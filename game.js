@@ -3,6 +3,7 @@ const renderer = new Renderer(canvas);
 
 // Estados de juego
 let gameState = 'MENU';
+let typeWriterState = null; // { text, x, y, speed, color, direction, charIndex, lastTime, textStyle }
 
 // Opciones del menú
 let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
@@ -13,131 +14,173 @@ let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 
 function drawMenu() {
-  renderer.clearScreen();
+	renderer.clearScreen();
 
-  // Fondo azul retro como en el juego original
-  renderer.setFillStyle(1, 1); // color 1 = azul oscuro
-  renderer.bar(0, 0, canvas.width, canvas.height);
+	// Fondo azul retro como en el juego original
+	renderer.setFillStyle(1, 1); // color 1 = azul oscuro
+	renderer.bar(0, 0, canvas.width, canvas.height);
 
-  // Título grande en estilo 'Space Ships' - TriplexFont size 4, horizontal
-  renderer.setTextStyle(4, 0, 10);
-  renderer.setColor(9);
-  renderer.outTextXY(103, 0, 'Space');
+	// Título grande en estilo 'Space Ships' - TriplexFont size 4, horizontal
+	renderer.setTextStyle(4, 0, 10);
+	renderer.setColor(9);
+	renderer.outTextXY(103, 0, 'Space');
 	renderer.setColor(15);
 	renderer.outTextXY(100, 2, 'Space');
 	renderer.setColor(11);
 	renderer.outTextXY(101, 2, 'Space');
 	renderer.setTextStyle(4, 0, 9);
 	renderer.setColor(9);
-  renderer.outTextXY(130, 106, 'Ships');
+	renderer.outTextXY(130, 106, 'Ships');
 	renderer.setColor(15);
-  renderer.outTextXY(131, 107, 'Ships');
+	renderer.outTextXY(131, 107, 'Ships');
 	renderer.setColor(11);
-  renderer.outTextXY(132, 107, 'Ships');
+	renderer.outTextXY(132, 107, 'Ships');
 
 	renderer.setTextStyle(2, 1, 4);
-  renderer.setColor(15);
-  renderer.outTextXY(450, 120, 'Adventure');
+	renderer.setColor(15);
+	renderer.outTextXY(450, 120, 'Adventure');
 
-  // Subtítulo - DefaultFont size 1
-  renderer.setTextStyle(0, 0, 1);
-  renderer.setColor(14); // amarillo para subtítulo
-  renderer.outTextXY(480, 20, 'Edición Especial');
+	// Subtítulo - DefaultFont size 1
+	renderer.setTextStyle(0, 0, 1);
+	renderer.setColor(14); // amarillo para subtítulo
+	renderer.outTextXY(480, 20, 'Edición Especial');
 	renderer.setTextStyle(1, 0, 2);
 	renderer.outTextXY(600, 15, '🤖');
 
-  // Opciones de menú - DefaultFont size 2
-  renderer.setTextStyle(0, 0, 2);
-  for (let i = 0; i < menuOptions.length; i++) {
-    const y = 250 + i * 30;
+	// Opciones de menú - DefaultFont size 2
+	renderer.setTextStyle(0, 0, 2);
+	for (let i = 0; i < menuOptions.length; i++) {
+		const y = 250 + i * 30;
 		const x = 170;
-    let color = (i === selectedOption) ? 12 : 4; // selección rojo claro
-    renderer.setColor(color);
-    let text = menuOptions[i];
-    if (i === 0) text += ': ' + players;
-    if (i === 1) text += ': ' + speed;
-    if (i === 2) text += ': ' + difficulty;
-    renderer.outTextXY(x + 30, y, text);
-    if (i === selectedOption) {
-      drawMenuArrow(x, y+5, 14);
-    }
-  }
+		let color = (i === selectedOption) ? 12 : 4; // selección rojo claro
+		renderer.setColor(color);
+		let text = menuOptions[i];
+		if (i === 0) text += ': ' + players;
+		if (i === 1) text += ': ' + speed;
+		if (i === 2) text += ': ' + difficulty;
+		renderer.outTextXY(x + 30, y, text);
+		if (i === selectedOption) {
+			drawMenuArrow(x, y+5, 14);
+		}
+	}
 
-  // Footer con marca - SmallFont size 1
-  renderer.setTextStyle(2, 0, 1);
-  renderer.setColor(12);
-  renderer.outTextXY(20, canvas.height - 30, 'Lucas Capalbo Producciones');
+	// Footer
+	renderer.setTextStyle(2, 0, 1);
+	typeWriter('Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar    Enter: aceptar', 20, canvas.height - 25, 1, 7, 1, renderer);
 
-  renderer.setColor(7);
-  renderer.outTextXY(20, canvas.height - 50, 'Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar    Enter: aceptar');
+	renderer.setTextStyle(2, 0, 1.5);
+	renderer.setColor(11);
+	renderer.outTextXY(500, canvas.height - 35, 'Lucas Capalbo');
+	renderer.setTextStyle(5, 0, 1.4);
+	renderer.setColor(12);
+	renderer.outTextXY(525, canvas.height - 25, 'Producciones');
 }
 
 function drawMenuArrow(x, y, color) {
-  renderer.setColor(color);
-  renderer.line(x, y, x + 10, y);
-  renderer.line(x, y, x, y + 10);
-  renderer.line(x + 10, y, x + 10, y - 10);
-  renderer.line(x, y + 10, x + 10, y + 10);
-  renderer.line(x + 10, y + 10, x + 10, y + 20);
-  renderer.line(x + 10, y + 20, x + 25, y + 5);
-  renderer.line(x + 10, y - 10, x + 25, y + 5);
+	renderer.setColor(color);
+	renderer.line(x, y, x + 10, y);
+	renderer.line(x, y, x, y + 10);
+	renderer.line(x + 10, y, x + 10, y - 10);
+	renderer.line(x, y + 10, x + 10, y + 10);
+	renderer.line(x + 10, y + 10, x + 10, y + 20);
+	renderer.line(x + 10, y + 20, x + 25, y + 5);
+	renderer.line(x + 10, y - 10, x + 25, y + 5);
+}
+
+function delay(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function startTypeWriter(text, x, y, speed, color, direction, textStyle) {
+	typeWriterState = {
+		text,
+		x,
+		y,
+		speed,
+		color,
+		textStyle: {...(textStyle)},
+		direction,
+		charIndex: 0,
+		lastTime: Date.now()
+	};
+}
+
+function updateTypeWriter() {
+	if (!typeWriterState) return;
+	
+	const now = Date.now();
+	if (now - typeWriterState.lastTime >= typeWriterState.speed) {
+		typeWriterState.charIndex++;
+		typeWriterState.lastTime = now;
+	}
+	
+	// Dibujar TODO el texto hasta charIndex (canvas se limpia cada frame)
+	renderer.textStyle =  {...(typeWriterState.textStyle)};
+	renderer.setColor(typeWriterState.color);
+	renderer.outTextXY(typeWriterState.x, typeWriterState.y, typeWriterState.text.substring(0, typeWriterState.charIndex));
+}
+
+function typeWriter(text, x, y, speed, color, direction, renderer) {
+	if (!typeWriterState) {
+		startTypeWriter(text, x, y, speed, color, direction, renderer.textStyle );
+	}
 }
 
 // Manejo de teclado
 document.addEventListener('keydown', (event) => {
-  if (gameState === 'MENU') {
-    switch (event.key) {
-      case 'ArrowUp':
-      case 'w':
-      case 'W':
-      case '8': // numpad
-        selectedOption = (selectedOption - 1 + menuOptions.length) % menuOptions.length;
-        break;
-      case 'ArrowDown':
-      case 's':
-      case 'S':
-      case '2': // numpad
-        selectedOption = (selectedOption + 1) % menuOptions.length;
-        break;
-      case 'ArrowLeft':
-      case 'a':
-      case 'A':
-      case '4': // numpad
-        if (selectedOption === 0) {
-          players = players === 'Uno' ? 'Dos' : 'Uno';
-        } else if (selectedOption === 1) {
-          if (speed === 'Normal') speed = 'Lento';
-          else if (speed === 'Rápido') speed = 'Normal';
-        } else if (selectedOption === 2) {
-          if (difficulty === 'Media') difficulty = 'Fácil';
-          else if (difficulty === 'Difícil') difficulty = 'Media';
-        }
-        break;
-      case 'ArrowRight':
-      case 'd':
-      case 'D':
-      case '6': // numpad
-        if (selectedOption === 0) {
-          players = players === 'Uno' ? 'Dos' : 'Uno';
-        } else if (selectedOption === 1) {
-          if (speed === 'Lento') speed = 'Normal';
-          else if (speed === 'Normal') speed = 'Rápido';
-        } else if (selectedOption === 2) {
-          if (difficulty === 'Fácil') difficulty = 'Media';
-          else if (difficulty === 'Media') difficulty = 'Difícil';
-        }
-        break;
-      case 'Enter':
-        if (selectedOption === 0) {
-          gameState = 'GAME';
-        } else if (selectedOption === 3) {
-          gameState = 'HIGHSCORES';
-        } else if (selectedOption === 4) {
-          location.reload();
-        }
-        break;
-    }
-  }
+	if (gameState === 'MENU') {
+		switch (event.key) {
+			case 'ArrowUp':
+			case 'w':
+			case 'W':
+			case '8': // numpad
+				selectedOption = (selectedOption - 1 + menuOptions.length) % menuOptions.length;
+				break;
+			case 'ArrowDown':
+			case 's':
+			case 'S':
+			case '2': // numpad
+				selectedOption = (selectedOption + 1) % menuOptions.length;
+				break;
+			case 'ArrowLeft':
+			case 'a':
+			case 'A':
+			case '4': // numpad
+				if (selectedOption === 0) {
+					players = players === 'Uno' ? 'Dos' : 'Uno';
+				} else if (selectedOption === 1) {
+					if (speed === 'Normal') speed = 'Lento';
+					else if (speed === 'Rápido') speed = 'Normal';
+				} else if (selectedOption === 2) {
+					if (difficulty === 'Media') difficulty = 'Fácil';
+					else if (difficulty === 'Difícil') difficulty = 'Media';
+				}
+				break;
+			case 'ArrowRight':
+			case 'd':
+			case 'D':
+			case '6': // numpad
+				if (selectedOption === 0) {
+					players = players === 'Uno' ? 'Dos' : 'Uno';
+				} else if (selectedOption === 1) {
+					if (speed === 'Lento') speed = 'Normal';
+					else if (speed === 'Normal') speed = 'Rápido';
+				} else if (selectedOption === 2) {
+					if (difficulty === 'Fácil') difficulty = 'Media';
+					else if (difficulty === 'Media') difficulty = 'Difícil';
+				}
+				break;
+			case 'Enter':
+				if (selectedOption === 0) {
+					gameState = 'GAME';
+				} else if (selectedOption === 3) {
+					gameState = 'HIGHSCORES';
+				} else if (selectedOption === 4) {
+					location.reload();
+				}
+				break;
+		}
+	}
 });
 
 function drawPlayer(x, y, player) {
@@ -405,35 +448,37 @@ function drawEnemyShip(nx, ny, npant) {
 }
 
 function gameLoop() {
-  switch (gameState) {
-    case 'MENU':
-      drawMenu();
-      break;
-    case 'GAME':
-      renderer.clearScreen();
-      // Dibujar enemyships en la parte superior
-      drawEnemyShip(100, 50, 1);
-      drawEnemyShip(320, 50, 2);
-      drawEnemyShip(540, 50, 3);
+	
+	switch (gameState) {
+		case 'MENU':
+			drawMenu();
+			updateTypeWriter();
+			break;
+		case 'GAME':
+			renderer.clearScreen();
+			// Dibujar enemyships en la parte superior
+			drawEnemyShip(100, 50, 1);
+			drawEnemyShip(320, 50, 2);
+			drawEnemyShip(540, 50, 3);
 
-      // Dibujar ejemplos de enemigos pequeños
-      drawEnemy(100, 220, 1);
-      drawEnemy(180, 220, 2);
-      drawEnemy(260, 220, 3);
-      drawEnemy(340, 220, 4);
+			// Dibujar ejemplos de enemigos pequeños
+			drawEnemy(100, 220, 1);
+			drawEnemy(180, 220, 2);
+			drawEnemy(260, 220, 3);
+			drawEnemy(340, 220, 4);
 
-      // Dibujar jugadores al pie de pantalla
-      drawPlayer(200, 400, 1);
-      drawPlayer(440, 400, 2);
-      break;
-    case 'HIGHSCORES':
-      renderer.clearScreen();
-      renderer.setColor(15);
-      renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
-      break;
-  }
+			// Dibujar jugadores al pie de pantalla
+			drawPlayer(200, 400, 1);
+			drawPlayer(440, 400, 2);
+			break;
+		case 'HIGHSCORES':
+			renderer.clearScreen();
+			renderer.setColor(15);
+			renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
+			break;
+	}
 
-  requestAnimationFrame(gameLoop);
+	requestAnimationFrame(gameLoop);
 }
 
 gameLoop();

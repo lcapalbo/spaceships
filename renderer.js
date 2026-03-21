@@ -4,7 +4,7 @@ class Renderer {
 		this.ctx = canvas.getContext('2d');
 		this.fillStyle = 1;
 		this.color = 15;
-		this.textStyle = { font: '12px monospace', align: 'left', baseline: 'top' };
+		this.textStyle = { font: '12px monospace', align: 'left', baseline: 'top', outline: false };
 		this.palette = {
 			0: '#000000', 1: '#000080', 2: '#008000', 3: '#008080', 4: '#800000', 5: '#800080', 6: '#808000', 7: '#C0C0C0',
 			8: '#808080', 9: '#0000FF', 10: '#00FF00', 11: '#00FFFF', 12: '#FF0000', 13: '#FF00FF', 14: '#FFFF00', 15: '#FFFFFF'
