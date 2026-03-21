@@ -5,6 +5,10 @@ const renderer = new Renderer(canvas);
 let gameState = 'MENU';
 let typeWriterState = null; // { text, x, y, speed, color, direction, charIndex, lastTime, textStyle }
 
+// Variables para optimizar dibujo del menú
+let menuInitialized = false;
+let previousSelectedOption = -1;
+
 // Opciones del menú
 let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
 let players = 'Uno'; // 'Uno' o 'Dos'
@@ -14,66 +18,85 @@ let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 
 function drawMenu() {
-	renderer.clearScreen();
+	if (!menuInitialized) {
+		// Primera vez: dibujar fondo, título, subtítulo, opciones iniciales, créditos
+		renderer.setFillStyle(0, 1); // patrón sólido, color 1 = azul oscuro
+		renderer.bar(0, 0, canvas.width, canvas.height);
 
-	// Fondo azul retro como en el juego original
-	renderer.setFillStyle(1, 1); // color 1 = azul oscuro
-	renderer.bar(0, 0, canvas.width, canvas.height);
+		// Título grande en estilo 'Space Ships'
+		renderer.setTextStyle(4, 0, 10);
+		renderer.setColor(9);
+		renderer.outTextXY(103, 0, 'Space');
+		renderer.setColor(15);
+		renderer.outTextXY(100, 2, 'Space');
+		renderer.setColor(11);
+		renderer.outTextXY(101, 2, 'Space');
+		renderer.setTextStyle(4, 0, 9);
+		renderer.setColor(9);
+		renderer.outTextXY(130, 106, 'Ships');
+		renderer.setColor(15);
+		renderer.outTextXY(131, 107, 'Ships');
+		renderer.setColor(11);
+		renderer.outTextXY(132, 107, 'Ships');
 
-	// Título grande en estilo 'Space Ships' - TriplexFont size 4, horizontal
-	renderer.setTextStyle(4, 0, 10);
-	renderer.setColor(9);
-	renderer.outTextXY(103, 0, 'Space');
-	renderer.setColor(15);
-	renderer.outTextXY(100, 2, 'Space');
-	renderer.setColor(11);
-	renderer.outTextXY(101, 2, 'Space');
-	renderer.setTextStyle(4, 0, 9);
-	renderer.setColor(9);
-	renderer.outTextXY(130, 106, 'Ships');
-	renderer.setColor(15);
-	renderer.outTextXY(131, 107, 'Ships');
-	renderer.setColor(11);
-	renderer.outTextXY(132, 107, 'Ships');
+		renderer.setTextStyle(2, 1, 4);
+		renderer.setColor(15);
+		renderer.outTextXY(450, 120, 'Adventure');
 
-	renderer.setTextStyle(2, 1, 4);
-	renderer.setColor(15);
-	renderer.outTextXY(450, 120, 'Adventure');
+		// Subtítulo
+		renderer.setTextStyle(0, 0, 1);
+		renderer.setColor(14);
+		renderer.outTextXY(480, 20, 'Edición Especial');
+		renderer.setTextStyle(1, 0, 2);
+		renderer.outTextXY(600, 15, '🤖');
 
-	// Subtítulo - DefaultFont size 1
-	renderer.setTextStyle(0, 0, 1);
-	renderer.setColor(14); // amarillo para subtítulo
-	renderer.outTextXY(480, 20, 'Edición Especial');
-	renderer.setTextStyle(1, 0, 2);
-	renderer.outTextXY(600, 15, '🤖');
+		// Créditos
+		renderer.setTextStyle(2, 0, 1.5);
+		renderer.setColor(11);
+		renderer.outTextXY(500, canvas.height - 35, 'Lucas Capalbo');
+		renderer.setTextStyle(5, 0, 1.4);
+		renderer.setColor(12);
+		renderer.outTextXY(525, canvas.height - 25, 'Producciones');
 
-	// Opciones de menú - DefaultFont size 2
+		// Iniciar typeWriter
+		renderer.setTextStyle(2, 0, 1);
+		typeWriter('Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar    Enter: aceptar', 20, canvas.height - 25, 50, 7, 1, renderer);
+
+		menuInitialized = true;
+		previousSelectedOption = selectedOption;
+	}
+
+	// Actualizar opciones si cambiaron
+	renderer.setFillStyle(0, 1);
+	renderer.bar(200, 230, 500, 250 + menuOptions.length * 30);
+	
+	// Dibujar opciones actuales
 	renderer.setTextStyle(0, 0, 2);
 	for (let i = 0; i < menuOptions.length; i++) {
 		const y = 250 + i * 30;
 		const x = 170;
-		let color = (i === selectedOption) ? 12 : 4; // selección rojo claro
+		let color = (i === selectedOption) ? 12 : 4;
 		renderer.setColor(color);
 		let text = menuOptions[i];
 		if (i === 0) text += ': ' + players;
 		if (i === 1) text += ': ' + speed;
 		if (i === 2) text += ': ' + difficulty;
 		renderer.outTextXY(x + 30, y, text);
-		if (i === selectedOption) {
-			drawMenuArrow(x, y+5, 14);
-		}
 	}
 
-	// Footer
-	renderer.setTextStyle(2, 0, 1);
-	typeWriter('Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar    Enter: aceptar', 20, canvas.height - 25, 1, 7, 1, renderer);
+	// Borrar flecha anterior si cambió
+	if (previousSelectedOption !== selectedOption && previousSelectedOption !== -1) {
+		renderer.setFillStyle(0, 1);
+		renderer.bar(160, 230, 200, 250 + menuOptions.length * 30);
+	}
 
-	renderer.setTextStyle(2, 0, 1.5);
-	renderer.setColor(11);
-	renderer.outTextXY(500, canvas.height - 35, 'Lucas Capalbo');
-	renderer.setTextStyle(5, 0, 1.4);
-	renderer.setColor(12);
-	renderer.outTextXY(525, canvas.height - 25, 'Producciones');
+	// Dibujar flecha actual
+	if (selectedOption >= 0 && selectedOption < menuOptions.length) {
+		const y = 250 + selectedOption * 30;
+		drawMenuArrow(170, y + 5, 14);
+	}
+
+	previousSelectedOption = selectedOption;
 }
 
 function drawMenuArrow(x, y, color) {
@@ -114,7 +137,7 @@ function updateTypeWriter() {
 		typeWriterState.lastTime = now;
 	}
 	
-	// Dibujar TODO el texto hasta charIndex (canvas se limpia cada frame)
+	// Dibujar TODO el texto hasta charIndex
 	renderer.textStyle =  {...(typeWriterState.textStyle)};
 	renderer.setColor(typeWriterState.color);
 	renderer.outTextXY(typeWriterState.x, typeWriterState.y, typeWriterState.text.substring(0, typeWriterState.charIndex));
@@ -173,6 +196,7 @@ document.addEventListener('keydown', (event) => {
 			case 'Enter':
 				if (selectedOption === 0) {
 					gameState = 'GAME';
+					menuInitialized = false; // Reset para próxima vez que entre al menú
 				} else if (selectedOption === 3) {
 					gameState = 'HIGHSCORES';
 				} else if (selectedOption === 4) {
@@ -448,7 +472,6 @@ function drawEnemyShip(nx, ny, npant) {
 }
 
 function gameLoop() {
-	
 	switch (gameState) {
 		case 'MENU':
 			drawMenu();
