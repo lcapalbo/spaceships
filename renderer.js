@@ -52,6 +52,8 @@ class Renderer {
 		this.textStyle.font = `${style} ${weight} ${fontSize}px ${fontFamily}`;
 		// direction: 0=horizontal, 1=vertical (simplified, ignore for now)
 		this.textStyle.direction = direction;
+		// outline for DefaultFont and GothicFont (0 & 4)
+		this.textStyle.outline = (font === 0 || font === 4);
 	}
 
 	clearScreen() {
@@ -105,7 +107,13 @@ class Renderer {
 		this.ctx.font = this.textStyle.font;
 		this.ctx.textAlign = this.textStyle.align;
 		this.ctx.textBaseline = this.textStyle.baseline;
-		this.ctx.fillText(text, x, y);
+
+		if (this.textStyle.outline) {
+			this.ctx.strokeText(text, x, y);
+		} else {
+			this.ctx.fillText(text, x, y);
+		}
+
 		this.ctx.restore();
 	}
 

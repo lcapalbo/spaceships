@@ -21,33 +21,45 @@ function drawMenu() {
 
   // Título grande en estilo 'Space Ships' - TriplexFont size 4, horizontal
   renderer.setTextStyle(4, 0, 10);
-  renderer.setColor(11); // cian
-  renderer.outTextXY(103, 20, 'Space');
-  renderer.outTextXY(130, 86, 'Ships');
-	renderer.setTextStyle(2, 1, 5);
+  renderer.setColor(9);
+  renderer.outTextXY(103, 0, 'Space');
+	renderer.setColor(15);
+	renderer.outTextXY(100, 2, 'Space');
+	renderer.setColor(11);
+	renderer.outTextXY(101, 2, 'Space');
+	renderer.setTextStyle(4, 0, 9);
+	renderer.setColor(9);
+  renderer.outTextXY(130, 106, 'Ships');
+	renderer.setColor(15);
+  renderer.outTextXY(131, 107, 'Ships');
+	renderer.setColor(11);
+  renderer.outTextXY(132, 107, 'Ships');
+
+	renderer.setTextStyle(2, 1, 4);
   renderer.setColor(15);
-  renderer.outTextXY(350, 120, 'Adventure');
+  renderer.outTextXY(450, 120, 'Adventure');
 
   // Subtítulo - DefaultFont size 1
   renderer.setTextStyle(0, 0, 1);
   renderer.setColor(14); // amarillo para subtítulo
-  renderer.outTextXY(380, 20, 'Edición Especial');
-	renderer.setTextStyle(0, 0, 2);
-	renderer.outTextXY(500, 15, '🤖');
+  renderer.outTextXY(480, 20, 'Edición Especial');
+	renderer.setTextStyle(1, 0, 2);
+	renderer.outTextXY(600, 15, '🤖');
 
   // Opciones de menú - DefaultFont size 2
   renderer.setTextStyle(0, 0, 2);
   for (let i = 0; i < menuOptions.length; i++) {
-    const y = 220 + i * 30;
+    const y = 250 + i * 30;
+		const x = 170;
     let color = (i === selectedOption) ? 12 : 4; // selección rojo claro
     renderer.setColor(color);
     let text = menuOptions[i];
     if (i === 0) text += ': ' + players;
     if (i === 1) text += ': ' + speed;
     if (i === 2) text += ': ' + difficulty;
-    renderer.outTextXY(150, y, text);
+    renderer.outTextXY(x + 30, y, text);
     if (i === selectedOption) {
-      drawMenuArrow(120, y+5, 14);
+      drawMenuArrow(x, y+5, 14);
     }
   }
 
