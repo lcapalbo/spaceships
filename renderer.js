@@ -34,6 +34,26 @@ class Renderer {
 		}
 	}
 
+	setTextStyle(font, direction, size) {
+		// BGI fonts: 0=Default, 1=Triplex, 2=Small, 3=SansSerif, 4=Gothic, 5=Script
+		const fonts = {
+			0: 'monospace', // DefaultFont
+			1: 'serif', // TriplexFont
+			2: 'monospace', // SmallFont
+			3: 'sans-serif', // SansSerifFont
+			4: 'serif', // GothicFont
+			5: 'cursive' // ScriptFont
+		};
+		const baseSize = font === 2 ? 10 : 12; // SmallFont smaller
+		const fontSize = baseSize * size;
+		const fontFamily = fonts[font] || 'monospace';
+		const weight = (font === 1 || font === 4) ? 'bold' : 'normal';
+		const style = font === 5 ? 'italic' : 'normal';
+		this.textStyle.font = `${style} ${weight} ${fontSize}px ${fontFamily}`;
+		// direction: 0=horizontal, 1=vertical (simplified, ignore for now)
+		this.textStyle.direction = direction;
+	}
+
 	clearScreen() {
 		this.ctx.save();
 		this.ctx.fillStyle = this._resolveColor(0);

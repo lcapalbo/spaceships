@@ -19,17 +19,21 @@ function drawMenu() {
   renderer.setFillStyle(1, 1); // color 1 = azul oscuro aproximado
   renderer.bar(0, 0, canvas.width, canvas.height);
 
-  // Título grande en estilo 'Space Ships'
+  // Título grande en estilo 'Space Ships' - TriplexFont size 4
+  renderer.setTextStyle(1, 0, 4); // TriplexFont, horizontal, size 4
   renderer.setColor(11); // cian
   renderer.outTextXY(140, 40, 'Space');
   renderer.outTextXY(140, 70, 'Ships');
   renderer.setColor(15);
   renderer.outTextXY(500, 40, 'Adventure');
 
+  // Subtítulo - DefaultFont size 1
+  renderer.setTextStyle(0, 0, 1);
   renderer.setColor(14); // amarillo para subtítulo
   renderer.outTextXY(380, 20, 'Edición Especial');
 
-  // Opciones de menú
+  // Opciones de menú - DefaultFont size 2
+  renderer.setTextStyle(0, 0, 2);
   for (let i = 0; i < menuOptions.length; i++) {
     const y = 180 + i * 40;
     let color = (i === selectedOption) ? 12 : 4; // selección rojo claro
@@ -45,7 +49,8 @@ function drawMenu() {
     }
   }
 
-  // Footer con marca
+  // Footer con marca - SmallFont size 1
+  renderer.setTextStyle(2, 0, 1);
   renderer.setColor(12);
   renderer.outTextXY(20, canvas.height - 30, 'Lucas Capalbo Producciones');
 
