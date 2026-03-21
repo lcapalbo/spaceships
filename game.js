@@ -1,6 +1,101 @@
 const canvas = document.getElementById('gameCanvas');
 const renderer = new Renderer(canvas);
 
+// Estados de juego
+let gameState = 'MENU';
+
+// Opciones del menú
+let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
+let players = 'Uno'; // 'Uno' o 'Dos'
+let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
+let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
+
+const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
+
+function drawMenu() {
+  renderer.clearScreen();
+
+  // Título
+  renderer.setColor(15);
+  renderer.outTextXY(250, 50, 'SpaceShips Adventure');
+
+  // Opciones
+  for (let i = 0; i < menuOptions.length; i++) {
+    let color = (i === selectedOption) ? 14 : 7;
+    renderer.setColor(color);
+    let text = menuOptions[i];
+    if (i === 0) text += ': ' + players;
+    if (i === 1) text += ': ' + speed;
+    if (i === 2) text += ': ' + difficulty;
+    renderer.outTextXY(280, 100 + i * 30, text);
+  }
+
+  // Instrucciones
+  renderer.setColor(7);
+  renderer.outTextXY(200, 300, 'Usa flechas arriba/abajo para seleccionar');
+  renderer.outTextXY(200, 320, 'Flechas izquierda/derecha para cambiar opciones');
+  renderer.outTextXY(200, 340, 'Enter para elegir');
+  renderer.outTextXY(200, 360, 'ASDW o numpad para mover');
+}
+
+// Manejo de teclado
+document.addEventListener('keydown', (event) => {
+  if (gameState === 'MENU') {
+    switch (event.key) {
+      case 'ArrowUp':
+      case 'w':
+      case 'W':
+      case '8': // numpad
+        selectedOption = (selectedOption - 1 + menuOptions.length) % menuOptions.length;
+        break;
+      case 'ArrowDown':
+      case 's':
+      case 'S':
+      case '2': // numpad
+        selectedOption = (selectedOption + 1) % menuOptions.length;
+        break;
+      case 'ArrowLeft':
+      case 'a':
+      case 'A':
+      case '4': // numpad
+        if (selectedOption === 0) {
+          players = players === 'Uno' ? 'Dos' : 'Uno';
+        } else if (selectedOption === 1) {
+          if (speed === 'Normal') speed = 'Lento';
+          else if (speed === 'Rápido') speed = 'Normal';
+        } else if (selectedOption === 2) {
+          if (difficulty === 'Media') difficulty = 'Fácil';
+          else if (difficulty === 'Difícil') difficulty = 'Media';
+        }
+        break;
+      case 'ArrowRight':
+      case 'd':
+      case 'D':
+      case '6': // numpad
+        if (selectedOption === 0) {
+          players = players === 'Uno' ? 'Dos' : 'Uno';
+        } else if (selectedOption === 1) {
+          if (speed === 'Lento') speed = 'Normal';
+          else if (speed === 'Normal') speed = 'Rápido';
+        } else if (selectedOption === 2) {
+          if (difficulty === 'Fácil') difficulty = 'Media';
+          else if (difficulty === 'Media') difficulty = 'Difícil';
+        }
+        break;
+      case 'Enter':
+        if (selectedOption === 0) {
+          gameState = 'GAME';
+        } else if (selectedOption === 3) {
+          gameState = 'HIGHSCORES';
+        } else if (selectedOption === 4) {
+          // Salir, pero en web, quizás no hacer nada o alert
+          alert('Salir - Cierra la pestaña');
+        }
+        break;
+    }
+  }
+});
+
 function drawPlayer(x, y, player) {
 	if (player === 1) {
 		renderer.setColor(12);
@@ -266,24 +361,35 @@ function drawEnemyShip(nx, ny, npant) {
 }
 
 function gameLoop() {
-	renderer.clearScreen();
+  switch (gameState) {
+    case 'MENU':
+      drawMenu();
+      break;
+    case 'GAME':
+      renderer.clearScreen();
+      // Dibujar enemyships en la parte superior
+      drawEnemyShip(100, 50, 1);
+      drawEnemyShip(320, 50, 2);
+      drawEnemyShip(540, 50, 3);
 
-	// Dibujar enemyships en la parte superior
-	drawEnemyShip(100, 50, 1);
-	drawEnemyShip(320, 50, 2);
-	drawEnemyShip(540, 50, 3);
+      // Dibujar ejemplos de enemigos pequeños
+      drawEnemy(100, 220, 1);
+      drawEnemy(180, 220, 2);
+      drawEnemy(260, 220, 3);
+      drawEnemy(340, 220, 4);
 
-	// Dibujar ejemplos de enemigos pequeños
-	drawEnemy(100, 220, 1);
-	drawEnemy(180, 220, 2);
-	drawEnemy(260, 220, 3);
-	drawEnemy(340, 220, 4);
+      // Dibujar jugadores al pie de pantalla
+      drawPlayer(200, 400, 1);
+      drawPlayer(440, 400, 2);
+      break;
+    case 'HIGHSCORES':
+      renderer.clearScreen();
+      renderer.setColor(15);
+      renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
+      break;
+  }
 
-	// Dibujar jugadores al pie de pantalla
-	drawPlayer(200, 400, 1);
-	drawPlayer(440, 400, 2);
-
-	requestAnimationFrame(gameLoop);
+  requestAnimationFrame(gameLoop);
 }
 
 gameLoop();
