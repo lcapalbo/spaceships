@@ -15,17 +15,18 @@ const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 function drawMenu() {
   renderer.clearScreen();
 
-  // Fondo azul retro
-  renderer.setFillStyle(1, 1); // color 1 = azul oscuro aproximado
+  // Fondo azul retro como en el juego original
+  renderer.setFillStyle(1, 1); // color 1 = azul oscuro
   renderer.bar(0, 0, canvas.width, canvas.height);
 
-  // Título grande en estilo 'Space Ships' - TriplexFont size 4
-  renderer.setTextStyle(1, 0, 4); // TriplexFont, horizontal, size 4
+  // Título grande en estilo 'Space Ships' - TriplexFont size 4, horizontal
+  renderer.setTextStyle(4, 0, 10);
   renderer.setColor(11); // cian
-  renderer.outTextXY(140, 40, 'Space');
-  renderer.outTextXY(140, 70, 'Ships');
+  renderer.outTextXY(103, 20, 'Space');
+  renderer.outTextXY(130, 86, 'Ships');
+	renderer.setTextStyle(2, 1, 5);
   renderer.setColor(15);
-  renderer.outTextXY(500, 40, 'Adventure');
+  renderer.outTextXY(350, 120, 'Adventure');
 
   // Subtítulo - DefaultFont size 1
   renderer.setTextStyle(0, 0, 1);
@@ -35,17 +36,17 @@ function drawMenu() {
   // Opciones de menú - DefaultFont size 2
   renderer.setTextStyle(0, 0, 2);
   for (let i = 0; i < menuOptions.length; i++) {
-    const y = 180 + i * 40;
+    const y = 200 + i * 30;
     let color = (i === selectedOption) ? 12 : 4; // selección rojo claro
     renderer.setColor(color);
     let text = menuOptions[i];
     if (i === 0) text += ': ' + players;
     if (i === 1) text += ': ' + speed;
     if (i === 2) text += ': ' + difficulty;
-    renderer.outTextXY(260, y, text);
+    renderer.outTextXY(150, y, text);
     if (i === selectedOption) {
       renderer.setColor(14);
-      renderer.outTextXY(230, y, '->');
+      renderer.outTextXY(120, y, '->');
     }
   }
 
@@ -55,7 +56,7 @@ function drawMenu() {
   renderer.outTextXY(20, canvas.height - 30, 'Lucas Capalbo Producciones');
 
   renderer.setColor(7);
-  renderer.outTextXY(210, canvas.height - 60, 'Arriba/Abajo: seleccionar  Izquierda/Derecha: cambiar  Enter: aceptar');
+  renderer.outTextXY(20, canvas.height - 50, 'Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar    Enter: aceptar');
 }
 
 // Manejo de teclado
