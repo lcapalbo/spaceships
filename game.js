@@ -142,18 +142,146 @@ function drawEnemy(c, f, codigo) {
   }
 }
 
+function drawEnemyShip(nx, ny, npant) {
+  let cod = 0;
+  if (npant === 3) {
+    if (nx % 50 > 25) {
+      if (nx > 30) {
+        ny--;
+        cod = 1;
+      }
+    } else {
+      if (ny < 400) {
+        ny++;
+        cod = 2;
+      }
+    }
+  }
+
+  switch (npant) {
+    case 1:
+      renderer.setColor(10);
+      renderer.line(nx - 10, ny + 10, nx + 10, ny + 10);
+      renderer.line(nx - 15, ny, nx - 10, ny + 10);
+      renderer.line(nx + 15, ny, nx + 10, ny + 10);
+      renderer.line(nx - 15, ny, nx - 18, ny + 5);
+      renderer.line(nx + 15, ny, nx + 18, ny + 5);
+      renderer.line(nx - 18, ny + 5, nx - 30, ny + 8);
+      renderer.line(nx + 18, ny + 5, nx + 30, ny + 8);
+      renderer.line(nx - 30, ny + 8, nx - 60, ny + 40);
+      renderer.line(nx + 30, ny + 8, nx + 60, ny + 40);
+      renderer.line(nx - 53, ny + 60, nx - 30, ny + 50);
+      renderer.line(nx + 53, ny + 60, nx + 30, ny + 50);
+      renderer.line(nx - 30, ny + 8, nx - 30, ny + 50);
+      renderer.line(nx + 30, ny + 8, nx + 30, ny + 50);
+      renderer.line(nx - 30, ny + 50, nx - 20, ny + 50);
+      renderer.line(nx + 30, ny + 50, nx + 20, ny + 50);
+      renderer.setColor(2);
+      renderer.line(nx - 18, ny + 5, nx - 18, ny + 30);
+      renderer.line(nx + 18, ny + 5, nx + 18, ny + 30);
+      renderer.line(nx - 18, ny + 30, nx - 5, ny + 30);
+      renderer.line(nx + 18, ny + 30, nx + 5, ny + 30);
+      renderer.setColor(14);
+      renderer.line(nx - 60, ny + 40, nx - 53, ny + 60);
+      renderer.line(nx + 60, ny + 40, nx + 53, ny + 60);
+      renderer.line(nx - 59, ny + 44, nx - 59, ny + 75);
+      renderer.line(nx + 59, ny + 44, nx + 59, ny + 75);
+      renderer.line(nx - 59, ny + 75, nx - 53, ny + 55);
+      renderer.line(nx + 59, ny + 75, nx + 53, ny + 55);
+      renderer.setColor(12);
+      renderer.ellipse(nx, ny + 45, 0, 180, 5, 20);
+      renderer.ellipse(nx, ny + 55, 0, 70, 10, 10);
+      renderer.ellipse(nx, ny + 55, 110, 180, 10, 10);
+      renderer.ellipse(nx, ny + 50, 180, 360, 25, 7);
+      renderer.ellipse(nx, ny + 58, 180, 360, 7, 10);
+      renderer.ellipse(nx, ny + 90, 0, 360, 4, 8);
+      renderer.ellipse(nx, ny + 90, 180, 360, 5, 9);
+      renderer.line(nx - 3, ny + 67, nx - 2, ny + 82);
+      renderer.line(nx + 3, ny + 67, nx + 2, ny + 82);
+      renderer.setFillStyle(1, 4);
+      renderer.floodFill(nx, ny + 70, 12);
+      renderer.setFillStyle(1, 12);
+      renderer.floodFill(nx, ny + 60, 12);
+      break;
+    case 2:
+      renderer.setColor(11);
+      renderer.ellipse(nx, ny + 55, 160, 17, 20, 32);
+      renderer.ellipse(nx, ny + 55, 150, 25, 12, 24);
+      renderer.setColor(5);
+      renderer.line(nx - 48, ny + 18, nx - 60, ny + 72);
+      renderer.line(nx + 48, ny + 18, nx + 60, ny + 72);
+      renderer.line(nx - 20, ny + 40, nx - 60, ny + 72);
+      renderer.line(nx + 20, ny + 40, nx + 60, ny + 72);
+      renderer.setColor(12);
+      renderer.ellipse(nx, ny + 5, 0, 180, 60, 35);
+      renderer.ellipse(nx, ny + 5, 0, 180, 60, 30);
+      renderer.ellipse(nx, ny + 5, 0, 180, 60, 20);
+      renderer.ellipse(nx, ny + 5, 0, 180, 60, 10);
+      renderer.ellipse(nx, ny + 5, 0, 180, 50, 35);
+      renderer.ellipse(nx, ny + 5, 0, 180, 40, 35);
+      renderer.ellipse(nx, ny + 5, 0, 180, 30, 35);
+      renderer.ellipse(nx, ny + 5, 0, 180, 30, 35);
+      renderer.ellipse(nx, ny + 5, 0, 180, 20, 35);
+      renderer.ellipse(nx, ny + 5, 0, 180, 10, 35);
+      renderer.line(nx - 60, ny + 5, nx + 60, ny + 5);
+      renderer.line(nx - 60, ny + 5, nx - 20, ny + 44);
+      renderer.line(nx + 60, ny + 5, nx + 20, ny + 44);
+      renderer.line(nx - 20, ny + 44, nx + 20, ny + 44);
+      renderer.setColor(3);
+      renderer.circle(nx, ny + 60, 3);
+      renderer.circle(nx, ny + 60, 2);
+      renderer.setColor(11);
+      renderer.circle(nx, ny + 60, 1);
+      break;
+    case 3:
+      renderer.setColor(11);
+      renderer.ellipse(nx, ny + 67, 110, 70, 50, 18);
+      renderer.ellipse(nx, ny + 65, 110, 70, 30, 20);
+      renderer.ellipse(nx, ny + 65, 110, 70, 29, 19);
+      renderer.setColor(12);
+      renderer.ellipse(nx, ny + 40, 0, 360, 10, 40);
+      renderer.setColor(10);
+      if (cod === 1) {
+        renderer.line(nx - 25, ny + 55, nx - 60, ny + 30);
+        renderer.line(nx + 25, ny + 55, nx + 60, ny + 30);
+        renderer.line(nx - 11, ny + 40, nx - 60, ny + 30);
+        renderer.line(nx + 11, ny + 40, nx + 60, ny + 30);
+        renderer.line(nx - 60, ny + 30, nx - 15, ny + 10);
+        renderer.line(nx + 60, ny + 30, nx + 15, ny + 10);
+        renderer.line(nx - 15, ny + 10, nx - 55, ny + 35);
+        renderer.line(nx + 15, ny + 10, nx + 55, ny + 35);
+      } else if (cod === 2) {
+        renderer.line(nx - 25, ny + 55, nx - 60, ny + 20);
+        renderer.line(nx + 25, ny + 55, nx + 60, ny + 20);
+        renderer.line(nx - 11, ny + 40, nx - 60, ny + 20);
+        renderer.line(nx + 11, ny + 40, nx + 60, ny + 20);
+        renderer.line(nx - 60, ny + 20, nx - 15, ny - 10);
+        renderer.line(nx + 60, ny + 20, nx + 15, ny - 10);
+        renderer.line(nx - 15, ny - 10, nx - 55, ny + 25);
+        renderer.line(nx + 15, ny - 10, nx + 55, ny + 25);
+      }
+      break;
+  }
+  return ny;
+}
+
 function gameLoop() {
   renderer.clearScreen();
 
-  // Dibujar ejemplo de jugador 1 y 2
-  drawPlayer(200, 240, 1);
-  drawPlayer(440, 240, 2);
+  // Dibujar enemyships en la parte superior
+  drawEnemyShip(100, 50, 1);
+  drawEnemyShip(320, 50, 2);
+  drawEnemyShip(540, 50, 3);
 
-  // Dibujar ejemplos de enemigos 1..4
-  drawEnemy(100, 120, 1);
-  drawEnemy(180, 120, 2);
-  drawEnemy(260, 120, 3);
-  drawEnemy(340, 120, 4);
+  // Dibujar ejemplos de enemigos pequeños
+  drawEnemy(100, 220, 1);
+  drawEnemy(180, 220, 2);
+  drawEnemy(260, 220, 3);
+  drawEnemy(340, 220, 4);
+
+  // Dibujar jugadores al pie de pantalla
+  drawPlayer(200, 400, 1);
+  drawPlayer(440, 400, 2);
 
   requestAnimationFrame(gameLoop);
 }
