@@ -108,6 +108,14 @@ class Renderer {
 		this.ctx.textAlign = this.textStyle.align;
 		this.ctx.textBaseline = this.textStyle.baseline;
 
+		// Aplicar transformación para texto vertical (direction === 1)
+		if (this.textStyle.direction === 1) {
+			this.ctx.translate(x, y);
+			this.ctx.rotate(-Math.PI / 2); // 90 grados en sentido anti horario
+			x = 0;
+			y = 0;
+		}
+
 		if (this.textStyle.outline) {
 			this.ctx.strokeText(text, x, y);
 		} else {

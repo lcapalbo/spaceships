@@ -39,16 +39,14 @@ function drawMenu() {
 		renderer.setColor(11);
 		renderer.outTextXY(136, 108, 'Ships');
 
-		renderer.setTextStyle(2, 1, 4);
+		renderer.setTextStyle(2, 1, 3);
 		renderer.setColor(15);
-		renderer.outTextXY(450, 120, 'Adventure');
+		renderer.outTextXY(460, 200, 'Adventure!');
 
 		// Subtítulo
 		renderer.setTextStyle(0, 0, 1);
 		renderer.setColor(14);
-		renderer.outTextXY(480, 20, 'Edición Especial');
-		renderer.setTextStyle(1, 0, 2);
-		renderer.outTextXY(600, 15, '🤖');
+		renderer.outTextXY(canvas.width-120, 10, 'Edición Especial');
 
 		// Créditos
 		renderer.setTextStyle(2, 0, 1.5);
