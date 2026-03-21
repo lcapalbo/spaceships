@@ -15,27 +15,42 @@ const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 function drawMenu() {
   renderer.clearScreen();
 
-  // Título
-  renderer.setColor(15);
-  renderer.outTextXY(250, 50, 'SpaceShips Adventure');
+  // Fondo azul retro
+  renderer.setFillStyle(1, 1); // color 1 = azul oscuro aproximado
+  renderer.bar(0, 0, canvas.width, canvas.height);
 
-  // Opciones
+  // Título grande en estilo 'Space Ships'
+  renderer.setColor(11); // cian
+  renderer.outTextXY(140, 40, 'Space');
+  renderer.outTextXY(140, 70, 'Ships');
+  renderer.setColor(15);
+  renderer.outTextXY(500, 40, 'Adventure');
+
+  renderer.setColor(14); // amarillo para subtítulo
+  renderer.outTextXY(380, 20, 'Edición Especial');
+
+  // Opciones de menú
   for (let i = 0; i < menuOptions.length; i++) {
-    let color = (i === selectedOption) ? 14 : 7;
+    const y = 180 + i * 40;
+    let color = (i === selectedOption) ? 12 : 4; // selección rojo claro
     renderer.setColor(color);
     let text = menuOptions[i];
     if (i === 0) text += ': ' + players;
     if (i === 1) text += ': ' + speed;
     if (i === 2) text += ': ' + difficulty;
-    renderer.outTextXY(280, 100 + i * 30, text);
+    renderer.outTextXY(260, y, text);
+    if (i === selectedOption) {
+      renderer.setColor(14);
+      renderer.outTextXY(230, y, '->');
+    }
   }
 
-  // Instrucciones
+  // Footer con marca
+  renderer.setColor(12);
+  renderer.outTextXY(20, canvas.height - 30, 'Lucas Capalbo Producciones');
+
   renderer.setColor(7);
-  renderer.outTextXY(200, 300, 'Usa flechas arriba/abajo para seleccionar');
-  renderer.outTextXY(200, 320, 'Flechas izquierda/derecha para cambiar opciones');
-  renderer.outTextXY(200, 340, 'Enter para elegir');
-  renderer.outTextXY(200, 360, 'ASDW o numpad para mover');
+  renderer.outTextXY(210, canvas.height - 60, 'Arriba/Abajo: seleccionar  Izquierda/Derecha: cambiar  Enter: aceptar');
 }
 
 // Manejo de teclado
