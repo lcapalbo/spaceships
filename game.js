@@ -26,18 +26,18 @@ function drawMenu() {
 		// Título grande en estilo 'Space Ships'
 		renderer.setTextStyle(4, 0, 10);
 		renderer.setColor(9);
-		renderer.outTextXY(103, 0, 'Space');
+		renderer.outTextXY(106, 0, 'Space');
 		renderer.setColor(15);
 		renderer.outTextXY(100, 2, 'Space');
 		renderer.setColor(11);
-		renderer.outTextXY(101, 2, 'Space');
+		renderer.outTextXY(104, 4, 'Space');
 		renderer.setTextStyle(4, 0, 9);
 		renderer.setColor(9);
 		renderer.outTextXY(130, 106, 'Ships');
 		renderer.setColor(15);
-		renderer.outTextXY(131, 107, 'Ships');
+		renderer.outTextXY(132, 110, 'Ships');
 		renderer.setColor(11);
-		renderer.outTextXY(132, 107, 'Ships');
+		renderer.outTextXY(136, 108, 'Ships');
 
 		renderer.setTextStyle(2, 1, 4);
 		renderer.setColor(15);
