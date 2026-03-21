@@ -32,11 +32,13 @@ function drawMenu() {
   renderer.setTextStyle(0, 0, 1);
   renderer.setColor(14); // amarillo para subtítulo
   renderer.outTextXY(380, 20, 'Edición Especial');
+	renderer.setTextStyle(0, 0, 2);
+	renderer.outTextXY(500, 15, '🤖');
 
   // Opciones de menú - DefaultFont size 2
   renderer.setTextStyle(0, 0, 2);
   for (let i = 0; i < menuOptions.length; i++) {
-    const y = 200 + i * 30;
+    const y = 220 + i * 30;
     let color = (i === selectedOption) ? 12 : 4; // selección rojo claro
     renderer.setColor(color);
     let text = menuOptions[i];
@@ -45,8 +47,7 @@ function drawMenu() {
     if (i === 2) text += ': ' + difficulty;
     renderer.outTextXY(150, y, text);
     if (i === selectedOption) {
-      renderer.setColor(14);
-      renderer.outTextXY(120, y, '->');
+      drawMenuArrow(120, y+5, 14);
     }
   }
 
@@ -57,6 +58,17 @@ function drawMenu() {
 
   renderer.setColor(7);
   renderer.outTextXY(20, canvas.height - 50, 'Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar    Enter: aceptar');
+}
+
+function drawMenuArrow(x, y, color) {
+  renderer.setColor(color);
+  renderer.line(x, y, x + 10, y);
+  renderer.line(x, y, x, y + 10);
+  renderer.line(x + 10, y, x + 10, y - 10);
+  renderer.line(x, y + 10, x + 10, y + 10);
+  renderer.line(x + 10, y + 10, x + 10, y + 20);
+  renderer.line(x + 10, y + 20, x + 25, y + 5);
+  renderer.line(x + 10, y - 10, x + 25, y + 5);
 }
 
 // Manejo de teclado
@@ -109,8 +121,7 @@ document.addEventListener('keydown', (event) => {
         } else if (selectedOption === 3) {
           gameState = 'HIGHSCORES';
         } else if (selectedOption === 4) {
-          // Salir, pero en web, quizás no hacer nada o alert
-          alert('Salir - Cierra la pestaña');
+          location.reload();
         }
         break;
     }
