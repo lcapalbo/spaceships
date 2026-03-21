@@ -92,20 +92,20 @@ function drawEnemy(c, f, codigo) {
     renderer.line(c - 15, f + 5, c - 5, f + 12);
     renderer.line(c + 15, f + 5, c + 5, f + 12);
     renderer.line(c - 5, f + 11, c + 5, f + 11);
-
+		
     renderer.setColor(3);
     renderer.ellipse(c, f + 15, 160, 15, 5, 8);
     renderer.ellipse(c, f + 15, 145, 25, 3, 6);
-
+		
     renderer.setColor(5);
     renderer.line(c - 12, f + 8, c - 15, f + 18);
     renderer.line(c + 12, f + 8, c + 15, f + 18);
     renderer.line(c - 5, f + 10, c - 15, f + 18);
     renderer.line(c + 5, f + 10, c + 15, f + 18);
-
+		
     renderer.setFillStyle(9, 4);
     renderer.floodFill(c, f, 12);
-
+		
     renderer.setColor(3);
     renderer.circle(c, f + 15, 3);
     renderer.circle(c, f + 15, 2);

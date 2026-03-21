@@ -24,10 +24,13 @@ class Renderer {
   }
 
   setFillStyle(style, color) {
+    // BGI: style 1 => solid fill, 0 => empty / no fill
     this.fillStyle = style;
     if (color !== undefined) {
-      const c = this._resolveColor(color);
-      this.ctx.fillStyle = c;
+      this.fillColor = this._resolveColor(color);
+    }
+    if (this.fillColor) {
+      this.ctx.fillStyle = this.fillColor;
     }
   }
 
@@ -55,7 +58,7 @@ class Renderer {
     const start = (startDeg * Math.PI) / 180;
     const end = (endDeg * Math.PI) / 180;
     this.ctx.beginPath();
-    this.ctx.arc(x, y, r, start, end);
+		this.ctx.arc(x, y, r, end, start);
     this.ctx.stroke();
   }
 
@@ -64,13 +67,13 @@ class Renderer {
     const end = (endDeg * Math.PI) / 180;
     this.ctx.beginPath();
     if (this.ctx.ellipse) {
-      this.ctx.ellipse(x, y, rx, ry, 0, start, end);
+			this.ctx.ellipse(x, y, rx, ry, 0, end, start);
       this.ctx.stroke();
     } else {
       this.ctx.save();
       this.ctx.translate(x, y);
       this.ctx.scale(rx / ry, 1);
-      this.ctx.arc(0, 0, ry, start, end);
+			this.ctx.arc(0, 0, ry, end, start);
       this.ctx.stroke();
       this.ctx.restore();
     }
@@ -97,7 +100,7 @@ class Renderer {
     const end = (endDeg * Math.PI) / 180;
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
-    this.ctx.arc(x, y, r, start, end);
+		this.ctx.arc(x, y, r, end, start);
     this.ctx.closePath();
     if (this.fillStyle === 1) {
       this.ctx.fill();
@@ -106,9 +109,61 @@ class Renderer {
     }
   }
 
-  floodFill(x, y, color) {
-    this.ctx.fillStyle = this._resolveColor(color || this.color);
-    this.ctx.fillRect(x - 1, y - 1, 2, 2);
+  floodFill(x, y, boundaryColor) {
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+    const imgData = this.ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+
+    const boundRgba = this._hexToRgba(this._resolveColor(boundaryColor));
+    const fillRgba = this._hexToRgba(this._resolveColor(this.fillColor || this.color));
+
+    const sx = Math.floor(x);
+    const sy = Math.floor(y);
+    if (sx < 0 || sy < 0 || sx >= width || sy >= height) return;
+
+    const startIdx = (sy * width + sx) * 4;
+    const startColor = [data[startIdx], data[startIdx + 1], data[startIdx + 2], data[startIdx + 3]];
+
+    const sameColor = (a, b) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+    if (sameColor(startColor, fillRgba)) return;
+
+    const stack = [[sx, sy]];
+    const visited = new Uint8Array(width * height);
+
+    while (stack.length > 0) {
+      const [px, py] = stack.pop();
+      if (px < 0 || py < 0 || px >= width || py >= height) continue;
+      const idx = py * width + px;
+      if (visited[idx]) continue;
+
+      const idx4 = idx * 4;
+      const pixelColor = [data[idx4], data[idx4 + 1], data[idx4 + 2], data[idx4 + 3]];
+
+      if (sameColor(pixelColor, boundRgba) || sameColor(pixelColor, fillRgba)) continue;
+      if (!sameColor(pixelColor, startColor)) continue;
+
+      data[idx4] = fillRgba[0];
+      data[idx4 + 1] = fillRgba[1];
+      data[idx4 + 2] = fillRgba[2];
+      data[idx4 + 3] = fillRgba[3];
+
+      visited[idx] = 1;
+
+      stack.push([px + 1, py]);
+      stack.push([px - 1, py]);
+      stack.push([px, py + 1]);
+      stack.push([px, py - 1]);
+    }
+
+    this.ctx.putImageData(imgData, 0, 0);
+  }
+
+  _hexToRgba(hex) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(ch => ch + ch).join('');
+    const num = parseInt(c, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255, 255];
   }
 }
 
