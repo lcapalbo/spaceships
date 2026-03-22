@@ -259,7 +259,9 @@ function updateTypeWriter() {
 		} else {
 			typeWriterState = null; // Terminado
 		}
-	}	
+	}
+
+	return true;
 }
 
 function typeWriter(text, x, y, speed, color, direction, renderer) {
@@ -270,6 +272,8 @@ function typeWriter(text, x, y, speed, color, direction, renderer) {
 
 // Manejo de teclado
 document.addEventListener('keydown', (event) => {
+	if (typeWriterState) return;
+
 	if (gameState === 'MENU') {
 		switch (event.key) {
 			case 'ArrowUp':
@@ -591,48 +595,53 @@ function drawEnemyShip(nx, ny, npant) {
 }
 
 function gameLoop() {
-	switch (gameState) {
-		case 'MENU':
-			drawMenu();
-			updateTypeWriter();
-			break;
-		case 'GAME':
-			setupGameScreen();
-			showEnergy(player1.energy, 1);
-			if (players === 'Dos') {
-				showEnergy(player2.energy, 2);
-			}
-			// Dibujar vidas de jugadores
-			for (let i = 1; i <= player1.lives; i++) {
-				drawPlayer(650 - (30 * i), 90, 1);
-			}
-			if (players === 'Dos') {
-				for (let i = 1; i <= player2.lives; i++) {
-					drawPlayer(650 - (30 * i), 400, 2);
+	if(!updateTypeWriter()) {
+		switch (gameState) {
+			case 'MENU':
+				drawMenu();
+				break;
+			case 'GAME':
+				//*
+				setupGameScreen();
+				showEnergy(player1.energy, 1);
+				if (players === 'Dos') {
+					showEnergy(player2.energy, 2);
 				}
-			}
-			/*
-			// Dibujar enemyships en la parte superior
-			drawEnemyShip(100, 50, 1);
-			drawEnemyShip(320, 50, 2);
-			drawEnemyShip(540, 50, 3);
+				// Dibujar vidas de jugadores
+				for (let i = 1; i <= player1.lives; i++) {
+					drawPlayer(650 - (30 * i), 90, 1);
+				}
+				if (players === 'Dos') {
+					for (let i = 1; i <= player2.lives; i++) {
+						drawPlayer(650 - (30 * i), 400, 2);
+					}
+				}
+				//*/
 
-			// Dibujar ejemplos de enemigos pequeños
-			drawEnemy(100, 220, 1);
-			drawEnemy(180, 220, 2);
-			drawEnemy(260, 220, 3);
-			drawEnemy(340, 220, 4);
+				/*
+				renderer.clearScreen();
+				// Dibujar enemyships en la parte superior
+				drawEnemyShip(100, 50, 1);
+				drawEnemyShip(320, 50, 2);
+				drawEnemyShip(540, 50, 3);
 
-			// Dibujar jugadores al pie de pantalla
-			drawPlayer(200, 400, 1);
-			drawPlayer(440, 400, 2);
-			*/
-			break;
-		case 'HIGHSCORES':
-			renderer.clearScreen();
-			renderer.setColor(15);
-			renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
-			break;
+				// Dibujar ejemplos de enemigos pequeños
+				drawEnemy(100, 220, 1);
+				drawEnemy(180, 220, 2);
+				drawEnemy(260, 220, 3);
+				drawEnemy(340, 220, 4);
+
+				// Dibujar jugadores al pie de pantalla
+				drawPlayer(200, 400, 1);
+				drawPlayer(440, 400, 2);
+				//*/
+				break;
+			case 'HIGHSCORES':
+				renderer.clearScreen();
+				renderer.setColor(15);
+				renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
+				break;
+		}
 	}
 
 	requestAnimationFrame(gameLoop);
