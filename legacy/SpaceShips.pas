@@ -1,10 +1,10 @@
 {21:33/VIE/29.12.2K
 PASTILLA
   CELESTE=100p
-  VERDE=COMPLETA ENERG÷A
+  VERDE=COMPLETA ENERG√çA
   ROJA=CAMBIA CONTROLES
   BLANCO=VELOCIDAD
-  VIOLETA=DISPARO EN µNGULO
+  VIOLETA=DISPARO EN √ÅNGULO
   AMARILLA=LASER
   ROSA=ESCUDO}
 Program Space_Ships_Adventure;
@@ -29,7 +29,7 @@ r: TopFive;
 archivo: DataFile;
 V: Top5;
 SEGRABO:BOOLEAN;
-  {PARA COPIAR LAS IMµGENES A MEMORIA}
+  {PARA COPIAR LAS IM√ÅGENES A MEMORIA}
   Size,Size2,SizeE: Word;
   P,Q,N,M,L,K: Pointer;   {P=JUG1 Q=JUG2 N=ENE1 M=ENE2 L=E3.1 K=E3.2}
 key,auxt,auxt1,t,t1,t2:char;
@@ -104,10 +104,10 @@ AUXT:=' ';
 SetFillStyle(6,8);SetColor(12);Bar3D(100,100,350,370,4,TopOn);
 tipear('Lucas Capalbo Producciones',115,110,10,11,1);tipear('Space Ships Adventure',130,120,10,10,0);
 Pastilla(170,150,1);OutTextXY(180,148,'100 Puntos');
-Pastilla(170,170,2);OutTextXY(180,168,'Energ°a');
+Pastilla(170,170,2);OutTextXY(180,168,'Energ√≠a');
 Pastilla(170,190,3);OutTextXY(180,188,'Cambio De Controles');
 Pastilla(170,210,4);OutTextXY(180,208,'Velocidad');
-Pastilla(170,230,5);OutTextXY(180,228,'Disparo En µngulo');
+Pastilla(170,230,5);OutTextXY(180,228,'Disparo En √Ångulo');
 Pastilla(170,250,6);OutTextXY(180,248,'Laser');
 Pastilla(170,270,7);OutTextXY(180,268,'Escudo x 5');
 OutTextXY(120,290,'Pastillas: 5 Puntos');
@@ -261,7 +261,7 @@ SetTextStyle(11,0,0);
 IF JUGADOR=1 THEN
              BEGIN
               SetColor(1);
-              outtextXY(590,40,'€€€€€');
+              outtextXY(590,40,'‚ñà‚ñà‚ñà‚ñà‚ñà');
               Str(puntos:5,puntaje);
               SetColor(14);
               outtextXY(590,40,puntaje)
@@ -269,7 +269,7 @@ IF JUGADOR=1 THEN
              ELSE
              BEGIN
               SetColor(1);
-              outtextXY(590,350,'€€€€€');
+              outtextXY(590,350,'‚ñà‚ñà‚ñà‚ñà‚ñà');
               Str(puntos:5,puntaje);
               SetColor(14);
               outtextXY(590,350,puntaje)
@@ -410,8 +410,8 @@ if vidas=0 then
            t:='0';
            repeat t:=readkey until (t=' ')OR(t=chr(9));
            SetColor(1);
-           OutTextXY(460,145,'€€€€€€€€€€€€€€€');
-           OutTextXY(425,153,'€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€')
+           OutTextXY(460,145,'‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà');
+           OutTextXY(425,153,'‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà')
            end
 end;
 
@@ -616,7 +616,7 @@ Procedure COPIARNaves(VAR N,M,L,K:Pointer);
 Var SizeE:integer;
 Begin
 ClearDevice;
-                                 {COPIA LA IMµGEN EN UNA UBICACI‡N DE MEMORIA}
+                                 {COPIA LA IM√ÅGEN EN UNA UBICACI√ìN DE MEMORIA}
 SetBkColor(0);                                                             {I}
 SetLineStyle(0,0,1);                                                       {I}
 {ENEMIGO 1}
@@ -639,7 +639,7 @@ SetLineStyle(0,0,1);                                                       {I}
  SizeE:=ImageSize(96, 0, 126, 28);                                         {I}
  GetMem(K, SizeE);                                                         {I}
  GetImage(96, 0, 126, 28, K^);                                             {I}
-ClearDevice                                                        {HASTA ACµ}
+ClearDevice                                                        {HASTA AC√Å}
 end;
 
 Procedure CUADRO(VAR UNOJUEGA,DOSJUEGA,VERCUADRO,SALIR,CALCEFI1,CALCEFI2,DOS:BOOLEAN; VAR NPANT,PILLefect,PILLX,PILLY,matados,
@@ -664,7 +664,7 @@ BEGIN
         IF (not UNOJUEGA) THEN CALCEFI1:=FALSE
         END;
      SetColor(12);SetFillStyle(10,4);
-     IF (NOT DOS) THEN                                {SI HAY UN S‡LO JUGADOR}
+     IF (NOT DOS) THEN                                {SI HAY UN S√ìLO JUGADOR}
      BEGIN
      Bar3D(50,50,350,350,4,TopOn);Line(51,325,350,325);
      Dibujar1Enemigo(160,90,NPANT);
@@ -892,7 +892,7 @@ end;
 
 
 Begin
-{INICIO DE LA UNIDAD GRµFICA}
+{INICIO DE LA UNIDAD GR√ÅFICA}
 Driver := Detect;
 InitGraph(Driver, Mode,' ');
 
@@ -906,7 +906,7 @@ SetColor(9);OutTextXY(103,-12,'Space');SetColor(15);OutTextXY(100,-10,'Space');S
 SetColor(9);OutTextXY(130,86,'Ships');SetColor(15);OutTextXY(131,87,'Ships');SetColor(11);OutTextXY(132,87,'Ships');
 SetColor(15);SetTextStyle(2, 1, 10);OutTextXY(430,20,'Adventure!');
       SetTextStyle(2, 0, 6);
-      tipear('Edici¢n Especial Para:',210,5,0,11,1);
+      tipear('Edici√≥n Especial Para:',210,5,0,11,1);
       tipear('    Lucas Capalbo Lavezzo',180,20,0,11,1);
 SetColor(12);
 Rectangle(1, 1, 639, 479);Rectangle(3, 3, 637, 477);                 {640x480}
@@ -943,7 +943,7 @@ Case t of
                                    begin
                                    Case velocidad of
                                      8: begin velocidad:=10; veloc:='Lento' end;
-                                     10: begin velocidad:=6; veloc:='R†pido' end;
+                                     10: begin velocidad:=6; veloc:='R√°pido' end;
                                      6: begin velocidad:=8; veloc:='Normal' end
                                    end;
                                    SetFillStyle(1,1); Bar(400,300,550,350);
@@ -951,8 +951,8 @@ Case t of
                           if y=375 then
                                    begin
                                    Case dificultad of
-                                     50: begin dificultad:=100; dificul:='F†cil' end;
-                                     100: begin dificultad:=4; dificul:='Dif°cil' end;
+                                     50: begin dificultad:=100; dificul:='F√°cil' end;
+                                     100: begin dificultad:=4; dificul:='Dif√≠cil' end;
                                      4: begin dificultad:=50; dificul:='Media' end
                                    end;
                                    SetFillStyle(1,1); Bar(400,350,550,400);
@@ -969,7 +969,7 @@ Case t of
                           if y=325 then
                                    begin
                                    Case velocidad of
-                                     8: begin velocidad:=6; veloc:='R†pido' end;
+                                     8: begin velocidad:=6; veloc:='R√°pido' end;
                                      10: begin velocidad:=8; veloc:='Normal' end;
                                      6: begin velocidad:=10; veloc:='Lento' end
                                    end;
@@ -978,9 +978,9 @@ Case t of
                           if y=375 then
                                    begin
                                    Case dificultad of
-                                     50: begin dificultad:=4; dificul:='Dif°cil' end;
+                                     50: begin dificultad:=4; dificul:='Dif√≠cil' end;
                                      100: begin dificultad:=50; dificul:='Media' end;
-                                     4: begin dificultad:=100; dificul:='F†cil' end
+                                     4: begin dificultad:=100; dificul:='F√°cil' end
                                    end;
                                    SetFillStyle(1,1); Bar(400,350,550,400);
                                    end;
@@ -1034,7 +1034,7 @@ SetColor(12);
 Rectangle(400, 0, 639, 479);                                         {640x480}
 Rectangle(402, 2, 637, 477);
 SetFillStyle(1,1); FloodFill(403,3,12);
-                           {UBICACION DEL T÷TULO, SEGUN CANTIDAD DE JUGADORES}
+                           {UBICACION DEL T√çTULO, SEGUN CANTIDAD DE JUGADORES}
 IF NOT DOS THEN
  BEGIN
  SetTextStyle(4, 0, 8);
@@ -1061,14 +1061,14 @@ IF NOT DOS THEN
 SetTextStyle(11, 0, 2);
 tipear('Puntaje',569,24,0,4,1);tipear('Puntaje',570,25,0,12,1);
 tipear('Vidas',584,54,0,4,1);tipear('Vidas',585,55,0,12,1);
-tipear('Energ°a',569,104,0,4,1);tipear('Energ°a',570,105,0,12,1);
+tipear('Energ√≠a',569,104,0,4,1);tipear('Energ√≠a',570,105,0,12,1);
 SetColor(14);Line(403,35,636,35);Line(403,65,636,65);Line(403,115,636,115);
 {JUGADOR 2, ESTADO DE VARIABLES}
 IF DOS THEN
        BEGIN
        tipear('Puntaje',569,334,0,4,1);tipear('Puntaje',570,335,0,12,1);
        tipear('Vidas',584,364,0,4,1);tipear('Vidas',585,365,0,12,1);
-       tipear('Energ°a',569,414,0,4,1);tipear('Energ°a',570,415,0,12,1);
+       tipear('Energ√≠a',569,414,0,4,1);tipear('Energ√≠a',570,415,0,12,1);
        SetColor(14);Line(403,345,636,345);Line(403,375,636,375);Line(403,425,636,425)
        END;
 total:=0;
@@ -1139,21 +1139,21 @@ MATADOS:=0;
 puntos:=0;
 EscribirPuntaje(puntos,1);
 DibujarJugador(x,y,1);
-                               {COPIA LA IMµGEN EN UNA UBICACI‡N DE MEMORIA P}
+                               {COPIA LA IM√ÅGEN EN UNA UBICACI√ìN DE MEMORIA P}
 Size:=ImageSize(x-10, y-20, x+10, y+5);
 GetMem(P, Size);
 GetImage(x-10, y-20, x+10, y+5, P^);
-                                                                   {HASTA ACµ}
+                                                                   {HASTA AC√Å}
 MostrarEnergia(energia,energiaINICIAL,1);
 IF DOS THEN
    BEGIN
    DibujarJugador(x1,y1,2);
    MostrarEnergia(energia1,energiaINICIAL,2);
-                               {COPIA LA IMµGEN EN UNA UBICACI‡N DE MEMORIA Q}
+                               {COPIA LA IM√ÅGEN EN UNA UBICACI√ìN DE MEMORIA Q}
    Size2:=ImageSize(x1-10, y1-20, x1+10, y1+5);
    GetMem(Q, Size2);
    GetImage(x1-10, y1-20, x1+10, y1+5, Q^)
-                                                                   {HASTA ACµ}
+                                                                   {HASTA AC√Å}
    END;
 DibujarEnemigo(c,f,N);
 cantdisp:=1;
@@ -1707,7 +1707,7 @@ IF DISANG1 THEN
   if not final then
   for e:=1 to cantidadNAVES do
   begin
-   {BALAS SACAN ENERG÷A}
+   {BALAS SACAN ENERG√çA}
    if estado[e]=true then
    BEGIN
     IF UNOJUEGA THEN
@@ -1820,7 +1820,7 @@ IF DISANG1 THEN
               t:='-';
               while (t<>'s')AND(t<>'S')AND(t<>chr(27))AND(t<>'n')AND(t<>'N')AND(t<>' ') do t:=readkey;
               SetColor(1);
-              outtextxy(405,10,'€€€€€€€€€€€€€€€€€€€€');
+              outtextxy(405,10,'‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà‚ñà');
               if (t='s')or(t='S')or(t=chr(27)) then goto 1;
              end;
   delay(velocidad);
@@ -1871,7 +1871,7 @@ IF DISANG1 THEN
         'a','A': t:='D';
         'd','D': t:='A'
        END;
-{HASTA ACµ}
+{HASTA AC√Å}
    if (t=' ')OR(t=chr(72))OR(t=chr(80))OR(t=chr(75))OR(t=chr(77))OR(t='8')OR(t='2')OR(t='4')OR(t='6')OR(t=chr(27))OR(t=chr(59))
    then auxt:=t;
 if DOSJUEGA then
