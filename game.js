@@ -18,6 +18,9 @@ let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 // Estado de jugadores
 const player1 = { score: 0, lives: 4, energy: 3 };
 const player2 = { score: 0, lives: 4, energy: 3 };
+
+// Energía inicial del juego
+const energiaInicial = 3;
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 
 function write(text, x, y) {
@@ -171,6 +174,28 @@ function setupGameScreen() {
 	write(`Puntaje: ${player2.score}`, 410, 220);
 	write(`Vidas: ${player2.lives}`, 410, 240);
 	write(`Energía: ${player2.energy}`, 410, 260);
+}
+
+function showEnergy(energy, player) {
+	const baseY = player === 1 ? 129 : 439;
+	for (let i = 1; i <= energiaInicial; i++) {
+		const x1 = 643 - (i * 20);
+		const x2 = 640 - (i * 20);
+		if (i <= energy) {
+			// Energía disponible: dos pieSlice
+			renderer.setFillStyle(1, 2);
+			renderer.pieSlice(x1, baseY, 20, 340, 8);
+			renderer.setColor(14);
+			renderer.setFillStyle(0);
+			renderer.pieSlice(x1, baseY, 20, 340, 8);
+			renderer.setFillStyle(1, 12);
+			renderer.pieSlice(x2, baseY, 110, 250, 5);
+		} else {
+			// Energía consumida: pieSlice completo
+			renderer.setFillStyle(1, 1);
+			renderer.pieSlice(x1, baseY, 0, 360, 8);
+		}
+	}
 }
 
 function startTypeWriter(text, x, y, speed, color, direction, textStyle) {
@@ -550,6 +575,10 @@ function gameLoop() {
 			break;
 		case 'GAME':
 			setupGameScreen();
+			showEnergy(player1.energy, 1);
+			if (players === 'Dos') {
+				showEnergy(player2.energy, 2);
+			}
 			/*
 			// Dibujar enemyships en la parte superior
 			drawEnemyShip(100, 50, 1);
