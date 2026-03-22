@@ -176,17 +176,14 @@ function setupGameScreen() {
 	write(`Energía: ${player2.energy}`, 410, 260);
 }
 
-function showEnergy(energy, player) {
+function showEnergy(energy, energiaInicial, player) {
 	const baseY = player === 1 ? 129 : 439;
 	for (let i = 1; i <= energiaInicial; i++) {
 		const x1 = 643 - (i * 20);
 		const x2 = 640 - (i * 20);
 		if (i <= energy) {
 			// Energía disponible: dos pieSlice
-			renderer.setFillStyle(1, 2);
-			renderer.pieSlice(x1, baseY, 20, 340, 8);
-			renderer.setColor(14);
-			renderer.setFillStyle(0);
+			renderer.setFillStyle(1, 14);
 			renderer.pieSlice(x1, baseY, 20, 340, 8);
 			renderer.setFillStyle(1, 12);
 			renderer.pieSlice(x2, baseY, 110, 250, 5);
@@ -575,9 +572,18 @@ function gameLoop() {
 			break;
 		case 'GAME':
 			setupGameScreen();
-			showEnergy(player1.energy, 1);
+			showEnergy(player1.energy, energiaInicial, 1);
 			if (players === 'Dos') {
-				showEnergy(player2.energy, 2);
+				showEnergy(player2.energy, energiaInicial, 2);
+			}
+			// Dibujar vidas de jugadores
+			for (let i = 1; i <= player1.lives; i++) {
+				drawPlayer(650 - (30 * i), 90, 1);
+			}
+			if (players === 'Dos') {
+				for (let i = 1; i <= player2.lives; i++) {
+					drawPlayer(650 - (30 * i), 400, 2);
+				}
 			}
 			/*
 			// Dibujar enemyships en la parte superior
