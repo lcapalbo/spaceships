@@ -15,6 +15,9 @@ let players = 'Uno'; // 'Uno' o 'Dos'
 let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 
+// Estado de jugadores
+const player1 = { score: 0, lives: 4, energy: 3 };
+const player2 = { score: 0, lives: 4, energy: 3 };
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 
 function write(text, x, y) {
@@ -115,6 +118,59 @@ function drawMenuArrow(x, y, color) {
 	renderer.line(x + 10, y + 10, x + 10, y + 20);
 	renderer.line(x + 10, y + 20, x + 25, y + 5);
 	renderer.line(x + 10, y - 10, x + 25, y + 5);
+}
+
+function setupGameScreen() {
+	// Area de juego izquierdo
+	renderer.setFillStyle(0, 0); // fondo sólido negro
+	renderer.bar(0, 0, 400, canvas.height);
+
+	// Panel derecho
+	renderer.setFillStyle(1, 1); // fondo sólido azul
+	renderer.bar(400, 0, canvas.width, canvas.height);
+
+	// Bordes del panel
+	renderer.setColor(12);
+	renderer.line(400, 0, 400, canvas.height);
+	renderer.line(400, 0, canvas.width, 0);
+	renderer.line(canvas.width, 0, canvas.width, canvas.height);
+	renderer.line(400, canvas.height, canvas.width, canvas.height);
+
+	// Cabecera del panel
+	//renderer.setTextStyle(4, 0, 6);
+	//write('Space Ships Adventure', 410, 20);
+	//write('----------------------', 410, 45);
+
+	renderer.setTextStyle(4, 0, 5);
+  renderer.setColor(9);
+	renderer.outTextXY(423,354,'Space');
+	renderer.setColor(15);
+	renderer.outTextXY(420,356,'Space');
+	renderer.setColor(11);
+	renderer.outTextXY(421,356,'Space');
+  renderer.setTextStyle(4, 0, 4);
+  renderer.setColor(9);
+	renderer.outTextXY(447,404,'Ships');
+	renderer.setColor(15);
+	renderer.outTextXY(448,405,'Ships');
+	renderer.setColor(11);
+	renderer.outTextXY(449,405,'Ships');
+  renderer.setColor(15);
+  renderer.setTextStyle(2, 1, 1.7);
+  renderer.outTextXY(605,450,'Adventure!');
+
+	// Estado JUGADOR 1
+	renderer.setTextStyle(0, 0, 2);
+	write('Jugador 1:', 410, 80);
+	write(`Puntaje: ${player1.score}`, 410, 110);
+	write(`Vidas: ${player1.lives}`, 410, 130);
+	write(`Energía: ${player1.energy}`, 410, 150);
+
+	// Estado JUGADOR 2 (si está activo)
+	write('Jugador 2:', 410, 190);
+	write(`Puntaje: ${player2.score}`, 410, 220);
+	write(`Vidas: ${player2.lives}`, 410, 240);
+	write(`Energía: ${player2.energy}`, 410, 260);
 }
 
 function startTypeWriter(text, x, y, speed, color, direction, textStyle) {
@@ -493,7 +549,8 @@ function gameLoop() {
 			updateTypeWriter();
 			break;
 		case 'GAME':
-			renderer.clearScreen();
+			setupGameScreen();
+			/*
 			// Dibujar enemyships en la parte superior
 			drawEnemyShip(100, 50, 1);
 			drawEnemyShip(320, 50, 2);
@@ -508,6 +565,7 @@ function gameLoop() {
 			// Dibujar jugadores al pie de pantalla
 			drawPlayer(200, 400, 1);
 			drawPlayer(440, 400, 2);
+			*/
 			break;
 		case 'HIGHSCORES':
 			renderer.clearScreen();
