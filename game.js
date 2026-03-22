@@ -17,6 +17,15 @@ let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 
+function write(text, x, y) {
+    renderer.setColor(9);
+    renderer.outTextXY(x, y, text);
+		renderer.setColor(4);
+    renderer.outTextXY(x+1, y, text);
+    renderer.setColor(12);
+    renderer.outTextXY(x - 1, y - 1, text);
+}
+
 function drawMenu() {
 	if (!menuInitialized) {
 		// Primera vez: dibujar fondo, título, subtítulo, opciones iniciales, créditos
@@ -79,7 +88,7 @@ function drawMenu() {
 		if (i === 0) text += ': ' + players;
 		if (i === 1) text += ': ' + speed;
 		if (i === 2) text += ': ' + difficulty;
-		renderer.outTextXY(x + 30, y, text);
+		write(text, x + 30, y);
 	}
 
 	// Borrar flecha anterior si cambió
@@ -127,6 +136,7 @@ function updateTypeWriter() {
 	
 	const now = Date.now();
 	if (now - typeWriterState.lastTime < typeWriterState.speed) return;
+	typeWriterState.lastTime = now;
 
 	// Dibujar el texto según la dirección
 	renderer.textStyle =  {...(typeWriterState.textStyle)};
@@ -145,10 +155,7 @@ function updateTypeWriter() {
 		} else {
 			typeWriterState = null; // Terminado
 		}
-	}
-	
-	
-	typeWriterState.lastTime = now;
+	}	
 }
 
 function typeWriter(text, x, y, speed, color, direction, renderer) {
