@@ -140,40 +140,63 @@ function setupGameScreen() {
 	renderer.line(400, canvas.height, canvas.width, canvas.height);
 
 	// Cabecera del panel
-	//renderer.setTextStyle(4, 0, 6);
-	//write('Space Ships Adventure', 410, 20);
-	//write('----------------------', 410, 45);
-
+	let y_base = players === 'Dos' ? 154 : 268;
 	renderer.setTextStyle(4, 0, 5);
-  renderer.setColor(9);
-	renderer.outTextXY(423,354,'Space');
+	renderer.setColor(9);
+	renderer.outTextXY(423, y_base, 'Space');
 	renderer.setColor(15);
-	renderer.outTextXY(420,356,'Space');
+	renderer.outTextXY(420, y_base + 2, 'Space');
 	renderer.setColor(11);
-	renderer.outTextXY(421,356,'Space');
-  renderer.setTextStyle(4, 0, 4);
-  renderer.setColor(9);
-	renderer.outTextXY(447,404,'Ships');
+	renderer.outTextXY(421, y_base + 2, 'Space');
+	renderer.setTextStyle(4, 0, 4);
+	renderer.setColor(9);
+	renderer.outTextXY(447, y_base + 50, 'Ships');
 	renderer.setColor(15);
-	renderer.outTextXY(448,405,'Ships');
+	renderer.outTextXY(448, y_base + 51, 'Ships');
 	renderer.setColor(11);
-	renderer.outTextXY(449,405,'Ships');
-  renderer.setColor(15);
-  renderer.setTextStyle(2, 1, 1.7);
-  renderer.outTextXY(605,450,'Adventure!');
+	renderer.outTextXY(449, y_base + 51, 'Ships');
+	renderer.setColor(15);
+	renderer.setTextStyle(2, 1, 1.7);
+	renderer.outTextXY(605, y_base + 96, 'Adventure!');
 
-	// Estado JUGADOR 1
-	renderer.setTextStyle(0, 0, 2);
-	write('Jugador 1:', 410, 80);
-	write(`Puntaje: ${player1.score}`, 410, 110);
-	write(`Vidas: ${player1.lives}`, 410, 130);
-	write(`Energía: ${player1.energy}`, 410, 150);
+	// Textos fijos y líneas para Jugador 1
+	renderer.setTextStyle(0, 0, 1);
+	renderer.setColor(4);
+	renderer.outTextXY(579, 23, 'Puntaje');
+	renderer.setColor(12);
+	renderer.outTextXY(580, 24, 'Puntaje');
+	renderer.setColor(4);
+	renderer.outTextXY(594, 53, 'Vidas');
+	renderer.setColor(12);
+	renderer.outTextXY(595, 54, 'Vidas');
+	renderer.setColor(4);
+	renderer.outTextXY(579, 103, 'Energía');
+	renderer.setColor(12);
+	renderer.outTextXY(580, 104, 'Energía');
+	renderer.setColor(14);
+	renderer.line(403, 35, 636, 35);
+	renderer.line(403, 65, 636, 65);
+	renderer.line(403, 115, 636, 115);
 
-	// Estado JUGADOR 2 (si está activo)
-	write('Jugador 2:', 410, 190);
-	write(`Puntaje: ${player2.score}`, 410, 220);
-	write(`Vidas: ${player2.lives}`, 410, 240);
-	write(`Energía: ${player2.energy}`, 410, 260);
+	// Textos fijos y líneas para Jugador 2 si activo
+	if (players === 'Dos') {
+		renderer.setColor(4);
+		renderer.outTextXY(579, 333, 'Puntaje');
+		renderer.setColor(12);
+		renderer.outTextXY(580, 334, 'Puntaje');
+		renderer.setColor(4);
+		renderer.outTextXY(594, 363, 'Vidas');
+		renderer.setColor(12);
+		renderer.outTextXY(595, 364, 'Vidas');
+		renderer.setColor(4);
+		renderer.outTextXY(579, 413, 'Energía');
+		renderer.setColor(12);
+		renderer.outTextXY(580, 414, 'Energía');
+		renderer.setColor(14);
+		renderer.line(403, 345, 636, 345);
+		renderer.line(403, 375, 636, 375);
+		renderer.line(403, 425, 636, 425);
+	}
 }
 
 function showEnergy(energy, energiaInicial, player) {
