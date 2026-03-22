@@ -58,7 +58,7 @@ function drawMenu() {
 
 		// Iniciar typeWriter
 		renderer.setTextStyle(2, 0, 1);
-		typeWriter('Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar    Enter: aceptar', 20, canvas.height - 25, 50, 7, 1, renderer);
+		typeWriter('Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar   Enter: aceptar', 20, canvas.height - 25, 10, 7, 1, renderer);
 
 		menuInitialized = true;
 		previousSelectedOption = selectedOption;
@@ -108,10 +108,6 @@ function drawMenuArrow(x, y, color) {
 	renderer.line(x + 10, y - 10, x + 25, y + 5);
 }
 
-function delay(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 function startTypeWriter(text, x, y, speed, color, direction, textStyle) {
 	typeWriterState = {
 		text,
@@ -121,7 +117,7 @@ function startTypeWriter(text, x, y, speed, color, direction, textStyle) {
 		color,
 		textStyle: {...(textStyle)},
 		direction,
-		charIndex: 0,
+		charIndex: direction === 1 ? 0 : text.length-1,
 		lastTime: Date.now()
 	};
 }
@@ -130,15 +126,29 @@ function updateTypeWriter() {
 	if (!typeWriterState) return;
 	
 	const now = Date.now();
-	if (now - typeWriterState.lastTime >= typeWriterState.speed) {
-		typeWriterState.charIndex++;
-		typeWriterState.lastTime = now;
-	}
-	
-	// Dibujar TODO el texto hasta charIndex
+	if (now - typeWriterState.lastTime < typeWriterState.speed) return;
+
+	// Dibujar el texto según la dirección
 	renderer.textStyle =  {...(typeWriterState.textStyle)};
 	renderer.setColor(typeWriterState.color);
-	renderer.outTextXY(typeWriterState.x, typeWriterState.y, typeWriterState.text.substring(0, typeWriterState.charIndex));
+	renderer.outTextXY(typeWriterState.x + 5.5*typeWriterState.charIndex, typeWriterState.y, typeWriterState.text.charAt(typeWriterState.charIndex));
+
+	if (typeWriterState.direction === 1) {
+		if (typeWriterState.charIndex < typeWriterState.text.length) {
+			typeWriterState.charIndex++;
+		} else {
+			typeWriterState = null; // Terminado
+		}
+	} else {
+		if (typeWriterState.charIndex > 0) {
+			typeWriterState.charIndex--;
+		} else {
+			typeWriterState = null; // Terminado
+		}
+	}
+	
+	
+	typeWriterState.lastTime = now;
 }
 
 function typeWriter(text, x, y, speed, color, direction, renderer) {
