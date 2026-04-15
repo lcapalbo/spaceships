@@ -197,6 +197,32 @@ function setupGameScreen() {
 		renderer.line(403, 375, 636, 375);
 		renderer.line(403, 425, 636, 425);
 	}
+
+	// Dibujar vidas iniciales
+	for (let i = 1; i <= player1.lives; i++) {
+		drawPlayer(650 - (30 * i), 90, 1);
+	}
+	if (players === 'Dos') {
+		for (let i = 1; i <= player2.lives; i++) {
+			drawPlayer(650 - (30 * i), 400, 2);
+		}
+	}
+
+	// Mostrar energía inicial
+	showEnergy(player1.energy, 1);
+	if (players === 'Dos') showEnergy(player2.energy, 2);
+}
+
+function writeScore(score, player) {
+	const y = player === 1 ? 40 : 350;
+	const scoreStr = score.toString().padStart(5, '0');
+	renderer.setTextStyle(1, 0, 1);
+	renderer.setColor(1);
+	renderer.outTextXY(590, y, '█████');
+
+	renderer.setTextStyle(0, 0, 1);
+	renderer.setColor(14);
+	renderer.outTextXY(590, y, scoreStr);
 }
 
 function showEnergy(energy, player) {
@@ -603,19 +629,10 @@ function gameLoop() {
 			case 'GAME':
 				//*
 				setupGameScreen();
-				showEnergy(player1.energy, 1);
-				if (players === 'Dos') {
-					showEnergy(player2.energy, 2);
-				}
-				// Dibujar vidas de jugadores
-				for (let i = 1; i <= player1.lives; i++) {
-					drawPlayer(650 - (30 * i), 90, 1);
-				}
-				if (players === 'Dos') {
-					for (let i = 1; i <= player2.lives; i++) {
-						drawPlayer(650 - (30 * i), 400, 2);
-					}
-				}
+
+				// Escribir puntajes iniciales
+				writeScore(player1.score, 1);
+				if (players === 'Dos') writeScore(player2.score, 2);
 				//*/
 
 				/*
