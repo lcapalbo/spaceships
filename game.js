@@ -20,7 +20,8 @@ const player1 = { score: 0, lives: 4, energy: 3 };
 const player2 = { score: 0, lives: 4, energy: 3 };
 
 // Energía inicial del juego
-const energiaInicial = 3;
+let energiaInicial = 3;
+let pill = 5; // Posibilidad de pastilla según dificultad
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 
 function write(text, x, y) {
@@ -124,6 +125,35 @@ function drawMenuArrow(x, y, color) {
 }
 
 function setupGameScreen() {
+	// Inicializar valores según dificultad
+	let dificultadNum = 1;
+	if (difficulty === 'Media') dificultadNum = 2;
+	else if (difficulty === 'Difícil') dificultadNum = 3;
+
+	switch (dificultadNum) {
+		case 1:
+			energiaInicial = 4;
+			player1.lives = 4;
+			player2.lives = 4;
+			pill = 8;
+			break;
+		case 2:
+			energiaInicial = 3;
+			player1.lives = 4;
+			player2.lives = 4;
+			pill = 12;
+			break;
+		case 3:
+			energiaInicial = 3;
+			player1.lives = 3;
+			player2.lives = 3;
+			pill = 18;
+			break;
+	}
+
+	player1.energy = energiaInicial;
+	player2.energy = energiaInicial;
+
 	// Area de juego izquierdo
 	renderer.setFillStyle(0, 0); // fondo sólido negro
 	renderer.bar(0, 0, 400, canvas.height);
