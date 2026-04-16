@@ -16,8 +16,8 @@ let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 
 // Estado de jugadores
-const player1 = { score: 0, lives: 4, energy: 3, x: 200, y: 443 };
-const player2 = { score: 0, lives: 4, energy: 3, x: 200, y: 443 };
+const player1 = { score: 0, lives: 4, energy: 3, x: 200, y: 443, bullets: 0, shots: [false, false, false, false], bulletX: [-10, -10, -10, -10], bulletY: [-10, -10, -10, -10] };
+const player2 = { score: 0, lives: 4, energy: 3, x: 200, y: 443, bullets: 0, shots: [false, false, false, false], bulletX: [-10, -10, -10, -10], bulletY: [-10, -10, -10, -10] };
 
 // Energía inicial del juego
 let energiaInicial = 3;
@@ -164,7 +164,16 @@ function setupGameScreen() {
 		player2.x = 100;
 		player2.y = 443;
 	}
-
+	// Inicializar estado de balas
+	player1.bullets = 0;
+	player1.shots = [false, false, false, false];
+	player1.bulletX = [-10, -10, -10, -10];
+	player1.bulletY = [-10, -10, -10, -10];
+	player2.bullets = 0;
+	player2.shots = [false, false, false, false];
+	player2.bulletX = [-10, -10, -10, -10];
+	player2.bulletY = [-10, -10, -10, -10];
+	
 	// Area de juego izquierdo
 	renderer.setFillStyle(0, 0); // fondo sólido negro
 	renderer.bar(0, 0, 400, canvas.height);
