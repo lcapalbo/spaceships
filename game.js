@@ -16,8 +16,8 @@ let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 
 // Estado de jugadores
-const player1 = { score: 0, lives: 4, energy: 3 };
-const player2 = { score: 0, lives: 4, energy: 3 };
+const player1 = { score: 0, lives: 4, energy: 3, x: 200, y: 443 };
+const player2 = { score: 0, lives: 4, energy: 3, x: 200, y: 443 };
 
 // Energía inicial del juego
 let energiaInicial = 3;
@@ -154,6 +154,17 @@ function setupGameScreen() {
 	player1.energy = energiaInicial;
 	player2.energy = energiaInicial;
 
+	// Inicializar posiciones según cantidad de jugadores
+	if (players === 'Uno') {
+		player1.x = 200;
+		player1.y = 443;
+	} else {
+		player1.x = 300;
+		player1.y = 443;
+		player2.x = 100;
+		player2.y = 443;
+	}
+
 	// Area de juego izquierdo
 	renderer.setFillStyle(0, 0); // fondo sólido negro
 	renderer.bar(0, 0, 400, canvas.height);
@@ -241,6 +252,10 @@ function setupGameScreen() {
 	// Mostrar energía inicial
 	showEnergy(player1.energy, 1);
 	if (players === 'Dos') showEnergy(player2.energy, 2);
+
+	// Dibujar naves de jugadores en posiciones iniciales
+	drawPlayer(player1.x, player1.y, 1);
+	if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
 }
 
 function writeScore(score, player) {
