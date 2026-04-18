@@ -853,7 +853,9 @@ function drawConfirmExitScreen() {
 
 function drawHelpScreen() {
 	// Dibujar ventana de ayuda
-	renderer.setFillStyle(6, 8); // Patrón \, color gris
+	renderer.setFillStyle(1, 0);
+	renderer.bar(100, 100, 350, 405);
+	renderer.setFillStyle(6, 2); // Patrón \, color gris
 	renderer.setColor(12); // Rojo para borde
 	renderer.bar3d(100, 100, 350, 405, 4, true);
 

@@ -23,48 +23,105 @@ class Renderer {
 	}
 
 	setFillStyle(style, color) {
-		// BGI: style 1 => solid fill, 0 => empty / no fill, 6 => diagonal lines pattern
+		// BGI: style 1 => solid fill, 0 => empty / no fill, 2 => horizontal lines, 6 => diagonal lines, 7 => cross hatch, 10 => wide dots
 		this.fillStyle = style;
 		if (color !== undefined) {
 			this.fillColor = this._resolveColor(color);
 		}
 		
-		if (style === 6) {
-			// Crear patrón de líneas oblicuas (arriba-izquierda a abajo-derecha)
-			const patternCanvas = document.createElement('canvas');
-			patternCanvas.width = 10;
-			patternCanvas.height = 10;
-			const patternCtx = patternCanvas.getContext('2d');
-			
-			// Fondo transparente
-			patternCtx.clearRect(0, 0, 10, 10);
-			
-			// Dibujar líneas diagonales densas (arriba-izquierda a abajo-derecha)
-			patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
-			patternCtx.lineWidth = 1;
-			patternCtx.beginPath();
-			// Primera serie de líneas
-			patternCtx.moveTo(-5, 0);
-			patternCtx.lineTo(5, 10);
-			patternCtx.moveTo(-5, 5);
-			patternCtx.lineTo(0, 10);
-			patternCtx.moveTo(0, -5);
-			patternCtx.lineTo(10, 5);
-			patternCtx.moveTo(5, -5);
-			patternCtx.lineTo(10, 0);
-			// Segunda serie para mayor densidad
-			patternCtx.moveTo(-5, -5);
-			patternCtx.lineTo(10, 10);
-			patternCtx.moveTo(0, -5);
-			patternCtx.lineTo(5, 0);
-			patternCtx.moveTo(5, -5);
-			patternCtx.lineTo(10, 0);
-			patternCtx.stroke();
-			
-			this.ctx.fillStyle = this.ctx.createPattern(patternCanvas, 'repeat');
-		} else if (this.fillColor) {
-			this.ctx.fillStyle = this.fillColor;
+		if (style === 1 || style === 0) {
+			if (this.fillColor) {
+				this.ctx.fillStyle = this.fillColor;
+			}
+			return;
 		}
+		
+		// Para patrones, crear dinámicamente
+		const patternCanvas = document.createElement('canvas');
+		const patternCtx = patternCanvas.getContext('2d');
+		
+		switch (style) {
+			case 2: // LineFill - líneas horizontales
+				patternCanvas.width = 10;
+				patternCanvas.height = 4;
+				patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
+				patternCtx.lineWidth = 1;
+				patternCtx.clearRect(0, 0, 10, 4);
+				patternCtx.beginPath();
+				patternCtx.moveTo(0, 2);
+				patternCtx.lineTo(10, 2);
+				patternCtx.stroke();
+				break;
+				
+			case 6: // DiagonalFill - líneas oblicuas
+				patternCanvas.width = 10;
+				patternCanvas.height = 10;
+				patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
+				patternCtx.lineWidth = 1;
+				// Fondo transparente
+				patternCtx.clearRect(0, 0, 10, 10);
+				
+				// Dibujar líneas diagonales densas (arriba-izquierda a abajo-derecha)
+				patternCtx.beginPath();
+				// Primera serie de líneas
+				patternCtx.moveTo(-5, 0);
+				patternCtx.lineTo(5, 10);
+				patternCtx.moveTo(-5, 5);
+				patternCtx.lineTo(0, 10);
+				patternCtx.moveTo(0, -5);
+				patternCtx.lineTo(10, 5);
+				patternCtx.moveTo(5, -5);
+				patternCtx.lineTo(10, 0);
+				// Segunda serie para mayor densidad
+				patternCtx.moveTo(-5, -5);
+				patternCtx.lineTo(10, 10);
+				patternCtx.moveTo(0, -5);
+				patternCtx.lineTo(5, 0);
+				patternCtx.moveTo(5, -5);
+				patternCtx.lineTo(10, 0);
+				patternCtx.stroke();
+				break;
+				
+			case 7: // HatchFill - líneas cruzadas (diagonal + antidiagonal)
+				patternCanvas.width = 10;
+				patternCanvas.height = 10;
+				patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
+				patternCtx.lineWidth = 1;
+				patternCtx.clearRect(0, 0, 10, 10);
+				patternCtx.beginPath();
+				// Líneas diagonales (\) - arriba-izquierda a abajo-derecha
+				patternCtx.moveTo(0, 0);
+				patternCtx.lineTo(10, 10);
+				patternCtx.moveTo(0, 5);
+				patternCtx.lineTo(5, 10);
+				patternCtx.moveTo(5, 0);
+				patternCtx.lineTo(10, 5);
+				// Líneas antidiagonales (/) - arriba-derecha a abajo-izquierda
+				patternCtx.moveTo(0, 10);
+				patternCtx.lineTo(10, 0);
+				patternCtx.moveTo(5, 0);
+				patternCtx.lineTo(10, 5);
+				patternCtx.moveTo(0, 5);
+				patternCtx.lineTo(5, 10);
+				patternCtx.stroke();
+				break;
+				
+			case 10: // WideDotFill - puntos con espaciado amplio
+				patternCanvas.width = 8;
+				patternCanvas.height = 8;
+				patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
+				patternCtx.lineWidth = 1;
+				patternCtx.clearRect(0, 0, 8, 8);
+				// Dibujar puntos pequeños con mayor densidad
+				patternCtx.fillStyle = this.fillColor || this._resolveColor(this.color);
+				patternCtx.fillRect(1, 1, 1, 1);
+				patternCtx.fillRect(1, 5, 1, 1);
+				patternCtx.fillRect(5, 1, 1, 1);
+				patternCtx.fillRect(5, 5, 1, 1);
+				break;
+		}
+		
+		this.ctx.fillStyle = this.ctx.createPattern(patternCanvas, 'repeat');
 	}
 
 	setTextStyle(font, direction, size) {
@@ -172,7 +229,7 @@ class Renderer {
 
 	bar3d(left, top, right, bottom, depth, topOn) {
 		// Dibujar el rectángulo principal relleno
-		this.bar(left, top, right, bottom);
+		this.bar(left+1, top+1, right-1, bottom-1);
 		
 		// Dibujar borde del rectángulo principal
 		this.rectangle(left, top, right, bottom);
@@ -210,7 +267,7 @@ class Renderer {
 		this.ctx.moveTo(x, y);
 		this.ctx.arc(x, y, r, start, end, true);
 		this.ctx.closePath();
-		if (this.fillStyle === 1 || this.fillStyle === 6) {
+		if (this.fillStyle === 1 || this.fillStyle === 2 || this.fillStyle === 6 || this.fillStyle === 7 || this.fillStyle === 10) {
 			this.ctx.fill();
 		} else {
 			this.ctx.stroke();
