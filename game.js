@@ -3,7 +3,6 @@ const renderer = new Renderer(canvas);
 
 // Estados de juego
 let gameState = 'MENU';
-let typeWriterState = null; // { text, x, y, speed, color, direction, charIndex, lastTime, textStyle }
 
 // Variables para optimizar dibujo del menú
 let menuInitialized = false;
@@ -20,9 +19,14 @@ const player1 = { score: 0, lives: 4, energy: 3, x: 200, y: 443, bullets: 0, sho
 const player2 = { score: 0, lives: 4, energy: 3, x: 200, y: 443, bullets: 0, shots: [false, false, false, false], bulletX: [-10, -10, -10, -10], bulletY: [-10, -10, -10, -10] };
 
 // Energía inicial del juego
-let energiaInicial = 3;
+let initialEnergy = 3;
 let pill = 5; // Posibilidad de pastilla según dificultad
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
+
+// Estado de controles del juego
+let keysPressed = {};
+let escapePressed = false;
+let confirmingExit = false;
 
 function write(text, x, y) {
     renderer.setColor(9);
@@ -72,9 +76,10 @@ function drawMenu() {
 		renderer.setColor(12);
 		renderer.outTextXY(525, canvas.height - 25, 'Producciones');
 
-		// Iniciar typeWriter
+		// Instrucciones del menú
 		renderer.setTextStyle(2, 0, 1);
-		typeWriter('Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar   Enter: aceptar', 20, canvas.height - 25, 10, 7, 1, renderer);
+		renderer.setColor(7);
+		renderer.outTextXY(20, canvas.height - 25, 'Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar   Enter: aceptar');
 
 		menuInitialized = true;
 		previousSelectedOption = selectedOption;
@@ -126,33 +131,33 @@ function drawMenuArrow(x, y, color) {
 
 function setupGameScreen() {
 	// Inicializar valores según dificultad
-	let dificultadNum = 1;
-	if (difficulty === 'Media') dificultadNum = 2;
-	else if (difficulty === 'Difícil') dificultadNum = 3;
+	let difficultyLevel = 1;
+	if (difficulty === 'Media') difficultyLevel = 2;
+	else if (difficulty === 'Difícil') difficultyLevel = 3;
 
-	switch (dificultadNum) {
+	switch (difficultyLevel) {
 		case 1:
-			energiaInicial = 4;
+			initialEnergy = 4;
 			player1.lives = 4;
 			player2.lives = 4;
 			pill = 8;
 			break;
 		case 2:
-			energiaInicial = 3;
+			initialEnergy = 3;
 			player1.lives = 4;
 			player2.lives = 4;
 			pill = 12;
 			break;
 		case 3:
-			energiaInicial = 3;
+			initialEnergy = 3;
 			player1.lives = 3;
 			player2.lives = 3;
 			pill = 18;
 			break;
 	}
 
-	player1.energy = energiaInicial;
-	player2.energy = energiaInicial;
+	player1.energy = initialEnergy;
+	player2.energy = initialEnergy;
 
 	// Inicializar posiciones según cantidad de jugadores
 	if (players === 'Uno') {
@@ -173,7 +178,7 @@ function setupGameScreen() {
 	player2.shots = [false, false, false, false];
 	player2.bulletX = [-10, -10, -10, -10];
 	player2.bulletY = [-10, -10, -10, -10];
-	
+
 	// Area de juego izquierdo
 	renderer.setFillStyle(0, 0); // fondo sólido negro
 	renderer.bar(0, 0, 400, canvas.height);
@@ -281,7 +286,7 @@ function writeScore(score, player) {
 
 function showEnergy(energy, player) {
 	const baseY = player === 1 ? 129 : 439;
-	for (let i = 1; i <= energiaInicial; i++) {
+	for (let i = 1; i <= initialEnergy; i++) {
 		const x1 = 643 - (i * 20);
 		const x2 = 640 - (i * 20);
 		if (i <= energy) {
@@ -301,59 +306,10 @@ function showEnergy(energy, player) {
 	}
 }
 
-function startTypeWriter(text, x, y, speed, color, direction, textStyle) {
-	typeWriterState = {
-		text,
-		x,
-		y,
-		speed,
-		color,
-		textStyle: {...(textStyle)},
-		direction,
-		charIndex: direction === 1 ? 0 : text.length-1,
-		lastTime: Date.now()
-	};
-}
 
-function updateTypeWriter() {
-	if (!typeWriterState) return;
-	
-	const now = Date.now();
-	if (now - typeWriterState.lastTime < typeWriterState.speed) return;
-	typeWriterState.lastTime = now;
-
-	// Dibujar el texto según la dirección
-	renderer.textStyle =  {...(typeWriterState.textStyle)};
-	renderer.setColor(typeWriterState.color);
-	renderer.outTextXY(typeWriterState.x + 5.5*typeWriterState.charIndex, typeWriterState.y, typeWriterState.text.charAt(typeWriterState.charIndex));
-
-	if (typeWriterState.direction === 1) {
-		if (typeWriterState.charIndex < typeWriterState.text.length) {
-			typeWriterState.charIndex++;
-		} else {
-			typeWriterState = null; // Terminado
-		}
-	} else {
-		if (typeWriterState.charIndex > 0) {
-			typeWriterState.charIndex--;
-		} else {
-			typeWriterState = null; // Terminado
-		}
-	}
-
-	return true;
-}
-
-function typeWriter(text, x, y, speed, color, direction, renderer) {
-	if (!typeWriterState) {
-		startTypeWriter(text, x, y, speed, color, direction, renderer.textStyle );
-	}
-}
 
 // Manejo de teclado
 document.addEventListener('keydown', (event) => {
-	if (typeWriterState) return;
-
 	if (gameState === 'MENU') {
 		switch (event.key) {
 			case 'ArrowUp':
@@ -399,7 +355,11 @@ document.addEventListener('keydown', (event) => {
 			case 'Enter':
 				if (selectedOption === 0) {
 					gameState = 'GAME';
+					window.gameStarted = false;
 					menuInitialized = false; // Reset para próxima vez que entre al menú
+					keysPressed = {};
+					confirmingExit = false;
+
 				} else if (selectedOption === 3) {
 					gameState = 'HIGHSCORES';
 				} else if (selectedOption === 4) {
@@ -407,8 +367,118 @@ document.addEventListener('keydown', (event) => {
 				}
 				break;
 		}
+	} else if (gameState === 'GAME') {
+		// Rastrear teclas presionadas
+		keysPressed[event.key.toLowerCase()] = true;
+		keysPressed[event.key.toUpperCase()] = true;
+		
+		// Manejo de Escape para salir
+		if (event.key === 'Escape') {
+			if (!confirmingExit) {
+				confirmingExit = true;
+			} else {
+				// Si ya estábamos confirmando, salir
+				gameState = 'MENU';
+				confirmingExit = false;
+				escapePressed = false;
+				keysPressed = {};
+				menuInitialized = false;
+				window.gameStarted = false;
+			}
+		} else if (confirmingExit) {
+			// Si presiona cualquier otra tecla mientras confirma salida, cancela
+			confirmingExit = false;
+		}
 	}
 });
+
+document.addEventListener('keyup', (event) => {
+	if (gameState === 'GAME') {
+		keysPressed[event.key.toLowerCase()] = false;
+		keysPressed[event.key.toUpperCase()] = false;
+	}
+});
+
+function updatePlayerMovement() {
+	const moveSpeed = 5; // Píxeles por frame
+	const gameAreaWidth = 400;
+
+	// Player 1: Flechas
+	if (keysPressed['arrowup']) {
+		player1.y = Math.max(0, player1.y - moveSpeed);
+	}
+	if (keysPressed['arrowdown']) {
+		player1.y = Math.min(canvas.height - 20, player1.y + moveSpeed);
+	}
+	if (keysPressed['arrowleft']) {
+		player1.x = Math.max(0, player1.x - moveSpeed);
+	}
+	if (keysPressed['arrowright']) {
+		player1.x = Math.min(gameAreaWidth - 20, player1.x + moveSpeed);
+	}
+
+	// Player 2: AWSD (solo en modo dos jugadores)
+	if (players === 'Dos') {
+		if (keysPressed['w']) {
+			player2.y = Math.max(0, player2.y - moveSpeed);
+		}
+		if (keysPressed['s']) {
+			player2.y = Math.min(canvas.height - 20, player2.y + moveSpeed);
+		}
+		if (keysPressed['a']) {
+			player2.x = Math.max(0, player2.x - moveSpeed);
+		}
+		if (keysPressed['d']) {
+			player2.x = Math.min(gameAreaWidth - 20, player2.x + moveSpeed);
+		}
+	}
+
+	// Disparo Player 1: Espacio
+	if (keysPressed[' ']) {
+		// Iniciador disparo (la lógica completa será implementada después)
+		if (player1.shots.some(shot => !shot)) {
+			const shotIndex = player1.shots.findIndex(shot => !shot);
+			if (shotIndex !== -1) {
+				player1.shots[shotIndex] = true;
+				player1.bulletX[shotIndex] = player1.x;
+				player1.bulletY[shotIndex] = player1.y - 20;
+				player1.bullets++;
+			}
+		}
+	}
+
+	// Disparo Player 2: Tab (solo en modo dos jugadores)
+	if (players === 'Dos' && keysPressed['\t']) {
+		if (player2.shots.some(shot => !shot)) {
+			const shotIndex = player2.shots.findIndex(shot => !shot);
+			if (shotIndex !== -1) {
+				player2.shots[shotIndex] = true;
+				player2.bulletX[shotIndex] = player2.x;
+				player2.bulletY[shotIndex] = player2.y - 20;
+				player2.bullets++;
+			}
+		}
+	}
+}
+
+function drawGameplayUI() {
+	// Mostrar indicador de confirmación de salida si está activo
+	if (confirmingExit) {
+		renderer.setFillStyle(1, 1);
+		renderer.bar(60, 200, 340, 230);
+		renderer.setColor(12);
+		renderer.line(60, 200, 340, 200);
+		renderer.line(340, 200, 340, 230);
+		renderer.line(340, 230, 60, 230);
+		renderer.line(60, 230, 60, 200);
+		
+		// Mostrar mensaje de confirmación
+		renderer.setTextStyle(2, 0, 1);
+		renderer.setColor(14);
+		renderer.outTextXY(75, 210, 'Presione ESC nuevamente para salir');
+	}
+}
+
 
 function drawPlayer(x, y, player) {
 	if (player === 1) {
@@ -675,44 +745,38 @@ function drawEnemyShip(nx, ny, npant) {
 }
 
 function gameLoop() {
-	if(!updateTypeWriter()) {
-		switch (gameState) {
-			case 'MENU':
-				drawMenu();
-				break;
-			case 'GAME':
-				//*
+	switch (gameState) {
+		case 'MENU':
+			drawMenu();
+			break;
+		case 'GAME':
+			// Primera vez: inicializar pantalla de juego
+			if (!window.gameStarted) {
 				setupGameScreen();
-
-				// Escribir puntajes iniciales
 				writeScore(player1.score, 1);
 				if (players === 'Dos') writeScore(player2.score, 2);
-				//*/
+				window.gameStarted = true;
+			}
 
-				/*
-				renderer.clearScreen();
-				// Dibujar enemyships en la parte superior
-				drawEnemyShip(100, 50, 1);
-				drawEnemyShip(320, 50, 2);
-				drawEnemyShip(540, 50, 3);
+			// Actualizar movimiento de jugadores
+			updatePlayerMovement();
 
-				// Dibujar ejemplos de enemigos pequeños
-				drawEnemy(100, 220, 1);
-				drawEnemy(180, 220, 2);
-				drawEnemy(260, 220, 3);
-				drawEnemy(340, 220, 4);
+			// Redibujar área de juego
+			renderer.setFillStyle(0, 0);
+			renderer.bar(0, 0, 400, canvas.height);
 
-				// Dibujar jugadores al pie de pantalla
-				drawPlayer(200, 400, 1);
-				drawPlayer(440, 400, 2);
-				//*/
-				break;
-			case 'HIGHSCORES':
-				renderer.clearScreen();
-				renderer.setColor(15);
-				renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
-				break;
-		}
+			// Dibujar naves de jugadores en sus posiciones actuales
+			drawPlayer(player1.x, player1.y, 1);
+			if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
+
+			// Mostrar UI de juego (confirmación de salida, etc.)
+			drawGameplayUI();
+			break;
+		case 'HIGHSCORES':
+			renderer.clearScreen();
+			renderer.setColor(15);
+			renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
+			break;
 	}
 
 	requestAnimationFrame(gameLoop);
