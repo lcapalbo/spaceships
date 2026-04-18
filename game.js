@@ -3,6 +3,7 @@ const renderer = new Renderer(canvas);
 
 const GAME_STATES = {
 	MENU: 'MENU',
+	GAME_START: 'GAME_START',
 	GAME: 'GAME',
 	HIGHSCORES: 'HIGHSCORES',
 	CONFIRM_EXIT: 'CONFIRM_EXIT',
@@ -406,245 +407,6 @@ function clearPill(x, y) {
 	renderer.bar(x - 6, y - 7, x + 6, y + 7);
 }
 
-
-// Manejo de teclado
-document.addEventListener('keydown', (event) => {
-	if (gameState === GAME_STATES.MENU) {
-		switch (event.key) {
-			case 'ArrowUp':
-			case 'w':
-			case 'W':
-			case '8': // numpad
-				selectedOption = (selectedOption - 1 + menuOptions.length) % menuOptions.length;
-				break;
-			case 'ArrowDown':
-			case 's':
-			case 'S':
-			case '2': // numpad
-				selectedOption = (selectedOption + 1) % menuOptions.length;
-				break;
-			case 'ArrowLeft':
-			case 'a':
-			case 'A':
-			case '4': // numpad
-				if (selectedOption === 0) {
-					players = players === 'Uno' ? 'Dos' : 'Uno';
-				} else if (selectedOption === 1) {
-					if (speed === 'Normal') speed = 'Lento';
-					else if (speed === 'Rápido') speed = 'Normal';
-				} else if (selectedOption === 2) {
-					if (difficulty === 'Media') difficulty = 'Fácil';
-					else if (difficulty === 'Difícil') difficulty = 'Media';
-				}
-				break;
-			case 'ArrowRight':
-			case 'd':
-			case 'D':
-			case '6': // numpad
-				if (selectedOption === 0) {
-					players = players === 'Uno' ? 'Dos' : 'Uno';
-				} else if (selectedOption === 1) {
-					if (speed === 'Lento') speed = 'Normal';
-					else if (speed === 'Normal') speed = 'Rápido';
-				} else if (selectedOption === 2) {
-					if (difficulty === 'Fácil') difficulty = 'Media';
-					else if (difficulty === 'Media') difficulty = 'Difícil';
-				}
-				break;
-			case 'Enter':
-				if (selectedOption === 0) {
-					gameState = GAME_STATES.GAME;
-					window.gameStarted = false;
-					menuInitialized = false; // Reset para próxima vez que entre al menú
-					keysPressed = {};
-				} else if (selectedOption === 3) {
-					gameState = GAME_STATES.HIGHSCORES;
-				} else if (selectedOption === 4) {
-					location.reload();
-				}
-				break;
-		}
-	} else if (gameState === GAME_STATES.GAME) {
-		// Rastrear teclas presionadas
-		keysPressed[event.key.toLowerCase()] = true;
-		keysPressed[event.key.toUpperCase()] = true;
-		
-		// Manejo de Escape para salir
-		if (event.key === 'Escape') {
-			gameState = GAME_STATES.CONFIRM_EXIT;
-			confirmExitStartTime = Date.now();
-		} else if (event.key === ';' || event.key === 'F1' || event.key === '?') {
-			showHelp();
-		}
-	} else if (gameState === GAME_STATES.CONFIRM_EXIT) {
-		// Solo procesar teclado después de 1 segundo para evitar cancelación accidental
-		if (Date.now() - confirmExitStartTime >= 1000) {
-			if (event.key === 'Escape') {
-				// Confirmar salida al menú
-				gameState = GAME_STATES.MENU;
-				keysPressed = {};
-				menuInitialized = false;
-				window.gameStarted = false;
-			} else {
-				// Cualquier otra tecla cancela la confirmación y vuelve al juego
-				gameState = GAME_STATES.GAME;
-				keysPressed = {};
-			}
-		}
-	} else if (gameState === GAME_STATES.HELP) {
-		if (event.key === 'Escape') {
-			// Limpiar la ventana de ayuda antes de volver al juego
-			renderer.setFillStyle(1, 0); // Negro sólido
-			renderer.bar(100, 100, 350, 405);
-			gameState = GAME_STATES.GAME;
-		}
-	}
-});
-
-document.addEventListener('keyup', (event) => {
-	if (gameState === GAME_STATES.GAME) {
-		keysPressed[event.key.toLowerCase()] = false;
-		keysPressed[event.key.toUpperCase()] = false;
-	}
-});
-
-function updatePlayerMovement() {
-	const moveSpeed = 5; // Píxeles por frame
-	const gameAreaWidth = 400;
-
-	// Player 1: Flechas
-	if (keysPressed['arrowup']) {
-		player1.y = Math.max(0, player1.y - moveSpeed);
-	}
-	if (keysPressed['arrowdown']) {
-		player1.y = Math.min(canvas.height - 20, player1.y + moveSpeed);
-	}
-	if (keysPressed['arrowleft']) {
-		player1.x = Math.max(0, player1.x - moveSpeed);
-	}
-	if (keysPressed['arrowright']) {
-		player1.x = Math.min(gameAreaWidth - 20, player1.x + moveSpeed);
-	}
-
-	// Player 2: AWSD (solo en modo dos jugadores)
-	if (players === 'Dos') {
-		if (keysPressed['w']) {
-			player2.y = Math.max(0, player2.y - moveSpeed);
-		}
-		if (keysPressed['s']) {
-			player2.y = Math.min(canvas.height - 20, player2.y + moveSpeed);
-		}
-		if (keysPressed['a']) {
-			player2.x = Math.max(0, player2.x - moveSpeed);
-		}
-		if (keysPressed['d']) {
-			player2.x = Math.min(gameAreaWidth - 20, player2.x + moveSpeed);
-		}
-	}
-
-	// Disparo Player 1: Espacio
-	if (keysPressed[' ']) {
-		// Iniciador disparo (la lógica completa será implementada después)
-		if (player1.shots.some(shot => !shot)) {
-			const shotIndex = player1.shots.findIndex(shot => !shot);
-			if (shotIndex !== -1) {
-				player1.shots[shotIndex] = true;
-				player1.bulletX[shotIndex] = player1.x;
-				player1.bulletY[shotIndex] = player1.y - 20;
-				player1.bullets++;
-			}
-		}
-	}
-
-	// Disparo Player 2: Tab (solo en modo dos jugadores)
-	if (players === 'Dos' && keysPressed['\t']) {
-		if (player2.shots.some(shot => !shot)) {
-			const shotIndex = player2.shots.findIndex(shot => !shot);
-			if (shotIndex !== -1) {
-				player2.shots[shotIndex] = true;
-				player2.bulletX[shotIndex] = player2.x;
-				player2.bulletY[shotIndex] = player2.y - 20;
-				player2.bullets++;
-			}
-		}
-	}
-}
-
-function drawConfirmExitScreen() {
-	renderer.setFillStyle(1, 1);
-	renderer.bar(60, 200, 340, 230);
-	renderer.setColor(12);
-	renderer.rectangle(60, 200, 340, 230);
-	
-	// Mostrar mensaje de confirmación
-	renderer.setTextStyle(2, 0, 1);
-	renderer.setColor(14);
-	renderer.outTextXY(75, 210, 'Presione ESC nuevamente para salir');
-}
-
-function drawHelpScreen() {
-	// Dibujar ventana de ayuda
-	renderer.setFillStyle(1, 8); // Patrón punteado, color gris
-	renderer.setColor(12); // Rojo para borde
-	renderer.bar3d(100, 100, 350, 405, 4, true);
-
-	// Títulos
-	renderer.setTextStyle(0, 0, 1.2);
-	renderer.setColor(11); // Cyan
-	renderer.outTextXY(115, 110, 'Lucas Capalbo Producciones');
-	renderer.setColor(10); // Verde
-	renderer.outTextXY(130, 125, 'Space Ships Adventure');
-
-	// Mostrar ejemplos de pastillas con descripciones
-	renderer.setTextStyle(0, 0, 1);
-	renderer.setColor(14); // Amarillo
-
-	// Pastilla 1: 100 puntos
-	drawPill(170, 150, PILL_TYPES.POINTS_100);
-	renderer.outTextXY(185, 148, '100 Puntos');
-
-	// Pastilla 2: Energía completa
-	drawPill(170, 170, PILL_TYPES.ENERGY_FULL);
-	renderer.outTextXY(185, 168, 'Energía');
-
-	// Pastilla 3: Cambio de controles
-	drawPill(170, 190, PILL_TYPES.CONTROLS_CHANGE);
-	renderer.outTextXY(185, 188, 'Cambio De Controles');
-
-	// Pastilla 4: Velocidad
-	drawPill(170, 210, PILL_TYPES.SPEED_BOOST);
-	renderer.outTextXY(185, 208, 'Velocidad');
-
-	// Pastilla 5: Disparo en ángulo
-	drawPill(170, 230, PILL_TYPES.ANGULAR_SHOT);
-	renderer.outTextXY(185, 228, 'Disparo En Ángulo');
-
-	// Pastilla 6: Láser
-	drawPill(170, 250, PILL_TYPES.LASER);
-	renderer.outTextXY(185, 248, 'Laser');
-
-	// Pastilla 7: Escudo
-	drawPill(170, 270, PILL_TYPES.SHIELD);
-	renderer.outTextXY(185, 268, 'Escudo x 5');
-
-	// Información adicional
-	renderer.outTextXY(120, 290, 'Pastillas: 5 Puntos');
-	renderer.outTextXY(120, 304, 'Enemigos: 5 Puntos');
-	renderer.outTextXY(120, 318, 'Monstruos: 50 Puntos');
-	renderer.outTextXY(120, 332, 'Choque A Enemigo: 1 Punto');
-	renderer.outTextXY(120, 346, 'Choque A Monstruo: 10 Puntos');
-
-	// Fecha y instrucción de salida
-	renderer.setColor(12); // Rojo
-	renderer.outTextXY(130, 370, 'Septiembre de 2K, Argentina');
-	renderer.setColor(11); // Cyan
-	renderer.outTextXY(132, 384, 'Presione Escape Para Cerrar');
-}
-
-function showHelp() {
-	gameState = GAME_STATES.HELP;
-}
-
 function drawPlayer(x, y, player) {
 	if (player === 1) {
 		renderer.setColor(12);
@@ -909,19 +671,261 @@ function drawEnemyShip(nx, ny, screenNumber) {
 	return ny;
 }
 
+
+// Manejo de teclado
+document.addEventListener('keydown', (event) => {
+	if (gameState === GAME_STATES.MENU) {
+		switch (event.key) {
+			case 'ArrowUp':
+			case 'w':
+			case 'W':
+			case '8': // numpad
+				selectedOption = (selectedOption - 1 + menuOptions.length) % menuOptions.length;
+				break;
+			case 'ArrowDown':
+			case 's':
+			case 'S':
+			case '2': // numpad
+				selectedOption = (selectedOption + 1) % menuOptions.length;
+				break;
+			case 'ArrowLeft':
+			case 'a':
+			case 'A':
+			case '4': // numpad
+				if (selectedOption === 0) {
+					players = players === 'Uno' ? 'Dos' : 'Uno';
+				} else if (selectedOption === 1) {
+					if (speed === 'Normal') speed = 'Lento';
+					else if (speed === 'Rápido') speed = 'Normal';
+				} else if (selectedOption === 2) {
+					if (difficulty === 'Media') difficulty = 'Fácil';
+					else if (difficulty === 'Difícil') difficulty = 'Media';
+				}
+				break;
+			case 'ArrowRight':
+			case 'd':
+			case 'D':
+			case '6': // numpad
+				if (selectedOption === 0) {
+					players = players === 'Uno' ? 'Dos' : 'Uno';
+				} else if (selectedOption === 1) {
+					if (speed === 'Lento') speed = 'Normal';
+					else if (speed === 'Normal') speed = 'Rápido';
+				} else if (selectedOption === 2) {
+					if (difficulty === 'Fácil') difficulty = 'Media';
+					else if (difficulty === 'Media') difficulty = 'Difícil';
+				}
+				break;
+			case 'Enter':
+				if (selectedOption === 0) {
+					gameState = GAME_STATES.GAME_START;
+					menuInitialized = false; // Reset para próxima vez que entre al menú
+					keysPressed = {};
+				} else if (selectedOption === 3) {
+					gameState = GAME_STATES.HIGHSCORES;
+				} else if (selectedOption === 4) {
+					location.reload();
+				}
+				break;
+		}
+	} else if (gameState === GAME_STATES.GAME_START) {
+		// Cualquier tecla inicia el juego
+		gameState = GAME_STATES.GAME;
+		keysPressed = {};
+	} else if (gameState === GAME_STATES.GAME) {
+		// Rastrear teclas presionadas
+		keysPressed[event.key.toLowerCase()] = true;
+		keysPressed[event.key.toUpperCase()] = true;
+		
+		// Manejo de Escape para salir
+		if (event.key === 'Escape') {
+			gameState = GAME_STATES.CONFIRM_EXIT;
+			confirmExitStartTime = Date.now();
+		} else if (event.key === ';' || event.key === 'F1' || event.key === '?') {
+			gameState = GAME_STATES.HELP;
+		}
+	} else if (gameState === GAME_STATES.CONFIRM_EXIT) {
+		// Solo procesar teclado después de 1 segundo para evitar cancelación accidental
+		if (Date.now() - confirmExitStartTime >= 1000) {
+			if (event.key === 'Escape') {
+				// Confirmar salida al menú
+				gameState = GAME_STATES.MENU;
+				keysPressed = {};
+				menuInitialized = false;
+			} else {
+				// Cualquier otra tecla cancela la confirmación y vuelve al juego
+				gameState = GAME_STATES.GAME;
+				keysPressed = {};
+			}
+		}
+	} else if (gameState === GAME_STATES.HELP) {
+		if (event.key === 'Escape') {
+			gameState = GAME_STATES.GAME;
+		}
+	} else if (gameState === GAME_STATES.HIGHSCORES) {
+		// Cualquier tecla vuelve al menú
+		gameState = GAME_STATES.MENU;
+		menuInitialized = false;
+		keysPressed = {};
+	}
+});
+
+document.addEventListener('keyup', (event) => {
+	if (gameState === GAME_STATES.GAME) {
+		keysPressed[event.key.toLowerCase()] = false;
+		keysPressed[event.key.toUpperCase()] = false;
+	}
+});
+
+function updatePlayerMovement() {
+	const moveSpeed = 5; // Píxeles por frame
+	const gameAreaWidth = 400;
+
+	// Player 1: Flechas
+	if (keysPressed['arrowup']) {
+		player1.y = Math.max(0, player1.y - moveSpeed);
+	}
+	if (keysPressed['arrowdown']) {
+		player1.y = Math.min(canvas.height - 20, player1.y + moveSpeed);
+	}
+	if (keysPressed['arrowleft']) {
+		player1.x = Math.max(0, player1.x - moveSpeed);
+	}
+	if (keysPressed['arrowright']) {
+		player1.x = Math.min(gameAreaWidth - 20, player1.x + moveSpeed);
+	}
+
+	// Player 2: AWSD (solo en modo dos jugadores)
+	if (players === 'Dos') {
+		if (keysPressed['w']) {
+			player2.y = Math.max(0, player2.y - moveSpeed);
+		}
+		if (keysPressed['s']) {
+			player2.y = Math.min(canvas.height - 20, player2.y + moveSpeed);
+		}
+		if (keysPressed['a']) {
+			player2.x = Math.max(0, player2.x - moveSpeed);
+		}
+		if (keysPressed['d']) {
+			player2.x = Math.min(gameAreaWidth - 20, player2.x + moveSpeed);
+		}
+	}
+
+	// Disparo Player 1: Espacio
+	if (keysPressed[' ']) {
+		// Iniciador disparo (la lógica completa será implementada después)
+		if (player1.shots.some(shot => !shot)) {
+			const shotIndex = player1.shots.findIndex(shot => !shot);
+			if (shotIndex !== -1) {
+				player1.shots[shotIndex] = true;
+				player1.bulletX[shotIndex] = player1.x;
+				player1.bulletY[shotIndex] = player1.y - 20;
+				player1.bullets++;
+			}
+		}
+	}
+
+	// Disparo Player 2: Tab (solo en modo dos jugadores)
+	if (players === 'Dos' && keysPressed['\t']) {
+		if (player2.shots.some(shot => !shot)) {
+			const shotIndex = player2.shots.findIndex(shot => !shot);
+			if (shotIndex !== -1) {
+				player2.shots[shotIndex] = true;
+				player2.bulletX[shotIndex] = player2.x;
+				player2.bulletY[shotIndex] = player2.y - 20;
+				player2.bullets++;
+			}
+		}
+	}
+}
+
+function drawConfirmExitScreen() {
+	renderer.setFillStyle(1, 1);
+	renderer.bar(60, 200, 340, 230);
+	renderer.setColor(12);
+	renderer.rectangle(60, 200, 340, 230);
+	
+	// Mostrar mensaje de confirmación
+	renderer.setTextStyle(2, 0, 1);
+	renderer.setColor(14);
+	renderer.outTextXY(75, 210, 'Presione ESC nuevamente para salir');
+}
+
+function drawHelpScreen() {
+	// Dibujar ventana de ayuda
+	renderer.setFillStyle(1, 8); // Patrón punteado, color gris
+	renderer.setColor(12); // Rojo para borde
+	renderer.bar3d(100, 100, 350, 405, 4, true);
+
+	// Títulos
+	renderer.setTextStyle(0, 0, 1.2);
+	renderer.setColor(11); // Cyan
+	renderer.outTextXY(115, 110, 'Lucas Capalbo Producciones');
+	renderer.setColor(10); // Verde
+	renderer.outTextXY(130, 125, 'Space Ships Adventure');
+
+	// Mostrar ejemplos de pastillas con descripciones
+	renderer.setTextStyle(0, 0, 1);
+	renderer.setColor(14); // Amarillo
+
+	// Pastilla 1: 100 puntos
+	drawPill(170, 150, PILL_TYPES.POINTS_100);
+	renderer.outTextXY(185, 148, '100 Puntos');
+
+	// Pastilla 2: Energía completa
+	drawPill(170, 170, PILL_TYPES.ENERGY_FULL);
+	renderer.outTextXY(185, 168, 'Energía');
+
+	// Pastilla 3: Cambio de controles
+	drawPill(170, 190, PILL_TYPES.CONTROLS_CHANGE);
+	renderer.outTextXY(185, 188, 'Cambio De Controles');
+
+	// Pastilla 4: Velocidad
+	drawPill(170, 210, PILL_TYPES.SPEED_BOOST);
+	renderer.outTextXY(185, 208, 'Velocidad');
+
+	// Pastilla 5: Disparo en ángulo
+	drawPill(170, 230, PILL_TYPES.ANGULAR_SHOT);
+	renderer.outTextXY(185, 228, 'Disparo En Ángulo');
+
+	// Pastilla 6: Láser
+	drawPill(170, 250, PILL_TYPES.LASER);
+	renderer.outTextXY(185, 248, 'Laser');
+
+	// Pastilla 7: Escudo
+	drawPill(170, 270, PILL_TYPES.SHIELD);
+	renderer.outTextXY(185, 268, 'Escudo x 5');
+
+	// Información adicional
+	renderer.outTextXY(120, 290, 'Pastillas: 5 Puntos');
+	renderer.outTextXY(120, 304, 'Enemigos: 5 Puntos');
+	renderer.outTextXY(120, 318, 'Monstruos: 50 Puntos');
+	renderer.outTextXY(120, 332, 'Choque A Enemigo: 1 Punto');
+	renderer.outTextXY(120, 346, 'Choque A Monstruo: 10 Puntos');
+
+	// Fecha y instrucción de salida
+	renderer.setColor(12); // Rojo
+	renderer.outTextXY(130, 370, 'Septiembre de 2K, Argentina');
+	renderer.setColor(11); // Cyan
+	renderer.outTextXY(132, 384, 'Presione Escape Para Cerrar');
+}
+
+
 function gameLoop() {
 	switch (gameState) {
 		case GAME_STATES.MENU:
 			drawMenu();
 			break;
+		case GAME_STATES.GAME_START:
+			// Inicializar pantalla de juego y mostrar mensaje
+			setupGameScreen();
+			renderer.setTextStyle(2, 0, 1.5);
+			renderer.setColor(12);
+			renderer.outTextXY(50, 200, 'Presione una tecla para comenzar');
+			break;
 		case GAME_STATES.GAME:
-			// Primera vez: inicializar pantalla de juego
-			if (!window.gameStarted) {
-				setupGameScreen();
-				writeScore(player1.score, 1);
-				if (players === 'Dos') writeScore(player2.score, 2);
-				window.gameStarted = true;
-			}
+			writeScore(player1.score, 1);
+			if (players === 'Dos') writeScore(player2.score, 2);
 
 			updatePlayerMovement();
 
@@ -942,8 +946,11 @@ function gameLoop() {
 			break;
 		case GAME_STATES.HIGHSCORES:
 			renderer.clearScreen();
+			renderer.setTextStyle(0, 0, 1);
 			renderer.setColor(15);
 			renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
+			renderer.setColor(11);
+			renderer.outTextXY(200, 400, 'Presione cualquier tecla para volver');
 			break;
 	}
 
