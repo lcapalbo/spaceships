@@ -7,7 +7,7 @@ class Renderer {
 		this.textStyle = { font: '12px monospace', align: 'left', baseline: 'top', outline: false };
 		this.palette = {
 			0: '#000000', 1: '#000080', 2: '#008000', 3: '#008080', 4: '#800000', 5: '#800080', 6: '#808000', 7: '#C0C0C0',
-			8: '#808080', 9: '#0000FF', 10: '#00FF00', 11: '#00FFFF', 12: '#FF0000', 13: '#FF00FF', 14: '#FFFF00', 15: '#FFFFFF'
+			8: '#555555', 9: '#0000FF', 10: '#00FF00', 11: '#00FFFF', 12: '#FF0000', 13: '#FF00FF', 14: '#FFFF00', 15: '#FFFFFF'
 		};
 	}
 
@@ -23,12 +23,46 @@ class Renderer {
 	}
 
 	setFillStyle(style, color) {
-		// BGI: style 1 => solid fill, 0 => empty / no fill
+		// BGI: style 1 => solid fill, 0 => empty / no fill, 6 => diagonal lines pattern
 		this.fillStyle = style;
 		if (color !== undefined) {
 			this.fillColor = this._resolveColor(color);
 		}
-		if (this.fillColor) {
+		
+		if (style === 6) {
+			// Crear patrón de líneas oblicuas (arriba-izquierda a abajo-derecha)
+			const patternCanvas = document.createElement('canvas');
+			patternCanvas.width = 10;
+			patternCanvas.height = 10;
+			const patternCtx = patternCanvas.getContext('2d');
+			
+			// Fondo transparente
+			patternCtx.clearRect(0, 0, 10, 10);
+			
+			// Dibujar líneas diagonales densas (arriba-izquierda a abajo-derecha)
+			patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
+			patternCtx.lineWidth = 1;
+			patternCtx.beginPath();
+			// Primera serie de líneas
+			patternCtx.moveTo(-5, 0);
+			patternCtx.lineTo(5, 10);
+			patternCtx.moveTo(-5, 5);
+			patternCtx.lineTo(0, 10);
+			patternCtx.moveTo(0, -5);
+			patternCtx.lineTo(10, 5);
+			patternCtx.moveTo(5, -5);
+			patternCtx.lineTo(10, 0);
+			// Segunda serie para mayor densidad
+			patternCtx.moveTo(-5, -5);
+			patternCtx.lineTo(10, 10);
+			patternCtx.moveTo(0, -5);
+			patternCtx.lineTo(5, 0);
+			patternCtx.moveTo(5, -5);
+			patternCtx.lineTo(10, 0);
+			patternCtx.stroke();
+			
+			this.ctx.fillStyle = this.ctx.createPattern(patternCanvas, 'repeat');
+		} else if (this.fillColor) {
 			this.ctx.fillStyle = this.fillColor;
 		}
 	}
@@ -176,7 +210,7 @@ class Renderer {
 		this.ctx.moveTo(x, y);
 		this.ctx.arc(x, y, r, start, end, true);
 		this.ctx.closePath();
-		if (this.fillStyle === 1) {
+		if (this.fillStyle === 1 || this.fillStyle === 6) {
 			this.ctx.fill();
 		} else {
 			this.ctx.stroke();
