@@ -15,8 +15,24 @@ let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 
 // Estado de jugadores
-const player1 = { score: 0, lives: 4, energy: 3, x: 200, y: 443, bullets: 0, shots: [false, false, false, false], bulletX: [-10, -10, -10, -10], bulletY: [-10, -10, -10, -10] };
-const player2 = { score: 0, lives: 4, energy: 3, x: 200, y: 443, bullets: 0, shots: [false, false, false, false], bulletX: [-10, -10, -10, -10], bulletY: [-10, -10, -10, -10] };
+const player1 = {
+	x: 200, y: 443,
+	score: 0, lives: 4, energy: 3,
+	bullets: 0, 
+	shots: [false, false, false, false],
+	bulletX: [-10, -10, -10, -10],
+	bulletY: [-10, -10, -10, -10],
+	enemiesKilled: 0, enemiesCrashed: 0
+};
+const player2 = {
+	x: 200, y: 443,
+	score: 0, lives: 4, energy: 3,
+	bullets: 0, 
+	shots: [false, false, false, false],
+	bulletX: [-10, -10, -10, -10],
+	bulletY: [-10, -10, -10, -10],
+	enemiesKilled: 0, enemiesCrashed: 0
+};
 
 // Energía inicial del juego
 let initialEnergy = 3;
@@ -158,6 +174,12 @@ function setupGameScreen() {
 
 	player1.energy = initialEnergy;
 	player2.energy = initialEnergy;
+
+	// Reinicializar estadísticas de enemigos
+	player1.enemiesKilled = 0;
+	player1.enemiesCrashed = 0;
+	player2.enemiesKilled = 0;
+	player2.enemiesCrashed = 0;
 
 	// Inicializar posiciones según cantidad de jugadores
 	if (players === 'Uno') {
