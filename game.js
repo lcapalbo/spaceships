@@ -1,11 +1,19 @@
 const canvas = document.getElementById('gameCanvas');
 const renderer = new Renderer(canvas);
 
-// Estados de juego
-let gameState = 'MENU';
+const GAME_STATES = {
+	MENU: 'MENU',
+	GAME: 'GAME',
+	HIGHSCORES: 'HIGHSCORES',
+	CONFIRM_EXIT: 'CONFIRM_EXIT',
+	HELP: 'HELP'
+};
+
+// Estado actual del juego
+let gameState = GAME_STATES.MENU;
 let menuInitialized = false;
 let previousSelectedOption = -1;
-let gamePaused = false;
+let confirmExitStartTime = 0;
 
 // Opciones del menú
 let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
@@ -63,8 +71,6 @@ const PILL_TYPES = {
 
 // Estado de controles del juego
 let keysPressed = {};
-let escapePressed = false;
-let confirmingExit = false;
 
 function write(text, x, y) {
     renderer.setColor(9);
@@ -403,7 +409,7 @@ function clearPill(x, y) {
 
 // Manejo de teclado
 document.addEventListener('keydown', (event) => {
-	if (gameState === 'MENU') {
+	if (gameState === GAME_STATES.MENU) {
 		switch (event.key) {
 			case 'ArrowUp':
 			case 'w':
@@ -447,51 +453,56 @@ document.addEventListener('keydown', (event) => {
 				break;
 			case 'Enter':
 				if (selectedOption === 0) {
-					gameState = 'GAME';
+					gameState = GAME_STATES.GAME;
 					window.gameStarted = false;
 					menuInitialized = false; // Reset para próxima vez que entre al menú
 					keysPressed = {};
-					confirmingExit = false;
-
 				} else if (selectedOption === 3) {
-					gameState = 'HIGHSCORES';
+					gameState = GAME_STATES.HIGHSCORES;
 				} else if (selectedOption === 4) {
 					location.reload();
 				}
 				break;
 		}
-	} else if (gameState === 'GAME') {
+	} else if (gameState === GAME_STATES.GAME) {
 		// Rastrear teclas presionadas
 		keysPressed[event.key.toLowerCase()] = true;
 		keysPressed[event.key.toUpperCase()] = true;
 		
 		// Manejo de Escape para salir
 		if (event.key === 'Escape') {
-			if (!confirmingExit) {
-				confirmingExit = true;
-				gamePaused = true;
-			} else {
-				// Si ya estábamos confirmando, salir
-				gameState = 'MENU';
-				confirmingExit = false;
-				gamePaused = false;
-				escapePressed = false;
+			gameState = GAME_STATES.CONFIRM_EXIT;
+			confirmExitStartTime = Date.now();
+		} else if (event.key === ';' || event.key === 'F1' || event.key === '?') {
+			showHelp();
+		}
+	} else if (gameState === GAME_STATES.CONFIRM_EXIT) {
+		// Solo procesar teclado después de 1 segundo para evitar cancelación accidental
+		if (Date.now() - confirmExitStartTime >= 1000) {
+			if (event.key === 'Escape') {
+				// Confirmar salida al menú
+				gameState = GAME_STATES.MENU;
 				keysPressed = {};
 				menuInitialized = false;
 				window.gameStarted = false;
+			} else {
+				// Cualquier otra tecla cancela la confirmación y vuelve al juego
+				gameState = GAME_STATES.GAME;
+				keysPressed = {};
 			}
-		} else if (confirmingExit) {
-			// Si presiona cualquier otra tecla mientras confirma salida, cancela
-			confirmingExit = false;
-			gamePaused = false;
-		} else if (event.key === ';') {
-			showHelp();
+		}
+	} else if (gameState === GAME_STATES.HELP) {
+		if (event.key === 'Escape') {
+			// Limpiar la ventana de ayuda antes de volver al juego
+			renderer.setFillStyle(1, 0); // Negro sólido
+			renderer.bar(100, 100, 350, 405);
+			gameState = GAME_STATES.GAME;
 		}
 	}
 });
 
 document.addEventListener('keyup', (event) => {
-	if (gameState === 'GAME') {
+	if (gameState === GAME_STATES.GAME) {
 		keysPressed[event.key.toLowerCase()] = false;
 		keysPressed[event.key.toUpperCase()] = false;
 	}
@@ -559,24 +570,19 @@ function updatePlayerMovement() {
 	}
 }
 
-function drawGameplayUI() {
-	// Mostrar indicador de confirmación de salida si está activo
-	if (confirmingExit) {
-		renderer.setFillStyle(1, 1);
-		renderer.bar(60, 200, 340, 230);
-		renderer.setColor(12);
-		renderer.rectangle(60, 200, 340, 230);
-		
-		// Mostrar mensaje de confirmación
-		renderer.setTextStyle(2, 0, 1);
-		renderer.setColor(14);
-		renderer.outTextXY(75, 210, 'Presione ESC nuevamente para salir');
-	}
+function drawConfirmExitScreen() {
+	renderer.setFillStyle(1, 1);
+	renderer.bar(60, 200, 340, 230);
+	renderer.setColor(12);
+	renderer.rectangle(60, 200, 340, 230);
+	
+	// Mostrar mensaje de confirmación
+	renderer.setTextStyle(2, 0, 1);
+	renderer.setColor(14);
+	renderer.outTextXY(75, 210, 'Presione ESC nuevamente para salir');
 }
 
-function showHelp() {
-	gamePaused = true; // Pausar el juego
-	
+function drawHelpScreen() {
 	// Dibujar ventana de ayuda
 	renderer.setFillStyle(1, 8); // Patrón punteado, color gris
 	renderer.setColor(12); // Rojo para borde
@@ -633,20 +639,11 @@ function showHelp() {
 	renderer.outTextXY(130, 370, 'Septiembre de 2K, Argentina');
 	renderer.setColor(11); // Cyan
 	renderer.outTextXY(132, 384, 'Presione Escape Para Cerrar');
-
-	// Esperar a Escape para salir (simulado con un listener temporal)
-	const helpKeyListener = (event) => {
-		if (event.key === 'Escape') {
-			// Limpiar la ventana de ayuda
-			renderer.setFillStyle(1, 0); // Negro sólido
-			renderer.bar3d(100, 100, 350, 370, 4, true);
-			document.removeEventListener('keydown', helpKeyListener);
-			gamePaused = false; // Reanudar el juego
-		}
-	};
-	document.addEventListener('keydown', helpKeyListener);
 }
 
+function showHelp() {
+	gameState = GAME_STATES.HELP;
+}
 
 function drawPlayer(x, y, player) {
 	if (player === 1) {
@@ -914,10 +911,10 @@ function drawEnemyShip(nx, ny, screenNumber) {
 
 function gameLoop() {
 	switch (gameState) {
-		case 'MENU':
+		case GAME_STATES.MENU:
 			drawMenu();
 			break;
-		case 'GAME':
+		case GAME_STATES.GAME:
 			// Primera vez: inicializar pantalla de juego
 			if (!window.gameStarted) {
 				setupGameScreen();
@@ -926,23 +923,24 @@ function gameLoop() {
 				window.gameStarted = true;
 			}
 
-			if (!gamePaused) {
-				// Actualizar movimiento de jugadores solo si no está pausado
-				updatePlayerMovement();
+			updatePlayerMovement();
 
-				// Redibujar área de juego
-				renderer.setFillStyle(0, 0);
-				renderer.bar(0, 0, 400, canvas.height);
+			// Redibujar área de juego
+			renderer.setFillStyle(0, 0);
+			renderer.bar(0, 0, 400, canvas.height);
 
-				// Dibujar naves de jugadores en sus posiciones actuales
-				drawPlayer(player1.x, player1.y, 1);
-				if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
-			}
-
-			// Mostrar UI de juego (confirmación de salida, etc.) siempre
-			drawGameplayUI();
+			// Dibujar naves de jugadores en sus posiciones actuales
+			drawPlayer(player1.x, player1.y, 1);
+			if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
 			break;
-		case 'HIGHSCORES':
+		case GAME_STATES.CONFIRM_EXIT:
+			// Mostrar pantalla congelada con mensaje de confirmación
+			drawConfirmExitScreen();
+			break;
+		case GAME_STATES.HELP:
+			drawHelpScreen();
+			break;
+		case GAME_STATES.HIGHSCORES:
 			renderer.clearScreen();
 			renderer.setColor(15);
 			renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
