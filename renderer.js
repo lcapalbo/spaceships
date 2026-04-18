@@ -20,7 +20,6 @@ class Renderer {
 		this.color = color;
 		const c = this._resolveColor(color);
 		this.ctx.strokeStyle = c;
-		this.ctx.fillStyle = c;
 	}
 
 	setFillStyle(style, color) {
@@ -138,34 +137,36 @@ class Renderer {
 	}
 
 	bar3d(left, top, right, bottom, depth, topOn) {
-		const w = right - left;
-		const h = bottom - top;
-		
 		// Dibujar el rectángulo principal relleno
-		this.ctx.fillRect(left, top, w, h);
+		this.bar(left, top, right, bottom);
 		
-		// Dibujar bordes 3D
-		this.ctx.strokeStyle = this._resolveColor(15); // Blanco para resaltado
+		// Dibujar borde del rectángulo principal
+		this.rectangle(left, top, right, bottom);
+		
+		// Dibujar líneas de efecto 3D
 		this.ctx.beginPath();
-		this.ctx.moveTo(left, top);
-		this.ctx.lineTo(right, top);
-		this.ctx.lineTo(right - depth, top + depth);
 		if (topOn) {
+			// Efecto elevado: líneas hacia arriba y derecha
 			this.ctx.moveTo(right, top);
-			this.ctx.lineTo(right, bottom);
+			this.ctx.lineTo(right + depth, top - depth);
+			this.ctx.moveTo(right, bottom);
+			this.ctx.lineTo(right + depth, bottom - depth);
+			this.ctx.moveTo(left, top);
+			this.ctx.lineTo(left + depth, top - depth);
+			this.ctx.lineTo(right + depth, top - depth);
+			this.ctx.lineTo(right + depth, bottom - depth);
+		} else {
+			// Efecto hundido: líneas hacia abajo y derecha
+			this.ctx.moveTo(right, top);
+			this.ctx.lineTo(right + depth, top + depth);
+			this.ctx.moveTo(right, bottom);
+			this.ctx.lineTo(right + depth, bottom + depth);
+			this.ctx.moveTo(left, bottom);
+			this.ctx.lineTo(left + depth, bottom + depth);
+			this.ctx.lineTo(right + depth, bottom + depth);
+			this.ctx.lineTo(right + depth, top + depth);
 		}
 		this.ctx.stroke();
-		
-		this.ctx.strokeStyle = this._resolveColor(8); // Gris oscuro para sombra
-		this.ctx.beginPath();
-		this.ctx.moveTo(right, bottom);
-		this.ctx.lineTo(right - depth, bottom - depth);
-		this.ctx.lineTo(left - depth, bottom - depth);
-		this.ctx.lineTo(left, bottom);
-		this.ctx.stroke();
-		
-		// Restaurar el color original
-		this.ctx.strokeStyle = this._resolveColor(this.color);
 	}
 
 	pieSlice(x, y, startDeg, endDeg, r) {

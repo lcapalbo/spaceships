@@ -3,10 +3,9 @@ const renderer = new Renderer(canvas);
 
 // Estados de juego
 let gameState = 'MENU';
-
-// Variables para optimizar dibujo del menú
 let menuInitialized = false;
 let previousSelectedOption = -1;
+let gamePaused = false;
 
 // Opciones del menú
 let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
@@ -22,7 +21,13 @@ const player1 = {
 	shots: [false, false, false, false],
 	bulletX: [-10, -10, -10, -10],
 	bulletY: [-10, -10, -10, -10],
-	enemiesKilled: 0, enemiesCrashed: 0
+	enemiesKilled: 0, enemiesCrashed: 0,
+	// Efectos de pastillas
+	shield: false, shieldCounter: 0,
+	laser: false, angularShot: false,
+	effectDuration: 0,
+	speedBoost: false,
+	controlsChanged: false
 };
 const player2 = {
 	x: 200, y: 443,
@@ -31,13 +36,30 @@ const player2 = {
 	shots: [false, false, false, false],
 	bulletX: [-10, -10, -10, -10],
 	bulletY: [-10, -10, -10, -10],
-	enemiesKilled: 0, enemiesCrashed: 0
+	enemiesKilled: 0, enemiesCrashed: 0,
+	// Efectos de pastillas
+	shield: false, shieldCounter: 0,
+	laser: false, angularShot: false,
+	effectDuration: 0,
+	speedBoost: false,
+	controlsChanged: false
 };
 
 // Energía inicial del juego
 let initialEnergy = 3;
 let pill = 5; // Posibilidad de pastilla según dificultad
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
+
+// Constantes para tipos de pastillas
+const PILL_TYPES = {
+	POINTS_100: 1,      // Celeste - 100 puntos
+	ENERGY_FULL: 2,     // Verde - Energía completa
+	CONTROLS_CHANGE: 3, // Roja - Cambio de controles
+	SPEED_BOOST: 4,     // Blanco - Velocidad
+	ANGULAR_SHOT: 5,    // Violeta - Disparo en ángulo
+	LASER: 6,           // Amarilla - Láser
+	SHIELD: 7           // Rosa - Escudo
+};
 
 // Estado de controles del juego
 let keysPressed = {};
@@ -180,6 +202,22 @@ function setupGameScreen() {
 	player1.enemiesCrashed = 0;
 	player2.enemiesKilled = 0;
 	player2.enemiesCrashed = 0;
+
+	// Reinicializar efectos de pastillas
+	player1.shield = false;
+	player1.shieldCounter = 0;
+	player1.laser = false;
+	player1.angularShot = false;
+	player1.speedBoost = false;
+	player1.effectDuration = 0;
+	player1.controlsChanged = false;
+	player2.shield = false;
+	player2.shieldCounter = 0;
+	player2.laser = false;
+	player2.angularShot = false;
+	player2.speedBoost = false;
+	player2.effectDuration = 0;
+	player2.controlsChanged = false;
 
 	// Inicializar posiciones según cantidad de jugadores
 	if (players === 'Uno') {
@@ -325,6 +363,42 @@ function showEnergy(energy, player) {
 	}
 }
 
+// Funciones de dibujo de objetos del juego
+function drawPill(x, y, pillType) {
+	// Mapear tipos de pastillas a colores BGI (según código Pascal)
+	let color;
+	switch (pillType) {
+		case PILL_TYPES.POINTS_100: color = 11; break;
+		case PILL_TYPES.ENERGY_FULL: color = 2; break;
+		case PILL_TYPES.CONTROLS_CHANGE: color = 12; break;
+		case PILL_TYPES.SPEED_BOOST: color = 15; break;
+		case PILL_TYPES.ANGULAR_SHOT: color = 5; break;
+		case PILL_TYPES.LASER: color = 14; break;
+		case PILL_TYPES.SHIELD: color = 13; break;
+		default: return; // No dibujar si tipo inválido
+	}
+
+	// Dibujar arcos exteriores (equivalente a Arc en Pascal)
+	renderer.setColor(color);
+	renderer.arc(x, y, 0, 90, 5);
+	renderer.arc(x, y, 0, 90, 6);
+	renderer.arc(x, y, 180, 270, 5);
+	renderer.arc(x, y, 180, 270, 6);
+
+	// Dibujar círculos concéntricos
+	renderer.setColor(12); // Rojo para borde
+	renderer.circle(x, y, 3);
+	renderer.setColor(4);  // Rojo oscuro
+	renderer.circle(x, y, 2);
+	renderer.setColor(14); // Amarillo para centro
+	renderer.circle(x, y, 1);
+}
+
+function clearPill(x, y) {
+	// Borrar pastilla dibujando rectángulo negro (equivalente a BAR en Pascal)
+	renderer.setFillStyle(0, 0); // Negro sólido
+	renderer.bar(x - 6, y - 7, x + 6, y + 7);
+}
 
 
 // Manejo de teclado
@@ -395,10 +469,12 @@ document.addEventListener('keydown', (event) => {
 		if (event.key === 'Escape') {
 			if (!confirmingExit) {
 				confirmingExit = true;
+				gamePaused = true;
 			} else {
 				// Si ya estábamos confirmando, salir
 				gameState = 'MENU';
 				confirmingExit = false;
+				gamePaused = false;
 				escapePressed = false;
 				keysPressed = {};
 				menuInitialized = false;
@@ -407,6 +483,9 @@ document.addEventListener('keydown', (event) => {
 		} else if (confirmingExit) {
 			// Si presiona cualquier otra tecla mientras confirma salida, cancela
 			confirmingExit = false;
+			gamePaused = false;
+		} else if (event.key === ';') {
+			showHelp();
 		}
 	}
 });
@@ -493,6 +572,79 @@ function drawGameplayUI() {
 		renderer.setColor(14);
 		renderer.outTextXY(75, 210, 'Presione ESC nuevamente para salir');
 	}
+}
+
+function showHelp() {
+	gamePaused = true; // Pausar el juego
+	
+	// Dibujar ventana de ayuda
+	renderer.setFillStyle(1, 8); // Patrón punteado, color gris
+	renderer.setColor(12); // Rojo para borde
+	renderer.bar3d(100, 100, 350, 405, 4, true);
+
+	// Títulos
+	renderer.setTextStyle(0, 0, 1.2);
+	renderer.setColor(11); // Cyan
+	renderer.outTextXY(115, 110, 'Lucas Capalbo Producciones');
+	renderer.setColor(10); // Verde
+	renderer.outTextXY(130, 125, 'Space Ships Adventure');
+
+	// Mostrar ejemplos de pastillas con descripciones
+	renderer.setTextStyle(0, 0, 1);
+	renderer.setColor(14); // Amarillo
+
+	// Pastilla 1: 100 puntos
+	drawPill(170, 150, PILL_TYPES.POINTS_100);
+	renderer.outTextXY(185, 148, '100 Puntos');
+
+	// Pastilla 2: Energía completa
+	drawPill(170, 170, PILL_TYPES.ENERGY_FULL);
+	renderer.outTextXY(185, 168, 'Energía');
+
+	// Pastilla 3: Cambio de controles
+	drawPill(170, 190, PILL_TYPES.CONTROLS_CHANGE);
+	renderer.outTextXY(185, 188, 'Cambio De Controles');
+
+	// Pastilla 4: Velocidad
+	drawPill(170, 210, PILL_TYPES.SPEED_BOOST);
+	renderer.outTextXY(185, 208, 'Velocidad');
+
+	// Pastilla 5: Disparo en ángulo
+	drawPill(170, 230, PILL_TYPES.ANGULAR_SHOT);
+	renderer.outTextXY(185, 228, 'Disparo En Ángulo');
+
+	// Pastilla 6: Láser
+	drawPill(170, 250, PILL_TYPES.LASER);
+	renderer.outTextXY(185, 248, 'Laser');
+
+	// Pastilla 7: Escudo
+	drawPill(170, 270, PILL_TYPES.SHIELD);
+	renderer.outTextXY(185, 268, 'Escudo x 5');
+
+	// Información adicional
+	renderer.outTextXY(120, 290, 'Pastillas: 5 Puntos');
+	renderer.outTextXY(120, 304, 'Enemigos: 5 Puntos');
+	renderer.outTextXY(120, 318, 'Monstruos: 50 Puntos');
+	renderer.outTextXY(120, 332, 'Choque A Enemigo: 1 Punto');
+	renderer.outTextXY(120, 346, 'Choque A Monstruo: 10 Puntos');
+
+	// Fecha y instrucción de salida
+	renderer.setColor(12); // Rojo
+	renderer.outTextXY(130, 370, 'Septiembre de 2K, Argentina');
+	renderer.setColor(11); // Cyan
+	renderer.outTextXY(132, 384, 'Presione Escape Para Cerrar');
+
+	// Esperar a Escape para salir (simulado con un listener temporal)
+	const helpKeyListener = (event) => {
+		if (event.key === 'Escape') {
+			// Limpiar la ventana de ayuda
+			renderer.setFillStyle(1, 0); // Negro sólido
+			renderer.bar3d(100, 100, 350, 370, 4, true);
+			document.removeEventListener('keydown', helpKeyListener);
+			gamePaused = false; // Reanudar el juego
+		}
+	};
+	document.addEventListener('keydown', helpKeyListener);
 }
 
 
@@ -774,18 +926,20 @@ function gameLoop() {
 				window.gameStarted = true;
 			}
 
-			// Actualizar movimiento de jugadores
-			updatePlayerMovement();
+			if (!gamePaused) {
+				// Actualizar movimiento de jugadores solo si no está pausado
+				updatePlayerMovement();
 
-			// Redibujar área de juego
-			renderer.setFillStyle(0, 0);
-			renderer.bar(0, 0, 400, canvas.height);
+				// Redibujar área de juego
+				renderer.setFillStyle(0, 0);
+				renderer.bar(0, 0, 400, canvas.height);
 
-			// Dibujar naves de jugadores en sus posiciones actuales
-			drawPlayer(player1.x, player1.y, 1);
-			if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
+				// Dibujar naves de jugadores en sus posiciones actuales
+				drawPlayer(player1.x, player1.y, 1);
+				if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
+			}
 
-			// Mostrar UI de juego (confirmación de salida, etc.)
+			// Mostrar UI de juego (confirmación de salida, etc.) siempre
 			drawGameplayUI();
 			break;
 		case 'HIGHSCORES':
