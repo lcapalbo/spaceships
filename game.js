@@ -527,8 +527,8 @@ function drawPlayer(x, y, player) {
 	renderer.line(x + 8, y - 2, x + 10, y - 9);
 }
 
-function drawEnemy(c, f, codigo) {
-	if (codigo === 1) {
+function drawEnemy(c, f, enemyCode) {
+	if (enemyCode === 1) {
 		renderer.setColor(2);
 		renderer.ellipse(c, f, 150, 30, 5, 10);
 		renderer.ellipse(c, f, 150, 30, 4, 9);
@@ -559,7 +559,7 @@ function drawEnemy(c, f, codigo) {
 		renderer.line(c - 12, f + 15, c - 5, f + 5);
 		renderer.line(c + 15, f + 3, c + 12, f + 15);
 		renderer.line(c + 12, f + 15, c + 5, f + 5);
-	} else if (codigo === 2) {
+	} else if (enemyCode === 2) {
 		renderer.setColor(12);
 		renderer.ellipse(c, f + 5, 0, 180, 15, 10);
 		renderer.line(c - 15, f + 5, c - 5, f + 12);
@@ -585,18 +585,18 @@ function drawEnemy(c, f, codigo) {
 
 		renderer.setColor(11);
 		renderer.circle(c, f + 15, 1);
-	} else if (codigo === 3 || codigo === 4) {
+	} else if (enemyCode === 3 || enemyCode === 4) {
 		renderer.setColor(11);
 		renderer.ellipse(c, f + 17, 0, 360, 15, 5);
 		renderer.circle(c, f + 19, 4);
 
 		renderer.setColor(10);
-		renderer.line(c - 7, f + 15, c - 15, f + (codigo === 3 ? 8 : 5));
-		renderer.line(c - 15, f + (codigo === 3 ? 8 : 5), c - 7, f + (codigo === 3 ? 3 : -5));
-		renderer.line(c - 15, f + (codigo === 3 ? 8 : 5), c + 7, f + 15);
-		renderer.line(c + 15, f + (codigo === 3 ? 8 : 5), c - 7, f + 15);
-		renderer.line(c + 7, f + 15, c + 15, f + (codigo === 3 ? 8 : 5));
-		renderer.line(c + 15, f + (codigo === 3 ? 8 : 5), c + 7, f + (codigo === 3 ? 3 : -5));
+		renderer.line(c - 7, f + 15, c - 15, f + (enemyCode === 3 ? 8 : 5));
+		renderer.line(c - 15, f + (enemyCode === 3 ? 8 : 5), c - 7, f + (enemyCode === 3 ? 3 : -5));
+		renderer.line(c - 15, f + (enemyCode === 3 ? 8 : 5), c + 7, f + 15);
+		renderer.line(c + 15, f + (enemyCode === 3 ? 8 : 5), c - 7, f + 15);
+		renderer.line(c + 7, f + 15, c + 15, f + (enemyCode === 3 ? 8 : 5));
+		renderer.line(c + 15, f + (enemyCode === 3 ? 8 : 5), c + 7, f + (enemyCode === 3 ? 3 : -5));
 
 		renderer.setColor(11);
 		renderer.circle(c, f + 20, 3);
@@ -615,9 +615,9 @@ function drawEnemy(c, f, codigo) {
 	}
 }
 
-function drawEnemyShip(nx, ny, npant) {
+function drawEnemyShip(nx, ny, screenNumber) {
 	let cod = 0;
-	if (npant === 3) {
+	if (screenNumber === 3) {
 		if (nx % 50 > 25) {
 			if (nx > 30) {
 				ny--;
@@ -631,7 +631,7 @@ function drawEnemyShip(nx, ny, npant) {
 		}
 	}
 
-	switch (npant) {
+	switch (screenNumber) {
 		case 1:
 			renderer.setColor(10);
 			renderer.line(nx - 10, ny + 10, nx + 10, ny + 10);
