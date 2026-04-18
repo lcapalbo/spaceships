@@ -189,10 +189,7 @@ function setupGameScreen() {
 
 	// Bordes del panel
 	renderer.setColor(12);
-	renderer.line(400, 0, 400, canvas.height);
-	renderer.line(400, 0, canvas.width, 0);
-	renderer.line(canvas.width, 0, canvas.width, canvas.height);
-	renderer.line(400, canvas.height, canvas.width, canvas.height);
+	renderer.rectangle(400, 0, canvas.width, canvas.height);
 
 	// Cabecera del panel
 	let y_base = players === 'Dos' ? 154 : 268;
@@ -467,10 +464,7 @@ function drawGameplayUI() {
 		renderer.setFillStyle(1, 1);
 		renderer.bar(60, 200, 340, 230);
 		renderer.setColor(12);
-		renderer.line(60, 200, 340, 200);
-		renderer.line(340, 200, 340, 230);
-		renderer.line(340, 230, 60, 230);
-		renderer.line(60, 230, 60, 200);
+		renderer.rectangle(60, 200, 340, 230);
 		
 		// Mostrar mensaje de confirmación
 		renderer.setTextStyle(2, 0, 1);

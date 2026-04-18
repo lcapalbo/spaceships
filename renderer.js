@@ -131,6 +131,12 @@ class Renderer {
 		this.ctx.fillRect(left, top, w, h);
 	}
 
+	rectangle(left, top, right, bottom) {
+		const w = right - left;
+		const h = bottom - top;
+		this.ctx.strokeRect(left, top, w, h);
+	}
+
 	pieSlice(x, y, startDeg, endDeg, r) {
 		const start = -1 * (startDeg * Math.PI) / 180;
 		const end = -1 * (endDeg * Math.PI) / 180;
