@@ -137,6 +137,37 @@ class Renderer {
 		this.ctx.strokeRect(left, top, w, h);
 	}
 
+	bar3d(left, top, right, bottom, depth, topOn) {
+		const w = right - left;
+		const h = bottom - top;
+		
+		// Dibujar el rectángulo principal relleno
+		this.ctx.fillRect(left, top, w, h);
+		
+		// Dibujar bordes 3D
+		this.ctx.strokeStyle = this._resolveColor(15); // Blanco para resaltado
+		this.ctx.beginPath();
+		this.ctx.moveTo(left, top);
+		this.ctx.lineTo(right, top);
+		this.ctx.lineTo(right - depth, top + depth);
+		if (topOn) {
+			this.ctx.moveTo(right, top);
+			this.ctx.lineTo(right, bottom);
+		}
+		this.ctx.stroke();
+		
+		this.ctx.strokeStyle = this._resolveColor(8); // Gris oscuro para sombra
+		this.ctx.beginPath();
+		this.ctx.moveTo(right, bottom);
+		this.ctx.lineTo(right - depth, bottom - depth);
+		this.ctx.lineTo(left - depth, bottom - depth);
+		this.ctx.lineTo(left, bottom);
+		this.ctx.stroke();
+		
+		// Restaurar el color original
+		this.ctx.strokeStyle = this._resolveColor(this.color);
+	}
+
 	pieSlice(x, y, startDeg, endDeg, r) {
 		const start = -1 * (startDeg * Math.PI) / 180;
 		const end = -1 * (endDeg * Math.PI) / 180;
