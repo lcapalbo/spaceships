@@ -9,12 +9,26 @@ const GAME_STATES = {
 	CONFIRM_EXIT: 'CONFIRM_EXIT',
 	HELP: 'HELP'
 };
+const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 
 // Estado actual del juego
 let gameState = GAME_STATES.MENU;
 let menuInitialized = false;
 let previousSelectedOption = -1;
 let confirmExitStartTime = 0;
+let initialEnergy = 3;
+
+let pill = 5; // Posibilidad de pastilla según dificultad
+// Constantes para tipos de pastillas
+const PILL_TYPES = {
+	POINTS_100: 1,      // Celeste - 100 puntos
+	ENERGY_FULL: 2,     // Verde - Energía completa
+	CONTROLS_CHANGE: 3, // Roja - Cambio de controles
+	SPEED_BOOST: 4,     // Blanco - Velocidad
+	ANGULAR_SHOT: 5,    // Violeta - Disparo en ángulo
+	LASER: 6,           // Amarilla - Láser
+	SHIELD: 7           // Rosa - Escudo
+};
 
 // Opciones del menú
 let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
@@ -53,25 +67,6 @@ const player2 = {
 	speedBoost: false,
 	controlsChanged: false
 };
-
-// Energía inicial del juego
-let initialEnergy = 3;
-let pill = 5; // Posibilidad de pastilla según dificultad
-const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
-
-// Constantes para tipos de pastillas
-const PILL_TYPES = {
-	POINTS_100: 1,      // Celeste - 100 puntos
-	ENERGY_FULL: 2,     // Verde - Energía completa
-	CONTROLS_CHANGE: 3, // Roja - Cambio de controles
-	SPEED_BOOST: 4,     // Blanco - Velocidad
-	ANGULAR_SHOT: 5,    // Violeta - Disparo en ángulo
-	LASER: 6,           // Amarilla - Láser
-	SHIELD: 7           // Rosa - Escudo
-};
-
-// Estado de controles del juego
-let keysPressed = {};
 
 function write(text, x, y) {
     renderer.setColor(9);
@@ -672,6 +667,9 @@ function drawEnemyShip(nx, ny, screenNumber) {
 }
 
 
+// Estado de controles del juego
+let keysPressed = {};
+
 // Manejo de teclado
 document.addEventListener('keydown', (event) => {
 	if (gameState === GAME_STATES.MENU) {
@@ -855,7 +853,7 @@ function drawHelpScreen() {
 	// Dibujar ventana de ayuda
 	renderer.setFillStyle(1, 0);
 	renderer.bar(100, 100, 350, 405);
-	renderer.setFillStyle(6, 2); // Patrón \, color gris
+	renderer.setFillStyle(6, 8); // Patrón \, color gris
 	renderer.setColor(12); // Rojo para borde
 	renderer.bar3d(100, 100, 350, 405, 4, true);
 
