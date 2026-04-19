@@ -781,31 +781,31 @@ function updatePlayerMovement() {
 
 	// Player 1: Flechas
 	if (keysPressed['arrowup']) {
-		player1.y = Math.max(0, player1.y - moveSpeed);
+		player1.y = Math.max(20, player1.y - moveSpeed);
 	}
 	if (keysPressed['arrowdown']) {
-		player1.y = Math.min(canvas.height - 20, player1.y + moveSpeed);
+		player1.y = Math.min(canvas.height - 8, player1.y + moveSpeed);
 	}
 	if (keysPressed['arrowleft']) {
-		player1.x = Math.max(0, player1.x - moveSpeed);
+		player1.x = Math.max(11, player1.x - moveSpeed);
 	}
 	if (keysPressed['arrowright']) {
-		player1.x = Math.min(gameAreaWidth - 20, player1.x + moveSpeed);
+		player1.x = Math.min(gameAreaWidth - 12, player1.x + moveSpeed);
 	}
 
 	// Player 2: AWSD (solo en modo dos jugadores)
 	if (players === 'Dos') {
 		if (keysPressed['w']) {
-			player2.y = Math.max(0, player2.y - moveSpeed);
+			player2.y = Math.max(20, player2.y - moveSpeed);
 		}
 		if (keysPressed['s']) {
-			player2.y = Math.min(canvas.height - 20, player2.y + moveSpeed);
+			player2.y = Math.min(canvas.height - 8, player2.y + moveSpeed);
 		}
 		if (keysPressed['a']) {
-			player2.x = Math.max(0, player2.x - moveSpeed);
+			player2.x = Math.max(11, player2.x - moveSpeed);
 		}
 		if (keysPressed['d']) {
-			player2.x = Math.min(gameAreaWidth - 20, player2.x + moveSpeed);
+			player2.x = Math.min(gameAreaWidth - 12, player2.x + moveSpeed);
 		}
 	}
 
