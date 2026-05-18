@@ -48,6 +48,8 @@ const player1 = {
 	// Efectos de pastillas
 	shield: false, shieldCounter: 0,
 	laser: false, angularShot: false,
+	// Angular shot positions (-10 = inactive)
+	angularShotY: -10, angularShotXLeft: -10, angularShotXRight: -10,
 	effectDuration: 0,
 	speedBoost: false,
 	controlsChanged: false
@@ -63,6 +65,8 @@ const player2 = {
 	// Efectos de pastillas
 	shield: false, shieldCounter: 0,
 	laser: false, angularShot: false,
+	// Angular shot positions (-10 = inactive)
+	angularShotY: -10, angularShotXLeft: -10, angularShotXRight: -10,
 	effectDuration: 0,
 	speedBoost: false,
 	controlsChanged: false
@@ -210,6 +214,9 @@ function setupGameScreen() {
 	player1.shieldCounter = 0;
 	player1.laser = false;
 	player1.angularShot = false;
+	player1.angularShotY = -10;
+	player1.angularShotXLeft = -10;
+	player1.angularShotXRight = -10;
 	player1.speedBoost = false;
 	player1.effectDuration = 0;
 	player1.controlsChanged = false;
@@ -217,6 +224,9 @@ function setupGameScreen() {
 	player2.shieldCounter = 0;
 	player2.laser = false;
 	player2.angularShot = false;
+	player2.angularShotY = -10;
+	player2.angularShotXLeft = -10;
+	player2.angularShotXRight = -10;
 	player2.speedBoost = false;
 	player2.effectDuration = 0;
 	player2.controlsChanged = false;
@@ -666,9 +676,180 @@ function drawEnemyShip(nx, ny, screenNumber) {
 	return ny;
 }
 
+// --- Disparos: misiles, láser y disparos angulares (para ambos jugadores)
+function drawMissile(x, y, color) {
+	renderer.setColor(color);
+	// Cuerpo del proyectil (dos trazos verticales)
+	renderer.line(x - 5, y, x - 5, y - 7);
+	renderer.line(x + 5, y, x + 5, y - 7);
+	// Punta semicircular
+	// Centrar los arcos en la misma coordenada Y que en el Pascal original
+	renderer.arc(x - 5, y, 0, 180, 3);
+	renderer.arc(x + 5, y, 0, 180, 3);
+}
+
+function drawLaser(x, y, color) {
+	// Draw laser as two fast projectiles (left and right) similar to Pascal's Disparar
+	// Draw several vertical lines to give thickness and color variation
+	// Left
+	renderer.setColor(2);
+	renderer.line(x - 7, y, x - 7, y - 7);
+	renderer.line(x - 6, y, x - 6, y - 7);
+	renderer.setColor(4);
+	renderer.line(x - 4, y, x - 4, y - 7);
+	renderer.line(x - 3, y, x - 3, y - 7);
+	renderer.setColor(color);
+	renderer.line(x - 5, y, x - 5, y - 7);
+	// Right (mirror)
+	renderer.setColor(2);
+	renderer.line(x + 7, y, x + 7, y - 7);
+	renderer.line(x + 6, y, x + 6, y - 7);
+	renderer.setColor(4);
+	renderer.line(x + 4, y, x + 4, y - 7);
+	renderer.line(x + 3, y, x + 3, y - 7);
+	renderer.setColor(color);
+	renderer.line(x + 5, y, x + 5, y - 7);
+}
+
+function drawAngledShot(x, y, side, color) {
+	renderer.setColor(color);
+	// Centro pequeño
+	renderer.circle(x, y, 2);
+	// Trazos en ángulo
+	if (side === 'left') {
+		renderer.line(x, y, x - 8, y - 12);
+		renderer.line(x - 2, y - 2, x - 6, y - 10);
+	} else {
+		renderer.line(x, y, x + 8, y - 12);
+		renderer.line(x + 2, y - 2, x + 6, y - 10);
+	}
+}
+
+function updateShots() {
+	const missileSpeed = 6;
+	// Player 1
+	for (let i = 0; i < player1.shots.length; i++) {
+		if (!player1.shots[i]) continue;
+		// Mover bala y dibujar: si es láser dibujamos versión láser en la posición de la bala
+		player1.bulletY[i] -= missileSpeed;
+		if (player1.laser) {
+			drawLaser(player1.bulletX[i], player1.bulletY[i], 14);
+		} else {
+			drawMissile(player1.bulletX[i], player1.bulletY[i], 14);
+		}
+		// Fuera de pantalla -> desactivar
+		if (player1.bulletY[i] < -20 || player1.bulletX[i] < -50 || player1.bulletX[i] > 450) {
+			player1.shots[i] = false;
+			player1.bullets = Math.max(0, player1.bullets - 1);
+		}
+	}
+
+	// Player 2
+	for (let i = 0; i < player2.shots.length; i++) {
+		if (!player2.shots[i]) continue;
+		player2.bulletY[i] -= missileSpeed;
+		if (player2.laser) {
+			drawLaser(player2.bulletX[i], player2.bulletY[i], 11);
+		} else {
+			drawMissile(player2.bulletX[i], player2.bulletY[i], 11);
+		}
+		if (player2.bulletY[i] < -20 || player2.bulletX[i] < -50 || player2.bulletX[i] > 450) {
+			player2.shots[i] = false;
+			player2.bullets = Math.max(0, player2.bullets - 1);
+		}
+	}
+}
+
+function updateAngularShots() {
+	// Bounds to avoid drawing into the right panel
+	const leftBound = 6;
+	const rightBound = 389; // similar to Pascal
+	const topBound = 4;
+
+	// Player 1
+	if (player1.angularShot) {
+		// If inactive, values are -10
+		if (!(player1.angularShotXLeft === -10 && player1.angularShotXRight === -10 && player1.angularShotY === -10)) {
+			// Move
+			if (player1.angularShotXRight === -10) {
+				// already inactive on right
+			} else if (player1.angularShotXRight > rightBound) {
+				player1.angularShotXRight = -10;
+			} else {
+				player1.angularShotXRight += 3;
+			}
+
+			if (player1.angularShotXLeft === -10) {
+			} else if (player1.angularShotXLeft < leftBound) {
+				player1.angularShotXLeft = -10;
+			} else {
+				player1.angularShotXLeft -= 3;
+			}
+
+			if (player1.angularShotY === -10) {
+			} else if (player1.angularShotY < topBound) {
+				player1.angularShotY = -10;
+			} else {
+				player1.angularShotY -= 3;
+			}
+
+			// Draw if within left game area
+			renderer.setColor(10);
+			renderer.setFillStyle(1, 10);
+			if (player1.angularShotXRight !== -10 && player1.angularShotY !== -10 && player1.angularShotXRight < 400) {
+				renderer.circle(player1.angularShotXRight, player1.angularShotY, 2);
+				renderer.floodFill(player1.angularShotXRight, player1.angularShotY, 10);
+			}
+			if (player1.angularShotXLeft !== -10 && player1.angularShotY !== -10 && player1.angularShotXLeft < 400) {
+				renderer.circle(player1.angularShotXLeft, player1.angularShotY, 2);
+				renderer.floodFill(player1.angularShotXLeft, player1.angularShotY, 10);
+			}
+		}
+	}
+
+	// Player 2
+	if (player2.angularShot) {
+		if (!(player2.angularShotXLeft === -10 && player2.angularShotXRight === -10 && player2.angularShotY === -10)) {
+			if (player2.angularShotXRight === -10) {
+			} else if (player2.angularShotXRight > rightBound) {
+				player2.angularShotXRight = -10;
+			} else {
+				player2.angularShotXRight += 3;
+			}
+
+			if (player2.angularShotXLeft === -10) {
+			} else if (player2.angularShotXLeft < leftBound) {
+				player2.angularShotXLeft = -10;
+			} else {
+				player2.angularShotXLeft -= 3;
+			}
+
+			if (player2.angularShotY === -10) {
+			} else if (player2.angularShotY < topBound) {
+				player2.angularShotY = -10;
+			} else {
+				player2.angularShotY -= 3;
+			}
+
+			renderer.setColor(10);
+			renderer.setFillStyle(1, 10);
+			if (player2.angularShotXRight !== -10 && player2.angularShotY !== -10 && player2.angularShotXRight < 400) {
+				renderer.circle(player2.angularShotXRight, player2.angularShotY, 2);
+				renderer.floodFill(player2.angularShotXRight, player2.angularShotY, 10);
+			}
+			if (player2.angularShotXLeft !== -10 && player2.angularShotY !== -10 && player2.angularShotXLeft < 400) {
+				renderer.circle(player2.angularShotXLeft, player2.angularShotY, 2);
+				renderer.floodFill(player2.angularShotXLeft, player2.angularShotY, 10);
+			}
+		}
+	}
+}
+
+
 
 // Estado de controles del juego
 let keysPressed = {};
+let prevKeysPressed = {};
 
 // Manejo de teclado
 document.addEventListener('keydown', (event) => {
@@ -810,8 +991,8 @@ function updatePlayerMovement() {
 	}
 
 	// Disparo Player 1: Espacio
-	if (keysPressed[' ']) {
-		// Iniciador disparo (la lógica completa será implementada después)
+	// Disparo Player 1: Espacio (solo en el borde de pulsación)
+	if (keysPressed[' '] && !prevKeysPressed[' ']) {
 		if (player1.shots.some(shot => !shot)) {
 			const shotIndex = player1.shots.findIndex(shot => !shot);
 			if (shotIndex !== -1) {
@@ -821,10 +1002,16 @@ function updatePlayerMovement() {
 				player1.bullets++;
 			}
 		}
+		// Iniciar disparo angular adicional si está activo y no hay uno en curso
+		if (player1.angularShot && ((player1.angularShotXLeft === -10 && player1.angularShotXRight === -10) || player1.angularShotY === -10)) {
+			player1.angularShotXLeft = player1.x;
+			player1.angularShotXRight = player1.x;
+			player1.angularShotY = player1.y;
+		}
 	}
 
 	// Disparo Player 2: Tab (solo en modo dos jugadores)
-	if (players === 'Dos' && keysPressed['\t']) {
+	if (players === 'Dos' && keysPressed['1'] && !prevKeysPressed['1']) {
 		if (player2.shots.some(shot => !shot)) {
 			const shotIndex = player2.shots.findIndex(shot => !shot);
 			if (shotIndex !== -1) {
@@ -834,7 +1021,16 @@ function updatePlayerMovement() {
 				player2.bullets++;
 			}
 		}
+		// Iniciar disparo angular adicional si está activo y no hay uno en curso
+		if (player2.angularShot && ((player2.angularShotXLeft === -10 && player2.angularShotXRight === -10) || player2.angularShotY === -10)) {
+			player2.angularShotXLeft = player2.x;
+			player2.angularShotXRight = player2.x;
+			player2.angularShotY = player2.y;
+		}
 	}
+
+	// Actualizar prevKeysPressed para el siguiente frame (detección de borde)
+	prevKeysPressed = Object.assign({}, keysPressed);
 }
 
 function drawConfirmExitScreen() {
@@ -936,6 +1132,10 @@ function gameLoop() {
 			// Dibujar naves de jugadores en sus posiciones actuales
 			drawPlayer(player1.x, player1.y, 1);
 			if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
+
+			// Actualizar y dibujar disparos angulares y proyectiles
+			updateAngularShots();
+			updateShots();
 			break;
 		case GAME_STATES.CONFIRM_EXIT:
 			// Mostrar pantalla congelada con mensaje de confirmación
