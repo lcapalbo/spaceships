@@ -72,6 +72,25 @@ const player2 = {
 	controlsChanged: false
 };
 
+// Estado global de enemigos
+let currentScreen = 1; // Pantalla actual (1, 2, 3)
+let totalEnemies = 2; // Cantidad inicial de enemigos
+let finalBossActive = false; // Si el jefe final está activo
+let totalKilled = 0; // Total de enemigos matados para triggear jefe
+let bossEnergy = 0; // Energía del jefe
+let bossNX = 200; // Posición X del jefe
+let bossNY = -110; // Posición Y del jefe
+let bossControl = false; // Para controlar movimiento oscilante
+
+// Arrays de enemigos (máximo 5 por pantalla)
+const enemies = [
+	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
+	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
+	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
+	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
+	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false }
+];
+
 function write(text, x, y) {
     renderer.setColor(9);
     renderer.outTextXY(x, y, text);
@@ -339,6 +358,14 @@ function setupGameScreen() {
 	// Dibujar naves de jugadores en posiciones iniciales
 	drawPlayer(player1.x, player1.y, 1);
 	if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
+
+	// Inicializar enemigos
+	initEnemies(currentScreen);
+	totalKilled = 0;
+	finalBossActive = false;
+	bossEnergy = 0;
+	bossNX = 200;
+	bossNY = -110;
 }
 
 function writeScore(score, player) {
@@ -351,6 +378,349 @@ function writeScore(score, player) {
 	renderer.setTextStyle(0, 0, 1);
 	renderer.setColor(14);
 	renderer.outTextXY(590, y, scoreStr);
+}
+
+// --- Funciones de enemigos ---
+function initEnemies(screenNumber) {
+	totalEnemies = 2; // Iniciar con 2 enemigos
+	for (let i = 0; i < totalEnemies; i++) {
+		enemies[i].x = Math.random() * 380;
+		enemies[i].y = (Math.random() * 90) * (-1);
+		enemies[i].codigo = 1; // Default enemy type
+		enemies[i].firing = false;
+		enemies[i].shotX = -10;
+		enemies[i].shotY = -10;
+		enemies[i].control = false;
+	}
+	// Resto de enemigos inactivos
+	for (let i = totalEnemies; i < 5; i++) {
+		enemies[i].y = -20;
+	}
+}
+
+function updateEnemies(screenNumber) {
+	let difficultyValue = 1;
+	if (difficulty === 'Media') difficultyValue = 2;
+	else if (difficulty === 'Difícil') difficultyValue = 3;
+
+	for (let i = 0; i < totalEnemies; i++) {
+		// Movimiento según pantalla
+		switch (screenNumber) {
+			case 1:
+				// Acercarse horizontalmente hacia el jugador
+				if (Math.random() < 0.5) {
+					if (enemies[i].x > player1.x) {
+						enemies[i].x -= Math.random() * 3;
+					} else {
+						enemies[i].x += Math.random() * 3;
+					}
+				} else {
+					if (enemies[i].x < player1.x) {
+						enemies[i].x -= Math.random() * 3;
+					} else {
+						enemies[i].x += Math.random() * 3;
+					}
+				}
+				break;
+			case 2:
+				// Movimiento oscilante
+				if (enemies[i].y % 150 === 0) {
+					enemies[i].control = !enemies[i].control;
+				}
+				if (enemies[i].control) {
+					enemies[i].x++;
+				} else {
+					enemies[i].x--;
+				}
+				break;
+			case 3:
+				// Movimiento vertical especial
+				if (enemies[i].y % 18 === 0) {
+					enemies[i].y += 19;
+				} else if (Math.random() < 0.5) {
+					enemies[i].y++;
+				}
+				break;
+		}
+
+		// Limitar horizontalmente
+		if (enemies[i].x < 30) enemies[i].x = 30;
+		if (enemies[i].x > 380) enemies[i].x = 380;
+
+		// Movimiento vertical (excepto NPANT=3)
+		if (screenNumber !== 3) {
+			enemies[i].y++;
+		}
+
+		// Reiniciar si sale por abajo
+		if (enemies[i].y > 480) {
+			totalKilled++; // Contar como escape
+			enemies[i].y = -50;
+			enemies[i].x = Math.random() * 440;
+		}
+
+		// Generar disparo del enemigo
+		if (!enemies[i].firing && Math.random() * difficultyValue < 1) {
+			enemies[i].firing = true;
+			enemies[i].shotX = enemies[i].x;
+			enemies[i].shotY = enemies[i].y;
+		}
+
+		// Actualizar disparo del enemigo
+		if (enemies[i].firing) {
+			updateEnemyShot(i, screenNumber);
+		}
+	}
+}
+
+function updateEnemyShot(enemyIndex, screenNumber) {
+	const e = enemies[enemyIndex];
+
+	// Mover bala según pantalla
+	if (screenNumber === 1) {
+		e.shotY += 2; // Vertical
+	} else if (screenNumber === 2 || screenNumber === 3) {
+		if (finalBossActive && screenNumber !== 3) {
+			e.shotY += 5; // Más rápido si hay jefe
+		} else {
+			e.shotY += 3;
+		}
+
+		// Movimiento horizontal aleatorio
+		if (screenNumber === 1 || screenNumber === 3) {
+			const playerX = players === 'Dos' ? player1.x : player1.x;
+			if (Math.random() < 0.5) {
+				if (e.shotX > playerX) {
+					e.shotX -= Math.random() * 7;
+				} else {
+					e.shotX += Math.random() * 7;
+				}
+			} else {
+				if (e.shotX < playerX) {
+					e.shotX -= Math.random() * 4;
+				} else {
+					e.shotX += Math.random() * 4;
+				}
+			}
+		}
+	}
+
+	// Limitar X
+	if (e.shotX > 396) e.shotX = 396;
+
+	// Dibujar bala enemiga
+	renderer.setColor(12);
+	renderer.circle(e.shotX, e.shotY, 3);
+	renderer.circle(e.shotX, e.shotY, 2);
+	renderer.setColor(14);
+	renderer.circle(e.shotX, e.shotY, 1);
+
+	// Desactivar si sale de pantalla
+	if (e.shotY > 479) {
+		e.firing = false;
+	}
+}
+
+function drawEnemies(screenNumber) {
+	for (let i = 0; i < totalEnemies; i++) {
+		if (!finalBossActive) {
+			drawEnemy(enemies[i].x, enemies[i].y, screenNumber);
+		}
+	}
+}
+
+function checkPlayerShotCollisions(playerNum) {
+	const player = playerNum === 1 ? player1 : player2;
+	const missileHitboxX = 16;
+	const missileHitboxYTop = -6;
+	const missileHitboxYBottom = 20;
+
+	// Verificar colisiones con disparos normales
+	for (let d = 0; d < player.shots.length; d++) {
+		if (!player.shots[d]) continue;
+
+		for (let e = 0; e < totalEnemies; e++) {
+			// Hitbox check
+			if (player.bulletY[d] < enemies[e].y + missileHitboxYBottom &&
+				player.bulletY[d] > enemies[e].y + missileHitboxYTop &&
+				player.bulletX[d] > enemies[e].x - missileHitboxX &&
+				player.bulletX[d] < enemies[e].x + missileHitboxX) {
+				// Colisión!
+				if (!player.laser) {
+					player.shots[d] = false;
+					player.bulletX[d] = -10;
+					player.bulletY[d] = -10;
+				}
+				// Reiniciar enemigo
+				enemies[e].y = -80;
+				enemies[e].x = Math.random() * 380;
+				totalKilled++;
+				player.score += 5;
+				player.enemiesKilled++;
+			}
+		}
+
+		// Verificar colisiones con disparos angulares
+		if (playerNum === 1 && player1.angularShot) {
+			for (let e = 0; e < totalEnemies; e++) {
+				// Right ball
+				if (player1.angularShotXRight !== -10 && player1.angularShotY !== -10) {
+					if (player1.angularShotY < enemies[e].y + missileHitboxYBottom &&
+						player1.angularShotY > enemies[e].y + missileHitboxYTop &&
+						player1.angularShotXRight > enemies[e].x - missileHitboxX &&
+						player1.angularShotXRight < enemies[e].x + missileHitboxX) {
+						enemies[e].y = -80;
+						enemies[e].x = Math.random() * 380;
+						totalKilled++;
+						player1.score += 5;
+						player1.enemiesKilled++;
+					}
+				}
+				// Left ball
+				if (player1.angularShotXLeft !== -10 && player1.angularShotY !== -10) {
+					if (player1.angularShotY < enemies[e].y + missileHitboxYBottom &&
+						player1.angularShotY > enemies[e].y + missileHitboxYTop &&
+						player1.angularShotXLeft > enemies[e].x - missileHitboxX &&
+						player1.angularShotXLeft < enemies[e].x + missileHitboxX) {
+						enemies[e].y = -80;
+						enemies[e].x = Math.random() * 380;
+						totalKilled++;
+						player1.score += 5;
+						player1.enemiesKilled++;
+					}
+				}
+			}
+		}
+	}
+}
+
+function handleFinalBoss() {
+	if (totalKilled % 50 === 0 && totalKilled !== 0 && !finalBossActive) {
+		finalBossActive = true;
+		bossEnergy = 0;
+		bossNX = 200;
+		bossNY = -110;
+	}
+
+	if (finalBossActive) {
+		// Movimiento del jefe según pantalla
+		switch (currentScreen) {
+			case 1:
+				if (Math.random() < 0.5 && bossNX < 320) {
+					bossNX += Math.random() * 5;
+				} else if (bossNX > 80) {
+					bossNX -= Math.random() * 5;
+				}
+				break;
+			case 2:
+			case 3:
+				// Oscilación controlada
+				if ((bossNX % 330 <= 1 || bossNX < 70) || (bossNX % 35 === 1 && Math.random() < 0.5)) {
+					bossControl = !bossControl;
+				}
+				if (bossControl) {
+					bossNX += 4 - currentScreen;
+				} else {
+					bossNX -= 4 - currentScreen;
+				}
+				break;
+		}
+
+		if (bossNY < 100) {
+			bossNY += Math.random() * 5;
+		} else {
+			bossNY -= Math.random() * 5;
+		}
+
+		// Verificar colisiones con disparos del jugador 1
+		for (let d = 0; d < player1.shots.length; d++) {
+			if (!player1.shots[d]) continue;
+
+			if (player1.bulletY[d] < bossNY + 100 && player1.bulletY[d] > bossNY &&
+				player1.bulletX[d] > bossNX - 25 && player1.bulletX[d] < bossNX + 25) {
+				// Golpe al jefe
+				renderer.setColor(1);
+				renderer.setFillStyle(1, 1);
+				renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+
+				if (currentScreen === 1) {
+					bossEnergy += 15;
+				} else {
+					bossEnergy += 10;
+				}
+
+				if (bossEnergy < 360) {
+					let color = 12;
+					if (currentScreen === 2) color = 11;
+					if (currentScreen === 3) color = 10;
+					renderer.setColor(color);
+					renderer.setFillStyle(6, color);
+					renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+				}
+
+				if (bossEnergy >= 360) {
+					// Jefe derrotado
+					finalBossActive = false;
+					totalKilled++;
+					player1.score += 50;
+					player1.enemiesKilled++;
+					bossEnergy = 0;
+				}
+
+				if (!player1.laser) {
+					player1.shots[d] = false;
+					player1.bulletX[d] = -10;
+					player1.bulletY[d] = -10;
+				}
+			}
+		}
+
+		// Si hay jugador 2, verificar sus disparos también
+		if (players === 'Dos') {
+			for (let d = 0; d < player2.shots.length; d++) {
+				if (!player2.shots[d]) continue;
+
+				if (player2.bulletY[d] < bossNY + 100 && player2.bulletY[d] > bossNY &&
+					player2.bulletX[d] > bossNX - 25 && player2.bulletX[d] < bossNX + 25) {
+					renderer.setColor(1);
+					renderer.setFillStyle(1, 1);
+					renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+
+					if (currentScreen === 1) {
+						bossEnergy += 15;
+					} else {
+						bossEnergy += 10;
+					}
+
+					if (bossEnergy < 360) {
+						let color = 12;
+						if (currentScreen === 2) color = 11;
+						if (currentScreen === 3) color = 10;
+						renderer.setColor(color);
+						renderer.setFillStyle(6, color);
+						renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+					}
+
+					if (bossEnergy >= 360) {
+						finalBossActive = false;
+						totalKilled++;
+						player2.score += 50;
+						player2.enemiesKilled++;
+						bossEnergy = 0;
+					}
+
+					if (!player2.laser) {
+						player2.shots[d] = false;
+						player2.bulletX[d] = -10;
+						player2.bulletY[d] = -10;
+					}
+				}
+			}
+		}
+
+		// Dibujar jefe
+		drawEnemyShip(bossNX, bossNY, currentScreen);
+	}
 }
 
 function showEnergy(energy, player) {
@@ -1136,6 +1506,16 @@ function gameLoop() {
 			// Actualizar y dibujar disparos angulares y proyectiles
 			updateAngularShots();
 			updateShots();
+			// Actualizar y dibujar enemigos
+			updateEnemies(currentScreen);
+			drawEnemies(currentScreen);
+
+			// Manejar jefe final
+			handleFinalBoss();
+
+			// Verificar colisiones con disparos del jugador
+			checkPlayerShotCollisions(1);
+			if (players === 'Dos') checkPlayerShotCollisions(2);
 			break;
 		case GAME_STATES.CONFIRM_EXIT:
 			// Mostrar pantalla congelada con mensaje de confirmación
