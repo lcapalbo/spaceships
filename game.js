@@ -659,12 +659,9 @@ function handleFinalBoss() {
 				}
 
 				if (bossEnergy >= 360) {
-					// Jefe derrotado
-					finalBossActive = false;
+					// Jefe derrotado: avanzar de pantalla
 					totalKilled++;
-					player1.score += 50;
-					player1.enemiesKilled++;
-					bossEnergy = 0;
+					nextScreen(1);
 				}
 
 				if (!player1.laser) {
@@ -702,11 +699,9 @@ function handleFinalBoss() {
 					}
 
 					if (bossEnergy >= 360) {
-						finalBossActive = false;
+						// Jefe derrotado: avanzar de pantalla
 						totalKilled++;
-						player2.score += 50;
-						player2.enemiesKilled++;
-						bossEnergy = 0;
+						nextScreen(2);
 					}
 
 					if (!player2.laser) {
@@ -721,6 +716,25 @@ function handleFinalBoss() {
 		// Dibujar jefe
 		drawEnemyShip(bossNX, bossNY, currentScreen);
 	}
+}
+
+function nextScreen(playerNum) {
+	// Credit the player
+	if (playerNum === 1) {
+		player1.score += 50;
+		player1.enemiesKilled++;
+	} else if (playerNum === 2) {
+		player2.score += 50;
+		player2.enemiesKilled++;
+	}
+	// Advance screen (wrap to 1..3)
+	currentScreen = currentScreen === 3 ? 1 : currentScreen + 1;
+	// Reinitialize enemies for the next screen and reset boss
+	initEnemies(currentScreen);
+	finalBossActive = false;
+	bossEnergy = 0;
+	bossNX = 200;
+	bossNY = -110;
 }
 
 function showEnergy(energy, player) {
