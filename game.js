@@ -5,6 +5,8 @@ const GAME_STATES = {
 	MENU: 'MENU',
 	GAME_START: 'GAME_START',
 	GAME: 'GAME',
+	LIFE_LOST: 'LIFE_LOST',
+	GAME_OVER: 'GAME_OVER',
 	HIGHSCORES: 'HIGHSCORES',
 	CONFIRM_EXIT: 'CONFIRM_EXIT',
 	HELP: 'HELP'
@@ -759,6 +761,57 @@ function showEnergy(energy, player) {
 	}
 }
 
+function eraseLifeIcon(playerNum, lifeIndex) {
+	const y = playerNum === 1 ? 90 : 400;
+	const x = 650 - (30 * lifeIndex);
+	renderer.setFillStyle(1, 1);
+	renderer.bar(x - 14, y - 22, x + 14, y + 12);
+}
+
+function resetPlayerEffects(player) {
+	player.shield = false;
+	player.shieldCounter = 0;
+	player.laser = false;
+	player.angularShot = false;
+	player.angularShotY = -10;
+	player.angularShotXLeft = -10;
+	player.angularShotXRight = -10;
+	player.speedBoost = false;
+	player.controlsChanged = false;
+	player.effectDuration = 0;
+	player.shots = [false, false, false, false];
+	player.bulletX = [-10, -10, -10, -10];
+	player.bulletY = [-10, -10, -10, -10];
+	player.bullets = 0;
+}
+
+function losePlayerLife(player, playerNum) {
+	if (player.lives <= 0) return;
+
+	eraseLifeIcon(playerNum, player.lives);
+	player.lives = Math.max(0, player.lives - 1);
+	resetPlayerEffects(player);
+	player.x = 200;
+	player.y = 443;
+	player.energy = initialEnergy;
+	showEnergy(player.energy, playerNum);
+
+	if (player.lives > 0) {
+		gameState = GAME_STATES.LIFE_LOST;
+		keysPressed = {};
+		prevKeysPressed = {};
+	} else {
+		const otherPlayerDead = playerNum === 1 ? player2.lives === 0 : player1.lives === 0;
+		if (players === 'Uno' || otherPlayerDead) {
+			gameState = GAME_STATES.GAME_OVER;
+		} else {
+			gameState = GAME_STATES.LIFE_LOST;
+			keysPressed = {};
+			prevKeysPressed = {};
+		}
+	}
+}
+
 function handleEnemyBulletHit(player, playerNum) {
 	if (player.lives <= 0) return;
 
@@ -779,16 +832,7 @@ function handleEnemyBulletHit(player, playerNum) {
 	}
 
 	if (player.energy === 0) {
-		player.lives = Math.max(0, player.lives - 1);
-		if (player.lives > 0) {
-			player.energy = initialEnergy;
-			showEnergy(player.energy, playerNum);
-		} else {
-			if (players === 'Uno' || (players === 'Dos' && player1.lives === 0 && player2.lives === 0)) {
-				gameState = GAME_STATES.MENU;
-				menuInitialized = false;
-			}
-		}
+		losePlayerLife(player, playerNum);
 	}
 }
 
@@ -1387,6 +1431,22 @@ document.addEventListener('keydown', (event) => {
 		if (event.key === 'Escape') {
 			gameState = GAME_STATES.GAME;
 		}
+	} else if (gameState === GAME_STATES.LIFE_LOST) {
+		if (event.key === ' ' || event.key === '1') {
+			renderer.setTextStyle(1, 0, 1);
+			renderer.setColor(1);
+			renderer.outTextXY(460, 145, '███████████████');
+			renderer.outTextXY(425, 153, '███████████████████████████████');
+			gameState = GAME_STATES.GAME;
+			keysPressed = {};
+			prevKeysPressed = {};
+			keysPressed[event.key.toLowerCase()] = true;
+			keysPressed[event.key.toUpperCase()] = true;
+		}
+	} else if (gameState === GAME_STATES.GAME_OVER) {
+		gameState = GAME_STATES.MENU;
+		menuInitialized = false;
+		keysPressed = {};
 	} else if (gameState === GAME_STATES.HIGHSCORES) {
 		// Cualquier tecla vuelve al menú
 		gameState = GAME_STATES.MENU;
@@ -1615,6 +1675,23 @@ function gameLoop() {
 			renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
 			renderer.setColor(11);
 			renderer.outTextXY(200, 400, 'Presione cualquier tecla para volver');
+			break;
+		case GAME_STATES.LIFE_LOST:
+			renderer.setTextStyle(2, 0, 1);
+			renderer.setColor(15);
+			renderer.outTextXY(460, 145, 'Una Vida Menos');
+			renderer.setColor(11);
+			renderer.outTextXY(425, 153, 'Dispare Para Continuar');
+			break;
+		case GAME_STATES.GAME_OVER:
+			renderer.setTextStyle(2, 0, 1.2);
+			renderer.setColor(11);
+			if (players === 'Uno') {
+				renderer.outTextXY(460, 85, ': GAME OVER: ');
+			} else {
+				renderer.outTextXY(460, 395, ': GAME OVER: ');
+			}
+			renderer.setTextStyle(2, 0, 1);
 			break;
 	}
 
