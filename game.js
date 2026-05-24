@@ -98,8 +98,6 @@ let bossExplosionState = {
 
 let statsState = {
 	active: false,
-	showBoth: false,
-	singlePlayerNumber: 1,
 	targetPlayer: 1,
 	player1Kills: 0,
 	player1Crashes: 0,
@@ -112,10 +110,10 @@ let statsState = {
 // Arrays de enemigos (máximo 5 por pantalla)
 const enemies = [
 	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false },
-	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
-	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
-	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
-	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false }
+	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false },
+	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false },
+	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false },
+	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false }
 ];
 
 function write(text, x, y) {
@@ -248,6 +246,8 @@ function setupGameScreen() {
 			break;
 	}
 
+	player1.score = 0;
+	player2.score = 0;
 	player1.energy = initialEnergy;
 	player2.energy = initialEnergy;
 
@@ -288,7 +288,7 @@ function setupGameScreen() {
 	renderer.rectangle(400, 0, canvas.width, canvas.height);
 
 	// Cabecera del panel
-	let y_base = players === 'Dos' ? 154 : 268;
+	let y_base = players === 'Dos' ? 180 : 300;
 	renderer.setTextStyle(4, 0, 5);
 	renderer.setColor(9);
 	renderer.outTextXY(423, y_base, 'Space');
@@ -490,22 +490,22 @@ function updateEnemyShot(enemyIndex, screenNumber) {
 		} else {
 			e.shotY += 3;
 		}
+	}
 
-		// Movimiento horizontal aleatorio
-		if (screenNumber === 1 || screenNumber === 3) {
-			const playerX = players === 'Dos' ? player1.x : player1.x;
-			if (Math.random() < 0.5) {
-				if (e.shotX > playerX) {
-					e.shotX -= Math.random() * 7;
-				} else {
-					e.shotX += Math.random() * 7;
-				}
+	// Movimiento horizontal aleatorio
+	if (screenNumber === 1 || screenNumber === 3) {
+		const playerX = players === 'Dos' ? player1.x : player1.x;
+		if (Math.random() < 0.5) {
+			if (e.shotX > playerX) {
+				e.shotX -= Math.random() * 7;
 			} else {
-				if (e.shotX < playerX) {
-					e.shotX -= Math.random() * 4;
-				} else {
-					e.shotX += Math.random() * 4;
-				}
+				e.shotX += Math.random() * 7;
+			}
+		} else {
+			if (e.shotX < playerX) {
+				e.shotX -= Math.random() * 4;
+			} else {
+				e.shotX += Math.random() * 4;
 			}
 		}
 	}
@@ -830,6 +830,7 @@ function losePlayerLife(player, playerNum) {
 	} else {
 		const otherPlayerDead = playerNum === 1 ? player2.lives === 0 : player1.lives === 0;
 		if (players === 'Uno' || otherPlayerDead) {
+			prepareStatsScreen(null);
 			gameState = GAME_STATES.GAME_OVER;
 		} else {
 			gameState = GAME_STATES.LIFE_LOST;
@@ -987,8 +988,6 @@ function calculateEfficiency(kills, crashes) {
 function prepareStatsScreen(targetPlayer) {
 	statsState.active = true;
 	statsState.targetPlayer = targetPlayer;
-	statsState.showBoth = players === 'Dos' && player1.lives > 0 && player2.lives > 0;
-	statsState.singlePlayerNumber = statsState.showBoth ? null : (player1.lives > 0 ? 1 : 2);
 	statsState.player1Kills = player1.enemiesKilled;
 	statsState.player1Crashes = player1.enemiesCrashed;
 	statsState.player1Efficiency = calculateEfficiency(player1.enemiesKilled, player1.enemiesCrashed);
@@ -998,49 +997,54 @@ function prepareStatsScreen(targetPlayer) {
 }
 
 function drawStatsScreen() {
-	const isTwoPlayerBox = statsState.showBoth;
-	const top = isTwoPlayerBox ? 10 : 50;
-	const bottom = isTwoPlayerBox ? 470 : 350;
+	const top = players === 'Uno' ? 50 : 10;
+	const bottom = players === 'Uno' ? 350 : 470;
 
-	renderer.setFillStyle(1, 4);
-	renderer.bar3d(50, top, 350, bottom, 4, true);
+	renderer.setFillStyle(1, 0);
+	renderer.bar(50, top, 350, bottom);
+	renderer.setFillStyle(10, 4);
 	renderer.setColor(12);
-	renderer.rectangle(50, top, 350, bottom);
+	renderer.bar3d(50, top, 350, bottom, 4, true);
 
-	if (!isTwoPlayerBox) {
+	if (players === 'Uno') {
+		renderer.line(51,325,350,325);
 		renderer.setColor(11);
-		renderer.setTextStyle(3, 0, 5);
-		renderer.outTextXY(200, 60, 'x');
-		renderer.outTextXY(230, 60, statsState.singlePlayerNumber === 2 ? statsState.player2Kills.toString() : statsState.player1Kills.toString());
 		renderer.setTextStyle(3, 0, 3);
-		const crashText = (statsState.singlePlayerNumber === 2 ? statsState.player2Crashes : statsState.player1Crashes) + ' Choques';
-		renderer.outTextXY(80, 120, crashText);
-		renderer.outTextXY(75, 190, ': EFICIENCIA :');
+		renderer.outTextXY(200, 80, 'x');
+		renderer.setColor(12);
+		console.info(statsState);
+		renderer.outTextXY(230, 80, statsState.player1Kills.toString());
+		renderer.outTextXY(80, 140, statsState.player1Crashes + ' Choques');
+		renderer.outTextXY(75, 200, ': EFICIENCIA :');
 		renderer.setTextStyle(10, 0, 4);
-		const efficiency = (statsState.singlePlayerNumber === 2 ? statsState.player2Efficiency : statsState.player1Efficiency) + '%';
-		renderer.outTextXY(160, 230, efficiency);
+		renderer.outTextXY(160, 260, statsState.player1Efficiency + '%');
 		renderer.setTextStyle(11, 0, 1);
+		renderer.setColor(11);
 		renderer.outTextXY(80, 335, 'Presione ENTER Para Continuar');
 		drawEnemy(160, 90, currentScreen);
 	} else {
+		renderer.line(51,445,350,445);
+		renderer.line(51,230,350,230);
 		renderer.setColor(11);
-		renderer.setTextStyle(3, 0, 5);
+		renderer.setTextStyle(3, 0, 3);
 		renderer.outTextXY(200, 20, 'x');
-		renderer.outTextXY(200, 220, 'x');
+		renderer.outTextXY(200, 240, 'x');
+		renderer.setColor(12);
 		renderer.outTextXY(230, 20, statsState.player1Kills.toString());
-		renderer.outTextXY(230, 220, statsState.player2Kills.toString());
+		renderer.outTextXY(230, 240, statsState.player2Kills.toString());
 		renderer.setTextStyle(3, 0, 3);
 		renderer.outTextXY(80, 70, statsState.player1Crashes + ' Choques');
-		renderer.outTextXY(80, 270, statsState.player2Crashes + ' Choques');
-		renderer.outTextXY(75, 120, ': EFICIENCIA :');
-		renderer.outTextXY(75, 320, ': EFICIENCIA :');
+		renderer.outTextXY(80, 290, statsState.player2Crashes + ' Choques');
+		renderer.outTextXY(75, 130, ': EFICIENCIA :');
+		renderer.outTextXY(75, 350, ': EFICIENCIA :');
 		renderer.setTextStyle(10, 0, 4);
-		renderer.outTextXY(160, 160, statsState.player1Efficiency + '%');
-		renderer.outTextXY(160, 360, statsState.player2Efficiency + '%');
+		renderer.outTextXY(160, 170, statsState.player1Efficiency + '%');
+		renderer.outTextXY(160, 390, statsState.player2Efficiency + '%');
 		renderer.setTextStyle(11, 0, 1);
+		renderer.setColor(11);
 		renderer.outTextXY(80, 455, 'Presione ENTER Para Continuar');
-		drawEnemy(160, 40, currentScreen);
-		drawEnemy(160, 240, currentScreen);
+		drawEnemy(160, 30, currentScreen);
+		drawEnemy(160, 250, currentScreen);
 	}
 }
 
@@ -1891,6 +1895,7 @@ function gameLoop() {
 			renderer.outTextXY(425, 153, 'Dispare Para Continuar');
 			break;
 		case GAME_STATES.GAME_OVER:
+			drawStatsScreen();
 			renderer.setTextStyle(2, 0, 1.2);
 			renderer.setColor(11);
 			if (players === 'Uno') {
