@@ -759,6 +759,68 @@ function showEnergy(energy, player) {
 	}
 }
 
+function handleEnemyBulletHit(player, playerNum) {
+	if (player.lives <= 0) return;
+
+	if (player.shield) {
+		player.shieldCounter++;
+		if (player.shieldCounter >= 5) {
+			player.shield = false;
+			player.shieldCounter = 0;
+		}
+		return;
+	}
+
+	player.energy = Math.max(0, player.energy - 1);
+	showEnergy(player.energy, playerNum);
+
+	if (currentScreen === 3) {
+		player.y = Math.min(canvas.height - 8, player.y + 30);
+	}
+
+	if (player.energy === 0) {
+		player.lives = Math.max(0, player.lives - 1);
+		if (player.lives > 0) {
+			player.energy = initialEnergy;
+			showEnergy(player.energy, playerNum);
+		} else {
+			if (players === 'Uno' || (players === 'Dos' && player1.lives === 0 && player2.lives === 0)) {
+				gameState = GAME_STATES.MENU;
+				menuInitialized = false;
+			}
+		}
+	}
+}
+
+function checkEnemyShotCollisions() {
+	for (let i = 0; i < totalEnemies; i++) {
+		const enemy = enemies[i];
+		if (!enemy.firing) continue;
+
+		const playersToCheck = [
+			{ player: player1, num: 1 }
+		];
+		if (players === 'Dos') {
+			playersToCheck.push({ player: player2, num: 2 });
+		}
+
+		for (const entry of playersToCheck) {
+			const player = entry.player;
+			const playerNum = entry.num;
+			if (player.lives <= 0) continue;
+
+			if (enemy.shotY > player.y - 20 && enemy.shotY < player.y + 5 &&
+				enemy.shotX > player.x - 13 && enemy.shotX < player.x + 13) {
+				enemy.firing = false;
+				enemy.shotX = -10;
+				enemy.shotY = -10;
+				handleEnemyBulletHit(player, playerNum);
+				break;
+			}
+		}
+	}
+}
+
 // Funciones de dibujo de objetos del juego
 function drawPill(x, y, pillType) {
 	// Mapear tipos de pastillas a colores BGI (según código Pascal)
@@ -1345,21 +1407,42 @@ function updatePlayerMovement() {
 	const gameAreaWidth = 400;
 
 	// Player 1: Flechas
-	if (keysPressed['arrowup']) {
-		player1.y = Math.max(20, player1.y - moveSpeed);
-	}
-	if (keysPressed['arrowdown']) {
-		player1.y = Math.min(canvas.height - 8, player1.y + moveSpeed);
-	}
-	if (keysPressed['arrowleft']) {
-		player1.x = Math.max(11, player1.x - moveSpeed);
-	}
-	if (keysPressed['arrowright']) {
-		player1.x = Math.min(gameAreaWidth - 12, player1.x + moveSpeed);
+	if (player1.lives > 0) {
+		if (keysPressed['arrowup']) {
+			player1.y = Math.max(20, player1.y - moveSpeed);
+		}
+		if (keysPressed['arrowdown']) {
+			player1.y = Math.min(canvas.height - 8, player1.y + moveSpeed);
+		}
+		if (keysPressed['arrowleft']) {
+			player1.x = Math.max(11, player1.x - moveSpeed);
+		}
+		if (keysPressed['arrowright']) {
+			player1.x = Math.min(gameAreaWidth - 12, player1.x + moveSpeed);
+		}
+
+		// Disparo Player 1: Espacio (solo en el borde de pulsación)
+		if (keysPressed[' '] && !prevKeysPressed[' ']) {
+			if (player1.shots.some(shot => !shot)) {
+				const shotIndex = player1.shots.findIndex(shot => !shot);
+				if (shotIndex !== -1) {
+					player1.shots[shotIndex] = true;
+					player1.bulletX[shotIndex] = player1.x;
+					player1.bulletY[shotIndex] = player1.y - 20;
+					player1.bullets++;
+				}
+			}
+			// Iniciar disparo angular adicional si está activo y no hay uno en curso
+			if (player1.angularShot && ((player1.angularShotXLeft === -10 && player1.angularShotXRight === -10) || player1.angularShotY === -10)) {
+				player1.angularShotXLeft = player1.x;
+				player1.angularShotXRight = player1.x;
+				player1.angularShotY = player1.y;
+			}
+		}
 	}
 
 	// Player 2: AWSD (solo en modo dos jugadores)
-	if (players === 'Dos') {
+	if (players === 'Dos' && player2.lives > 0) {
 		if (keysPressed['w']) {
 			player2.y = Math.max(20, player2.y - moveSpeed);
 		}
@@ -1372,44 +1455,24 @@ function updatePlayerMovement() {
 		if (keysPressed['d']) {
 			player2.x = Math.min(gameAreaWidth - 12, player2.x + moveSpeed);
 		}
-	}
 
-	// Disparo Player 1: Espacio
-	// Disparo Player 1: Espacio (solo en el borde de pulsación)
-	if (keysPressed[' '] && !prevKeysPressed[' ']) {
-		if (player1.shots.some(shot => !shot)) {
-			const shotIndex = player1.shots.findIndex(shot => !shot);
-			if (shotIndex !== -1) {
-				player1.shots[shotIndex] = true;
-				player1.bulletX[shotIndex] = player1.x;
-				player1.bulletY[shotIndex] = player1.y - 20;
-				player1.bullets++;
+		// Disparo Player 2: Tab (solo en modo dos jugadores)
+		if (keysPressed['1'] && !prevKeysPressed['1']) {
+			if (player2.shots.some(shot => !shot)) {
+				const shotIndex = player2.shots.findIndex(shot => !shot);
+				if (shotIndex !== -1) {
+					player2.shots[shotIndex] = true;
+					player2.bulletX[shotIndex] = player2.x;
+					player2.bulletY[shotIndex] = player2.y - 20;
+					player2.bullets++;
+				}
 			}
-		}
-		// Iniciar disparo angular adicional si está activo y no hay uno en curso
-		if (player1.angularShot && ((player1.angularShotXLeft === -10 && player1.angularShotXRight === -10) || player1.angularShotY === -10)) {
-			player1.angularShotXLeft = player1.x;
-			player1.angularShotXRight = player1.x;
-			player1.angularShotY = player1.y;
-		}
-	}
-
-	// Disparo Player 2: Tab (solo en modo dos jugadores)
-	if (players === 'Dos' && keysPressed['1'] && !prevKeysPressed['1']) {
-		if (player2.shots.some(shot => !shot)) {
-			const shotIndex = player2.shots.findIndex(shot => !shot);
-			if (shotIndex !== -1) {
-				player2.shots[shotIndex] = true;
-				player2.bulletX[shotIndex] = player2.x;
-				player2.bulletY[shotIndex] = player2.y - 20;
-				player2.bullets++;
+			// Iniciar disparo angular adicional si está activo y no hay uno en curso
+			if (player2.angularShot && ((player2.angularShotXLeft === -10 && player2.angularShotXRight === -10) || player2.angularShotY === -10)) {
+				player2.angularShotXLeft = player2.x;
+				player2.angularShotXRight = player2.x;
+				player2.angularShotY = player2.y;
 			}
-		}
-		// Iniciar disparo angular adicional si está activo y no hay uno en curso
-		if (player2.angularShot && ((player2.angularShotXLeft === -10 && player2.angularShotXRight === -10) || player2.angularShotY === -10)) {
-			player2.angularShotXLeft = player2.x;
-			player2.angularShotXRight = player2.x;
-			player2.angularShotY = player2.y;
 		}
 	}
 
@@ -1514,8 +1577,12 @@ function gameLoop() {
 			renderer.bar(0, 0, 400, canvas.height);
 
 			// Dibujar naves de jugadores en sus posiciones actuales
-			drawPlayer(player1.x, player1.y, 1);
-			if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
+			if (player1.lives > 0) {
+				drawPlayer(player1.x, player1.y, 1);
+			}
+			if (players === 'Dos' && player2.lives > 0) {
+				drawPlayer(player2.x, player2.y, 2);
+			}
 
 			// Actualizar y dibujar disparos angulares y proyectiles
 			updateAngularShots();
@@ -1526,6 +1593,9 @@ function gameLoop() {
 
 			// Manejar jefe final
 			handleFinalBoss();
+
+			// Verificar colisiones con disparos enemigos
+			checkEnemyShotCollisions();
 
 			// Verificar colisiones con disparos del jugador
 			checkPlayerShotCollisions(1);
