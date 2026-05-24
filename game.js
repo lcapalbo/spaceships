@@ -727,6 +727,7 @@ function handleFinalBoss() {
 						// Jefe derrotado: otorgar bonificación y activar animación de explosión
 						player2.score += 50;
 						player2.enemiesKilled++;
+						bossExplosionState.active = true;
 						bossExplosionState.x = bossNX;
 						bossExplosionState.y = bossNY;
 						bossExplosionState.suma = 1;
