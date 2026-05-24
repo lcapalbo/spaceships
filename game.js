@@ -107,6 +107,13 @@ let statsState = {
 	player2Efficiency: 0
 };
 
+let pillDrop = {
+	active: false,
+	x: -10,
+	y: -10,
+	type: 0
+};
+
 // Arrays de enemigos (máximo 5 por pantalla)
 const enemies = [
 	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false },
@@ -565,6 +572,7 @@ function checkPlayerShotCollisions(playerNum) {
 					player.bulletX[d] = -10;
 					player.bulletY[d] = -10;
 				}
+				spawnPillDrop(enemies[e].x, enemies[e].y);
 				// Reiniciar enemigo
 				enemies[e].y = -80;
 				enemies[e].x = Math.floor(Math.random() * 380);
@@ -583,6 +591,7 @@ function checkPlayerShotCollisions(playerNum) {
 						player1.angularShotY > enemies[e].y + missileHitboxYTop &&
 						player1.angularShotXRight > enemies[e].x - missileHitboxX &&
 						player1.angularShotXRight < enemies[e].x + missileHitboxX) {
+						spawnPillDrop(enemies[e].x, enemies[e].y);
 						enemies[e].y = -80;
 						enemies[e].x = Math.floor(Math.random() * 380);
 						totalKilled++;
@@ -596,6 +605,7 @@ function checkPlayerShotCollisions(playerNum) {
 						player1.angularShotY > enemies[e].y + missileHitboxYTop &&
 						player1.angularShotXLeft > enemies[e].x - missileHitboxX &&
 						player1.angularShotXLeft < enemies[e].x + missileHitboxX) {
+						spawnPillDrop(enemies[e].x, enemies[e].y);
 						enemies[e].y = -80;
 						enemies[e].x = Math.floor(Math.random() * 380);
 						totalKilled++;
@@ -609,7 +619,7 @@ function checkPlayerShotCollisions(playerNum) {
 }
 
 function handleFinalBoss() {
-	if (totalKilled % 5 === 0 && totalKilled !== 0 && !finalBossActive) {
+	if (totalKilled % 50 === 0 && totalKilled !== 0 && !finalBossActive) {
 		finalBossActive = true;
 		bossEnergy = 0;
 		bossNX = 200;
@@ -1007,7 +1017,7 @@ function drawStatsScreen() {
 	renderer.bar3d(50, top, 350, bottom, 4, true);
 
 	if (players === 'Uno') {
-		renderer.line(51,325,350,325);
+		renderer.line(51, 325, 350, 325);
 		renderer.setColor(11);
 		renderer.setTextStyle(3, 0, 3);
 		renderer.outTextXY(200, 80, 'x');
@@ -1023,8 +1033,8 @@ function drawStatsScreen() {
 		renderer.outTextXY(80, 335, 'Presione ENTER Para Continuar');
 		drawEnemy(160, 90, currentScreen);
 	} else {
-		renderer.line(51,445,350,445);
-		renderer.line(51,230,350,230);
+		renderer.line(51, 445, 350, 445);
+		renderer.line(51, 230, 350, 230);
 		renderer.setColor(11);
 		renderer.setTextStyle(3, 0, 3);
 		renderer.outTextXY(200, 20, 'x');
@@ -1060,7 +1070,7 @@ function drawPill(x, y, pillType) {
 		case PILL_TYPES.ANGULAR_SHOT: color = 5; break;
 		case PILL_TYPES.LASER: color = 14; break;
 		case PILL_TYPES.SHIELD: color = 13; break;
-		default: return; // No dibujar si tipo inválido
+		default: color = 0; break;
 	}
 
 	// Dibujar arcos exteriores (equivalente a Arc en Pascal)
@@ -1083,6 +1093,87 @@ function clearPill(x, y) {
 	// Borrar pastilla dibujando rectángulo negro (equivalente a BAR en Pascal)
 	renderer.setFillStyle(0, 0); // Negro sólido
 	renderer.bar(x - 6, y - 7, x + 6, y + 7);
+}
+
+function cancelPillDrop() {
+	pillDrop.active = false;
+	pillDrop.x = -10;
+	pillDrop.y = -10;
+	pillDrop.type = 0;
+}
+
+function spawnPillDrop(x, y) {
+	if (pillDrop.active) return;
+	if (Math.floor(Math.random() * pill) !== 3) return;
+	pillDrop.active = true;
+	pillDrop.x = x;
+	pillDrop.y = y;
+	pillDrop.type = Math.floor(Math.random() * 8);
+}
+
+function applyPillEffect(player, playerNum, pillType) {
+	switch (pillType) {
+		case PILL_TYPES.POINTS_100:
+			player.score += 100;
+			break;
+		case PILL_TYPES.ENERGY_FULL:
+			player.energy = initialEnergy;
+			showEnergy(player.energy, playerNum);
+			break;
+		case PILL_TYPES.CONTROLS_CHANGE:
+			player.controlsChanged = true;
+			player.effectDuration = 300;
+			break;
+		case PILL_TYPES.SPEED_BOOST:
+			player.speedBoost = true;
+			player.effectDuration = 300;
+			break;
+		case PILL_TYPES.ANGULAR_SHOT:
+			player.angularShot = true;
+			break;
+		case PILL_TYPES.LASER:
+			player.laser = true;
+			break;
+		case PILL_TYPES.SHIELD:
+			player.shield = true;
+			player.shieldCounter = 0;
+			break;
+		default:
+			break;
+	}
+	player.score += 5;
+}
+
+function updatePlayerEffects(player) {
+	if (player.effectDuration > 0) {
+		player.effectDuration--;
+		if (player.effectDuration === 0) {
+			player.speedBoost = false;
+			player.controlsChanged = false;
+		}
+	}
+}
+
+function checkPillPickup(player, playerNum) {
+	if (!pillDrop.active) return false;
+	if (pillDrop.x > player.x - 20 && pillDrop.x < player.x + 20 &&
+		pillDrop.y > player.y - 25 && pillDrop.y < player.y + 10) {
+		applyPillEffect(player, playerNum, pillDrop.type);
+		cancelPillDrop();
+		return true;
+	}
+	return false;
+}
+
+function updatePillDrop() {
+	if (!pillDrop.active) return;
+	pillDrop.y++;
+	if (pillDrop.y > 480) {
+		cancelPillDrop();
+		return;
+	}
+	if (player1.lives > 0 && checkPillPickup(player1, 1)) return;
+	if (players === 'Dos' && player2.lives > 0) checkPillPickup(player2, 2);
 }
 
 function drawPlayer(x, y, player, showShield = true) {
@@ -1662,19 +1753,30 @@ function updatePlayerMovement() {
 	const moveSpeed = 5; // Píxeles por frame
 	const gameAreaWidth = 400;
 
+	updatePlayerEffects(player1);
+	updatePlayerEffects(player2);
+
+	const player1Speed = player1.speedBoost ? moveSpeed + 3 : moveSpeed;
+	const player2Speed = player2.speedBoost ? moveSpeed + 3 : moveSpeed;
+
+	const p1Up = player1.controlsChanged ? 'arrowdown' : 'arrowup';
+	const p1Down = player1.controlsChanged ? 'arrowup' : 'arrowdown';
+	const p1Left = player1.controlsChanged ? 'arrowright' : 'arrowleft';
+	const p1Right = player1.controlsChanged ? 'arrowleft' : 'arrowright';
+
 	// Player 1: Flechas
 	if (player1.lives > 0) {
-		if (keysPressed['arrowup']) {
-			player1.y = Math.max(20, player1.y - moveSpeed);
+		if (keysPressed[p1Up]) {
+			player1.y = Math.max(20, player1.y - player1Speed);
 		}
-		if (keysPressed['arrowdown']) {
-			player1.y = Math.min(canvas.height - 8, player1.y + moveSpeed);
+		if (keysPressed[p1Down]) {
+			player1.y = Math.min(canvas.height - 8, player1.y + player1Speed);
 		}
-		if (keysPressed['arrowleft']) {
-			player1.x = Math.max(11, player1.x - moveSpeed);
+		if (keysPressed[p1Left]) {
+			player1.x = Math.max(11, player1.x - player1Speed);
 		}
-		if (keysPressed['arrowright']) {
-			player1.x = Math.min(gameAreaWidth - 12, player1.x + moveSpeed);
+		if (keysPressed[p1Right]) {
+			player1.x = Math.min(gameAreaWidth - 12, player1.x + player1Speed);
 		}
 
 		// Disparo Player 1: Espacio (solo en el borde de pulsación)
@@ -1697,19 +1799,24 @@ function updatePlayerMovement() {
 		}
 	}
 
+	const p2Up = player2.controlsChanged ? 's' : 'w';
+	const p2Down = player2.controlsChanged ? 'w' : 's';
+	const p2Left = player2.controlsChanged ? 'd' : 'a';
+	const p2Right = player2.controlsChanged ? 'a' : 'd';
+
 	// Player 2: AWSD (solo en modo dos jugadores)
 	if (players === 'Dos' && player2.lives > 0) {
-		if (keysPressed['w']) {
-			player2.y = Math.max(20, player2.y - moveSpeed);
+		if (keysPressed[p2Up]) {
+			player2.y = Math.max(20, player2.y - player2Speed);
 		}
-		if (keysPressed['s']) {
-			player2.y = Math.min(canvas.height - 8, player2.y + moveSpeed);
+		if (keysPressed[p2Down]) {
+			player2.y = Math.min(canvas.height - 8, player2.y + player2Speed);
 		}
-		if (keysPressed['a']) {
-			player2.x = Math.max(11, player2.x - moveSpeed);
+		if (keysPressed[p2Left]) {
+			player2.x = Math.max(11, player2.x - player2Speed);
 		}
-		if (keysPressed['d']) {
-			player2.x = Math.min(gameAreaWidth - 12, player2.x + moveSpeed);
+		if (keysPressed[p2Right]) {
+			player2.x = Math.min(gameAreaWidth - 12, player2.x + player2Speed);
 		}
 
 		// Disparo Player 2: Tab (solo en modo dos jugadores)
@@ -1843,11 +1950,11 @@ function gameLoop() {
 			// Actualizar y dibujar disparos angulares y proyectiles
 			updateAngularShots();
 			updateShots();
+			updatePillDrop();
 			// Actualizar y dibujar enemigos
 			updateEnemies(currentScreen);
 			drawEnemies(currentScreen);
-
-			// Manejar jefe final
+			if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
 			handleFinalBoss();
 
 			// Verificar colisiones con disparos enemigos

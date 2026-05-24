@@ -3,6 +3,10 @@
         "/^node --check game\\.js$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^node -c game\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
