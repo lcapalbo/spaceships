@@ -6,6 +6,7 @@ const GAME_STATES = {
 	GAME_START: 'GAME_START',
 	GAME: 'GAME',
 	BOSS_EXPLOSION: 'BOSS_EXPLOSION',
+	STATS_SCREEN: 'STATS_SCREEN',
 	LIFE_LOST: 'LIFE_LOST',
 	GAME_OVER: 'GAME_OVER',
 	HIGHSCORES: 'HIGHSCORES',
@@ -93,6 +94,19 @@ let bossExplosionState = {
 	rx: 0,
 	timer: 0,
 	targetPlayer: 1
+};
+
+let statsState = {
+	active: false,
+	showBoth: false,
+	singlePlayerNumber: 1,
+	targetPlayer: 1,
+	player1Kills: 0,
+	player1Crashes: 0,
+	player1Efficiency: 0,
+	player2Kills: 0,
+	player2Crashes: 0,
+	player2Efficiency: 0
 };
 
 // Arrays de enemigos (máximo 5 por pantalla)
@@ -648,7 +662,9 @@ function handleFinalBoss() {
 				}
 
 				if (bossEnergy >= 360) {
-					// Jefe derrotado: activar animación de explosión
+					// Jefe derrotado: otorgar bonificación y activar animación de explosión
+					player1.score += 50;
+					player1.enemiesKilled++;
 					bossExplosionState.active = true;
 					bossExplosionState.x = bossNX;
 					bossExplosionState.y = bossNY;
@@ -695,8 +711,9 @@ function handleFinalBoss() {
 					}
 
 					if (bossEnergy >= 360) {
-						// Jefe derrotado: activar animación de explosión
-						bossExplosionState.active = true;
+					// Jefe derrotado: otorgar bonificación y activar animación de explosión
+					player2.score += 50;
+					player2.enemiesKilled++;
 						bossExplosionState.x = bossNX;
 						bossExplosionState.y = bossNY;
 						bossExplosionState.suma = 1;
@@ -722,14 +739,6 @@ function handleFinalBoss() {
 }
 
 function nextScreen(playerNum) {
-	// Credit the player
-	if (playerNum === 1) {
-		player1.score += 50;
-		player1.enemiesKilled++;
-	} else if (playerNum === 2) {
-		player2.score += 50;
-		player2.enemiesKilled++;
-	}
 	// Advance screen (wrap to 1..3)
 	currentScreen = currentScreen === 3 ? 1 : currentScreen + 1;
 	// Reinitialize enemies for the next screen and reset boss
@@ -918,8 +927,8 @@ function checkPlayerEnemyCollisions() {
 function finishBossExplosion() {
 	bossExplosionState.active = false;
 	bossExplosionState.timer = 0;
-	nextScreen(bossExplosionState.targetPlayer);
-	gameState = GAME_STATES.GAME;
+	prepareStatsScreen(bossExplosionState.targetPlayer);
+	gameState = GAME_STATES.STATS_SCREEN;
 	keysPressed = {};
 	prevKeysPressed = {};
 }
@@ -954,6 +963,73 @@ function renderBossExplosion() {
 	renderer.circle(x + rx + 6, y + 5, Math.floor(suma / 3));
 	renderer.setColor(14);
 	renderer.circle(x + rx - (suma + 5), y, Math.floor((suma * 2) / 3));
+}
+
+function calculateEfficiency(kills, crashes) {
+	const total = kills + crashes;
+	if (total === 0) return 0;
+	const efficiency = ((kills - crashes) / total) * 100;
+	return Math.max(0, Math.round(efficiency));
+}
+
+function prepareStatsScreen(targetPlayer) {
+	statsState.active = true;
+	statsState.targetPlayer = targetPlayer;
+	statsState.showBoth = players === 'Dos' && player1.lives > 0 && player2.lives > 0;
+	statsState.singlePlayerNumber = statsState.showBoth ? null : (player1.lives > 0 ? 1 : 2);
+	statsState.player1Kills = player1.enemiesKilled;
+	statsState.player1Crashes = player1.enemiesCrashed;
+	statsState.player1Efficiency = calculateEfficiency(player1.enemiesKilled, player1.enemiesCrashed);
+	statsState.player2Kills = player2.enemiesKilled;
+	statsState.player2Crashes = player2.enemiesCrashed;
+	statsState.player2Efficiency = calculateEfficiency(player2.enemiesKilled, player2.enemiesCrashed);
+}
+
+function drawStatsScreen() {
+	const isTwoPlayerBox = statsState.showBoth;
+	const top = isTwoPlayerBox ? 10 : 50;
+	const bottom = isTwoPlayerBox ? 470 : 350;
+
+	renderer.setFillStyle(1, 4);
+	renderer.bar3d(50, top, 350, bottom, 4, true);
+	renderer.setColor(12);
+	renderer.rectangle(50, top, 350, bottom);
+
+	if (!isTwoPlayerBox) {
+		renderer.setColor(11);
+		renderer.setTextStyle(3, 0, 5);
+		renderer.outTextXY(200, 60, 'x');
+		renderer.outTextXY(230, 60, statsState.singlePlayerNumber === 2 ? statsState.player2Kills.toString() : statsState.player1Kills.toString());
+		renderer.setTextStyle(3, 0, 3);
+		const crashText = (statsState.singlePlayerNumber === 2 ? statsState.player2Crashes : statsState.player1Crashes) + ' Choques';
+		renderer.outTextXY(80, 120, crashText);
+		renderer.outTextXY(75, 190, ': EFICIENCIA :');
+		renderer.setTextStyle(10, 0, 4);
+		const efficiency = (statsState.singlePlayerNumber === 2 ? statsState.player2Efficiency : statsState.player1Efficiency) + '%';
+		renderer.outTextXY(160, 230, efficiency);
+		renderer.setTextStyle(11, 0, 1);
+		renderer.outTextXY(80, 335, 'Presione ENTER Para Continuar');
+		drawEnemy(160, 90, currentScreen);
+	} else {
+		renderer.setColor(11);
+		renderer.setTextStyle(3, 0, 5);
+		renderer.outTextXY(200, 20, 'x');
+		renderer.outTextXY(200, 220, 'x');
+		renderer.outTextXY(230, 20, statsState.player1Kills.toString());
+		renderer.outTextXY(230, 220, statsState.player2Kills.toString());
+		renderer.setTextStyle(3, 0, 3);
+		renderer.outTextXY(80, 70, statsState.player1Crashes + ' Choques');
+		renderer.outTextXY(80, 270, statsState.player2Crashes + ' Choques');
+		renderer.outTextXY(75, 120, ': EFICIENCIA :');
+		renderer.outTextXY(75, 320, ': EFICIENCIA :');
+		renderer.setTextStyle(10, 0, 4);
+		renderer.outTextXY(160, 160, statsState.player1Efficiency + '%');
+		renderer.outTextXY(160, 360, statsState.player2Efficiency + '%');
+		renderer.setTextStyle(11, 0, 1);
+		renderer.outTextXY(80, 455, 'Presione ENTER Para Continuar');
+		drawEnemy(160, 40, currentScreen);
+		drawEnemy(160, 240, currentScreen);
+	}
 }
 
 // Funciones de dibujo de objetos del juego
@@ -1540,6 +1616,14 @@ document.addEventListener('keydown', (event) => {
 			keysPressed[event.key.toLowerCase()] = true;
 			keysPressed[event.key.toUpperCase()] = true;
 		}
+	} else if (gameState === GAME_STATES.STATS_SCREEN) {
+		if (event.key === 'Enter') {
+			statsState.active = false;
+			nextScreen(statsState.targetPlayer);
+			gameState = GAME_STATES.GAME;
+			keysPressed = {};
+			prevKeysPressed = {};
+		}
 	} else if (gameState === GAME_STATES.GAME_OVER) {
 		gameState = GAME_STATES.MENU;
 		menuInitialized = false;
@@ -1770,6 +1854,9 @@ function gameLoop() {
 			drawEnemies(currentScreen);
 			updateBossExplosion(16);
 			renderBossExplosion();
+			break;
+		case GAME_STATES.STATS_SCREEN:
+			drawStatsScreen();
 			break;
 		case GAME_STATES.CONFIRM_EXIT:
 			// Mostrar pantalla congelada con mensaje de confirmación
