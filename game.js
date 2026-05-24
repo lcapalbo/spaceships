@@ -5,6 +5,7 @@ const GAME_STATES = {
 	MENU: 'MENU',
 	GAME_START: 'GAME_START',
 	GAME: 'GAME',
+	BOSS_EXPLOSION: 'BOSS_EXPLOSION',
 	LIFE_LOST: 'LIFE_LOST',
 	GAME_OVER: 'GAME_OVER',
 	HIGHSCORES: 'HIGHSCORES',
@@ -83,6 +84,16 @@ let bossEnergy = 0; // Energía del jefe
 let bossNX = 200; // Posición X del jefe
 let bossNY = -110; // Posición Y del jefe
 let bossControl = false; // Para controlar movimiento oscilante
+let bossExplosionState = {
+	active: false,
+	x: 0,
+	y: 0,
+	suma: 1,
+	repeats: 0,
+	rx: 0,
+	timer: 0,
+	targetPlayer: 1
+};
 
 // Arrays de enemigos (máximo 5 por pantalla)
 const enemies = [
@@ -637,9 +648,16 @@ function handleFinalBoss() {
 				}
 
 				if (bossEnergy >= 360) {
-					// Jefe derrotado: avanzar de pantalla
-					totalKilled++;
-					nextScreen(1);
+					// Jefe derrotado: activar animación de explosión
+					bossExplosionState.active = true;
+					bossExplosionState.x = bossNX;
+					bossExplosionState.y = bossNY;
+					bossExplosionState.suma = 1;
+					bossExplosionState.repeats = 0;
+					bossExplosionState.rx = 0;
+					bossExplosionState.timer = 0;
+					bossExplosionState.targetPlayer = 1;
+					gameState = GAME_STATES.BOSS_EXPLOSION;
 				}
 
 				if (!player1.laser) {
@@ -677,9 +695,16 @@ function handleFinalBoss() {
 					}
 
 					if (bossEnergy >= 360) {
-						// Jefe derrotado: avanzar de pantalla
-						totalKilled++;
-						nextScreen(2);
+						// Jefe derrotado: activar animación de explosión
+						bossExplosionState.active = true;
+						bossExplosionState.x = bossNX;
+						bossExplosionState.y = bossNY;
+						bossExplosionState.suma = 1;
+						bossExplosionState.repeats = 0;
+						bossExplosionState.rx = 0;
+						bossExplosionState.timer = 0;
+						bossExplosionState.targetPlayer = 2;
+						gameState = GAME_STATES.BOSS_EXPLOSION;
 					}
 
 					if (!player2.laser) {
@@ -687,9 +712,9 @@ function handleFinalBoss() {
 						player2.bulletX[d] = -10;
 						player2.bulletY[d] = -10;
 					}
-				}
 			}
 		}
+	}
 
 		// Dibujar jefe
 		drawEnemyShip(bossNX, bossNY, currentScreen);
@@ -888,6 +913,47 @@ function checkPlayerEnemyCollisions() {
 			}
 		}
 	}
+}
+
+function finishBossExplosion() {
+	bossExplosionState.active = false;
+	bossExplosionState.timer = 0;
+	nextScreen(bossExplosionState.targetPlayer);
+	gameState = GAME_STATES.GAME;
+	keysPressed = {};
+	prevKeysPressed = {};
+}
+
+function updateBossExplosion(deltaTime) {
+	if (!bossExplosionState.active) return;
+	bossExplosionState.timer += deltaTime;
+	if (bossExplosionState.timer < 30) return;
+	bossExplosionState.timer -= 30;
+	bossExplosionState.rx = Math.random() * 60;
+	bossExplosionState.suma++;
+	if (bossExplosionState.suma > 30) {
+		bossExplosionState.suma = 1;
+		bossExplosionState.repeats++;
+	}
+	if (bossExplosionState.repeats >= 3) {
+		finishBossExplosion();
+	}
+}
+
+function renderBossExplosion() {
+	const x = bossExplosionState.x;
+	const y = bossExplosionState.y;
+	const suma = bossExplosionState.suma;
+	const rx = bossExplosionState.rx;
+
+	renderer.setColor(12);
+	renderer.circle(x + rx, y, 5 + suma);
+	renderer.setColor(4);
+	renderer.circle(x + rx - 3, y + 3, 30 - suma);
+	renderer.setColor(6);
+	renderer.circle(x + rx + 6, y + 5, Math.floor(suma / 3));
+	renderer.setColor(14);
+	renderer.circle(x + rx - (suma + 5), y, Math.floor((suma * 2) / 3));
 }
 
 // Funciones de dibujo de objetos del juego
@@ -1692,6 +1758,18 @@ function gameLoop() {
 			// Verificar colisiones con disparos del jugador
 			checkPlayerShotCollisions(1);
 			if (players === 'Dos') checkPlayerShotCollisions(2);
+			break;
+		case GAME_STATES.BOSS_EXPLOSION:
+			writeScore(player1.score, 1);
+			if (players === 'Dos') writeScore(player2.score, 2);
+
+			renderer.setFillStyle(0, 0);
+			renderer.bar(0, 0, 400, canvas.height);
+			if (player1.lives > 0) drawPlayer(player1.x, player1.y, 1);
+			if (players === 'Dos' && player2.lives > 0) drawPlayer(player2.x, player2.y, 2);
+			drawEnemies(currentScreen);
+			updateBossExplosion(16);
+			renderBossExplosion();
 			break;
 		case GAME_STATES.CONFIRM_EXIT:
 			// Mostrar pantalla congelada con mensaje de confirmación
