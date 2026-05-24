@@ -77,7 +77,7 @@ const player2 = {
 };
 
 // Estado global de enemigos
-let currentScreen = 3; // Pantalla actual (1, 2, 3)
+let currentScreen = 1; // Pantalla actual (1, 2, 3)
 let totalEnemies = 2; // Cantidad inicial de enemigos
 let finalBossActive = false; // Si el jefe final está activo
 let totalKilled = 0; // Total de enemigos matados para triggear jefe
@@ -220,7 +220,7 @@ function drawMenuArrow(x, y, color) {
 }
 
 function setupGameScreen() {
-	currentScreen = 3;
+	currentScreen = 1;
 
 	// Inicializar valores según dificultad
 	let difficultyLevel = 1;
@@ -389,8 +389,8 @@ function writeScore(score, player) {
 function initEnemies(screenNumber) {
 	totalEnemies = 2; // Iniciar con 2 enemigos
 	for (let i = 0; i < totalEnemies; i++) {
-		enemies[i].x = Math.random() * 380;
-		enemies[i].y = (Math.random() * 90) * (-1);
+		enemies[i].x = Math.floor(Math.random() * 380);
+		enemies[i].y = -Math.floor(Math.random() * 90);
 		enemies[i].code = screenNumber; // Default enemy type
 		enemies[i].firing = false;
 		enemies[i].shotX = -10;
@@ -415,15 +415,15 @@ function updateEnemies(screenNumber) {
 				// Acercarse horizontalmente hacia el jugador
 				if (Math.random() < 0.5) {
 					if (enemies[i].x > player1.x) {
-						enemies[i].x -= Math.random() * 3;
+						enemies[i].x -= Math.floor(Math.random() * 3) + 1;
 					} else {
-						enemies[i].x += Math.random() * 3;
+						enemies[i].x += Math.floor(Math.random() * 3) + 1;
 					}
 				} else {
 					if (enemies[i].x < player1.x) {
-						enemies[i].x -= Math.random() * 3;
+						enemies[i].x -= Math.floor(Math.random() * 3) + 1;
 					} else {
-						enemies[i].x += Math.random() * 3;
+						enemies[i].x += Math.floor(Math.random() * 3) + 1;
 					}
 				}
 				break;
@@ -439,7 +439,6 @@ function updateEnemies(screenNumber) {
 				}
 				break;
 			case 3:
-				console.log('Enemy ' + i + ' at (' + enemies[i].x.toFixed(2) + ', ' + enemies[i].y.toFixed(2) + ')');
 				// Movimiento vertical especial
 				if (enemies[i].y % 18 === 0) {
 					enemies[i].y += 19;
@@ -462,7 +461,7 @@ function updateEnemies(screenNumber) {
 		if (enemies[i].y > 480) {
 			totalKilled++; // Contar como escape
 			enemies[i].y = -50;
-			enemies[i].x = Math.random() * 440;
+			enemies[i].x = Math.floor(Math.random() * 440);
 		}
 
 		// Generar disparo del enemigo
@@ -568,7 +567,7 @@ function checkPlayerShotCollisions(playerNum) {
 				}
 				// Reiniciar enemigo
 				enemies[e].y = -80;
-				enemies[e].x = Math.random() * 380;
+				enemies[e].x = Math.floor(Math.random() * 380);
 				totalKilled++;
 				player.score += 5;
 				player.enemiesKilled++;
@@ -585,7 +584,7 @@ function checkPlayerShotCollisions(playerNum) {
 						player1.angularShotXRight > enemies[e].x - missileHitboxX &&
 						player1.angularShotXRight < enemies[e].x + missileHitboxX) {
 						enemies[e].y = -80;
-						enemies[e].x = Math.random() * 380;
+						enemies[e].x = Math.floor(Math.random() * 380);
 						totalKilled++;
 						player1.score += 5;
 						player1.enemiesKilled++;
@@ -598,7 +597,7 @@ function checkPlayerShotCollisions(playerNum) {
 						player1.angularShotXLeft > enemies[e].x - missileHitboxX &&
 						player1.angularShotXLeft < enemies[e].x + missileHitboxX) {
 						enemies[e].y = -80;
-						enemies[e].x = Math.random() * 380;
+						enemies[e].x = Math.floor(Math.random() * 380);
 						totalKilled++;
 						player1.score += 5;
 						player1.enemiesKilled++;
@@ -622,9 +621,9 @@ function handleFinalBoss() {
 		switch (currentScreen) {
 			case 1:
 				if (Math.random() < 0.5 && bossNX < 320) {
-					bossNX += Math.random() * 5;
+					bossNX += Math.floor(Math.random() * 5) + 1;
 				} else if (bossNX > 80) {
-					bossNX -= Math.random() * 5;
+					bossNX -= Math.floor(Math.random() * 5) + 1;
 				}
 				break;
 			case 2:
@@ -642,9 +641,9 @@ function handleFinalBoss() {
 		}
 
 		if (bossNY < 100) {
-			bossNY += Math.random() * 5;
+			bossNY += Math.floor(Math.random() * 5) + 1;
 		} else {
-			bossNY -= Math.random() * 5;
+			bossNY -= Math.floor(Math.random() * 5) + 1;
 		}
 
 		// Verificar colisiones con disparos del jugador 1
@@ -921,7 +920,7 @@ function checkPlayerEnemyCollisions() {
 			player.enemiesCrashed++;
 			totalKilled++;
 			enemy.y = -80;
-			enemy.x = Math.random() * 380;
+			enemy.x = Math.floor(Math.random() * 380);
 			losePlayerLife(player, playerNum);
 			break;
 		}
