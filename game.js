@@ -77,7 +77,7 @@ const player2 = {
 };
 
 // Estado global de enemigos
-let currentScreen = 1; // Pantalla actual (1, 2, 3)
+let currentScreen = 3; // Pantalla actual (1, 2, 3)
 let totalEnemies = 2; // Cantidad inicial de enemigos
 let finalBossActive = false; // Si el jefe final está activo
 let totalKilled = 0; // Total de enemigos matados para triggear jefe
@@ -111,7 +111,7 @@ let statsState = {
 
 // Arrays de enemigos (máximo 5 por pantalla)
 const enemies = [
-	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
+	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false },
 	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
 	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
 	{ x: 0, y: -20, codigo: 1, firing: false, shotX: -10, shotY: -10, control: false },
@@ -220,7 +220,7 @@ function drawMenuArrow(x, y, color) {
 }
 
 function setupGameScreen() {
-	currentScreen = 1;
+	currentScreen = 3;
 
 	// Inicializar valores según dificultad
 	let difficultyLevel = 1;
@@ -391,7 +391,7 @@ function initEnemies(screenNumber) {
 	for (let i = 0; i < totalEnemies; i++) {
 		enemies[i].x = Math.random() * 380;
 		enemies[i].y = (Math.random() * 90) * (-1);
-		enemies[i].codigo = 1; // Default enemy type
+		enemies[i].code = screenNumber; // Default enemy type
 		enemies[i].firing = false;
 		enemies[i].shotX = -10;
 		enemies[i].shotY = -10;
@@ -439,6 +439,7 @@ function updateEnemies(screenNumber) {
 				}
 				break;
 			case 3:
+				console.log('Enemy ' + i + ' at (' + enemies[i].x.toFixed(2) + ', ' + enemies[i].y.toFixed(2) + ')');
 				// Movimiento vertical especial
 				if (enemies[i].y % 18 === 0) {
 					enemies[i].y += 19;
@@ -529,7 +530,16 @@ function updateEnemyShot(enemyIndex, screenNumber) {
 function drawEnemies(screenNumber) {
 	for (let i = 0; i < totalEnemies; i++) {
 		if (!finalBossActive) {
-			drawEnemy(enemies[i].x, enemies[i].y, screenNumber);
+			// Si no es la pantalla 3, dibuja según el código de enemigo asignado.
+			// En la pantalla 3 el Pascal original alterna entre las variantes 3 y 4
+			// según la fila (F[e] MOD 18 > 12): cuando true usa la variante 4 (K),
+			// si no usa la variante 3 (L).
+			if (screenNumber !== 3) {
+				drawEnemy(enemies[i].x, enemies[i].y, enemies[i].code);
+			} else {
+				const code = (enemies[i].y % 18 > 12) ? 4 : 3;
+				drawEnemy(enemies[i].x, enemies[i].y, code);
+			}
 		}
 	}
 }
@@ -738,7 +748,7 @@ function handleFinalBoss() {
 		}
 
 		// Dibujar jefe
-		drawEnemyShip(bossNX, bossNY, currentScreen);
+		drawEnemyBossShip(bossNX, bossNY, currentScreen);
 	}
 }
 
@@ -1218,7 +1228,7 @@ function drawEnemy(c, f, enemyCode) {
 	}
 }
 
-function drawEnemyShip(nx, ny, screenNumber) {
+function drawEnemyBossShip(nx, ny, screenNumber) {
 	let cod = 0;
 	if (screenNumber === 3) {
 		if (nx % 50 > 25) {
@@ -1509,7 +1519,6 @@ function updateAngularShots() {
 		}
 	}
 }
-
 
 
 // Estado de controles del juego
