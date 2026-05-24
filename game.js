@@ -44,7 +44,7 @@ let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 const player1 = {
 	x: 200, y: 443,
 	score: 0, lives: 4, energy: 3,
-	bullets: 0, 
+	bullets: 0,
 	shots: [false, false, false, false],
 	bulletX: [-10, -10, -10, -10],
 	bulletY: [-10, -10, -10, -10],
@@ -61,7 +61,7 @@ const player1 = {
 const player2 = {
 	x: 200, y: 443,
 	score: 0, lives: 4, energy: 3,
-	bullets: 0, 
+	bullets: 0,
 	shots: [false, false, false, false],
 	bulletX: [-10, -10, -10, -10],
 	bulletY: [-10, -10, -10, -10],
@@ -119,12 +119,12 @@ const enemies = [
 ];
 
 function write(text, x, y) {
-    renderer.setColor(9);
-    renderer.outTextXY(x, y, text);
-		renderer.setColor(4);
-    renderer.outTextXY(x+1, y, text);
-    renderer.setColor(12);
-    renderer.outTextXY(x - 1, y - 1, text);
+	renderer.setColor(9);
+	renderer.outTextXY(x, y, text);
+	renderer.setColor(4);
+	renderer.outTextXY(x + 1, y, text);
+	renderer.setColor(12);
+	renderer.outTextXY(x - 1, y - 1, text);
 }
 
 function drawMenu() {
@@ -156,7 +156,7 @@ function drawMenu() {
 		// Subtítulo
 		renderer.setTextStyle(0, 0, 1);
 		renderer.setColor(14);
-		renderer.outTextXY(canvas.width-120, 10, 'Edición Especial');
+		renderer.outTextXY(canvas.width - 120, 10, 'Edición Especial');
 
 		// Créditos
 		renderer.setTextStyle(2, 0, 1.5);
@@ -178,7 +178,7 @@ function drawMenu() {
 	// Actualizar opciones si cambiaron
 	renderer.setFillStyle(0, 1);
 	renderer.bar(200, 230, 500, 250 + menuOptions.length * 30);
-	
+
 	// Dibujar opciones actuales
 	renderer.setTextStyle(0, 0, 2);
 	for (let i = 0; i < menuOptions.length; i++) {
@@ -220,6 +220,8 @@ function drawMenuArrow(x, y, color) {
 }
 
 function setupGameScreen() {
+	currentScreen = 1;
+
 	// Inicializar valores según dificultad
 	let difficultyLevel = 1;
 	if (difficulty === 'Media') difficultyLevel = 2;
@@ -450,7 +452,7 @@ function updateEnemies(screenNumber) {
 		if (enemies[i].x < 30) enemies[i].x = 30;
 		if (enemies[i].x > 380) enemies[i].x = 380;
 
-		// Movimiento vertical (excepto NPANT=3)
+		// Movimiento vertical (excepto screenNumber=3)
 		if (screenNumber !== 3) {
 			enemies[i].y++;
 		}
@@ -598,7 +600,7 @@ function checkPlayerShotCollisions(playerNum) {
 }
 
 function handleFinalBoss() {
-	if (totalKilled % 50 === 0 && totalKilled !== 0 && !finalBossActive) {
+	if (totalKilled % 5 === 0 && totalKilled !== 0 && !finalBossActive) {
 		finalBossActive = true;
 		bossEnergy = 0;
 		bossNX = 200;
@@ -662,6 +664,7 @@ function handleFinalBoss() {
 				}
 
 				if (bossEnergy >= 360) {
+					totalKilled++;
 					// Jefe derrotado: otorgar bonificación y activar animación de explosión
 					player1.score += 50;
 					player1.enemiesKilled++;
@@ -711,9 +714,10 @@ function handleFinalBoss() {
 					}
 
 					if (bossEnergy >= 360) {
-					// Jefe derrotado: otorgar bonificación y activar animación de explosión
-					player2.score += 50;
-					player2.enemiesKilled++;
+						totalKilled++;
+						// Jefe derrotado: otorgar bonificación y activar animación de explosión
+						player2.score += 50;
+						player2.enemiesKilled++;
 						bossExplosionState.x = bossNX;
 						bossExplosionState.y = bossNY;
 						bossExplosionState.suma = 1;
@@ -729,9 +733,9 @@ function handleFinalBoss() {
 						player2.bulletX[d] = -10;
 						player2.bulletY[d] = -10;
 					}
+				}
 			}
 		}
-	}
 
 		// Dibujar jefe
 		drawEnemyShip(bossNX, bossNY, currentScreen);
@@ -757,9 +761,9 @@ function showEnergy(energy, player) {
 		if (i <= energy) {
 			// Energía disponible: dos pieSlice
 			renderer.setFillStyle(1, 2);
-      renderer.pieSlice(x1, baseY, 20, 340, 8);
-      renderer.setColor(14);
-      renderer.setFillStyle(0);
+			renderer.pieSlice(x1, baseY, 20, 340, 8);
+			renderer.setColor(14);
+			renderer.setFillStyle(0);
 			renderer.pieSlice(x1, baseY, 20, 340, 8);
 			renderer.setFillStyle(1, 12);
 			renderer.pieSlice(x2, baseY, 110, 250, 5);
@@ -966,9 +970,7 @@ function renderBossExplosion() {
 }
 
 function calculateEfficiency(kills, crashes) {
-	const total = kills + crashes;
-	if (total === 0) return 0;
-	const efficiency = ((kills - crashes) / total) * 100;
+	const efficiency = ((kills - crashes) / totalKilled) * 100;
 	return Math.max(0, Math.round(efficiency));
 }
 
@@ -1166,20 +1168,20 @@ function drawEnemy(c, f, enemyCode) {
 		renderer.line(c - 15, f + 5, c - 5, f + 12);
 		renderer.line(c + 15, f + 5, c + 5, f + 12);
 		renderer.line(c - 5, f + 11, c + 5, f + 11);
-		
+
 		renderer.setColor(3);
 		renderer.ellipse(c, f + 15, 160, 15, 5, 8);
 		renderer.ellipse(c, f + 15, 145, 25, 3, 6);
-		
+
 		renderer.setColor(5);
 		renderer.line(c - 12, f + 8, c - 15, f + 18);
 		renderer.line(c + 12, f + 8, c + 15, f + 18);
 		renderer.line(c - 5, f + 10, c - 15, f + 18);
 		renderer.line(c + 5, f + 10, c + 15, f + 18);
-		
+
 		renderer.setFillStyle(9, 4);
 		renderer.floodFill(c, f, 12);
-		
+
 		renderer.setColor(3);
 		renderer.circle(c, f + 15, 3);
 		renderer.circle(c, f + 15, 2);
@@ -1578,7 +1580,7 @@ document.addEventListener('keydown', (event) => {
 		// Rastrear teclas presionadas
 		keysPressed[event.key.toLowerCase()] = true;
 		keysPressed[event.key.toUpperCase()] = true;
-		
+
 		// Manejo de Escape para salir
 		if (event.key === 'Escape') {
 			gameState = GAME_STATES.CONFIRM_EXIT;
@@ -1726,7 +1728,7 @@ function drawConfirmExitScreen() {
 	renderer.bar(60, 200, 340, 230);
 	renderer.setColor(12);
 	renderer.rectangle(60, 200, 340, 230);
-	
+
 	// Mostrar mensaje de confirmación
 	renderer.setTextStyle(2, 0, 1);
 	renderer.setColor(14);
@@ -1851,7 +1853,6 @@ function gameLoop() {
 			renderer.bar(0, 0, 400, canvas.height);
 			if (player1.lives > 0) drawPlayer(player1.x, player1.y, 1);
 			if (players === 'Dos' && player2.lives > 0) drawPlayer(player2.x, player2.y, 2);
-			drawEnemies(currentScreen);
 			updateBossExplosion(16);
 			renderBossExplosion();
 			break;
