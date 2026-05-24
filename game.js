@@ -231,26 +231,8 @@ function setupGameScreen() {
 	player2.enemiesCrashed = 0;
 
 	// Reinicializar efectos de pastillas
-	player1.shield = false;
-	player1.shieldCounter = 0;
-	player1.laser = false;
-	player1.angularShot = false;
-	player1.angularShotY = -10;
-	player1.angularShotXLeft = -10;
-	player1.angularShotXRight = -10;
-	player1.speedBoost = false;
-	player1.effectDuration = 0;
-	player1.controlsChanged = false;
-	player2.shield = false;
-	player2.shieldCounter = 0;
-	player2.laser = false;
-	player2.angularShot = false;
-	player2.angularShotY = -10;
-	player2.angularShotXLeft = -10;
-	player2.angularShotXRight = -10;
-	player2.speedBoost = false;
-	player2.effectDuration = 0;
-	player2.controlsChanged = false;
+	resetPlayerEffects(player1);
+	resetPlayerEffects(player2);
 
 	// Inicializar posiciones según cantidad de jugadores
 	if (players === 'Uno') {
@@ -263,14 +245,8 @@ function setupGameScreen() {
 		player2.y = 443;
 	}
 	// Inicializar estado de balas
-	player1.bullets = 0;
-	player1.shots = [false, false, false, false];
-	player1.bulletX = [-10, -10, -10, -10];
-	player1.bulletY = [-10, -10, -10, -10];
-	player2.bullets = 0;
-	player2.shots = [false, false, false, false];
-	player2.bulletX = [-10, -10, -10, -10];
-	player2.bulletY = [-10, -10, -10, -10];
+	resetPlayerShots(player1);
+	resetPlayerShots(player2);
 
 	// Area de juego izquierdo
 	renderer.setFillStyle(0, 0); // fondo sólido negro
@@ -345,11 +321,11 @@ function setupGameScreen() {
 
 	// Dibujar vidas iniciales
 	for (let i = 1; i <= player1.lives; i++) {
-		drawPlayer(650 - (30 * i), 90, 1);
+		drawPlayer(650 - (30 * i), 90, 1, false);
 	}
 	if (players === 'Dos') {
 		for (let i = 1; i <= player2.lives; i++) {
-			drawPlayer(650 - (30 * i), 400, 2);
+			drawPlayer(650 - (30 * i), 400, 2, false);
 		}
 	}
 
@@ -779,6 +755,9 @@ function resetPlayerEffects(player) {
 	player.speedBoost = false;
 	player.controlsChanged = false;
 	player.effectDuration = 0;
+}
+
+function resetPlayerShots(player) {
 	player.shots = [false, false, false, false];
 	player.bulletX = [-10, -10, -10, -10];
 	player.bulletY = [-10, -10, -10, -10];
@@ -902,7 +881,7 @@ function clearPill(x, y) {
 	renderer.bar(x - 6, y - 7, x + 6, y + 7);
 }
 
-function drawPlayer(x, y, player) {
+function drawPlayer(x, y, player, showShield = true) {
 	if (player === 1) {
 		renderer.setColor(12);
 	} else {
@@ -938,6 +917,12 @@ function drawPlayer(x, y, player) {
 
 	renderer.arc(x, y, 0, 180, 8);
 	renderer.arc(x, y, 0, 180, 6);
+
+	const hasShield = showShield && (player === 1 ? player1.shield : player2.shield);
+	if (hasShield) {
+		renderer.setColor(10);
+		renderer.ellipse(x, y - 5, 0, 360, 11, 15);
+	}
 
 	if (player === 1) {
 		renderer.setColor(11);
@@ -1414,8 +1399,8 @@ document.addEventListener('keydown', (event) => {
 			gameState = GAME_STATES.HELP;
 		}
 	} else if (gameState === GAME_STATES.CONFIRM_EXIT) {
-		// Solo procesar teclado después de 1 segundo para evitar cancelación accidental
-		if (Date.now() - confirmExitStartTime >= 1000) {
+		// Solo procesar teclado después de medio segundo para evitar cancelación accidental
+		if (Date.now() - confirmExitStartTime >= 500) {
 			if (event.key === 'Escape') {
 				// Confirmar salida al menú
 				gameState = GAME_STATES.MENU;
