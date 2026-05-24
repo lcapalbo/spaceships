@@ -844,6 +844,52 @@ function checkEnemyShotCollisions() {
 	}
 }
 
+function getCrashPoints(isBoss) {
+	return isBoss ? 10 : 1;
+}
+
+function checkPlayerEnemyCollisions() {
+	const playersToCheck = [
+		{ player: player1, num: 1 }
+	];
+	if (players === 'Dos') {
+		playersToCheck.push({ player: player2, num: 2 });
+	}
+
+	for (const entry of playersToCheck) {
+		const player = entry.player;
+		const playerNum = entry.num;
+		if (player.lives <= 0) continue;
+
+		for (let i = 0; i < totalEnemies; i++) {
+			const enemy = enemies[i];
+			if (enemy.y < -20 || enemy.y > 480) continue;
+
+			const enemyHit = player.x > enemy.x - 15 && player.x < enemy.x + 15 &&
+				player.y > enemy.y - 5 && player.y < enemy.y + 25;
+			if (!enemyHit) continue;
+
+			player.score += getCrashPoints(false);
+			player.enemiesCrashed++;
+			totalKilled++;
+			enemy.y = -80;
+			enemy.x = Math.random() * 380;
+			losePlayerLife(player, playerNum);
+			break;
+		}
+
+		if (finalBossActive && bossNY < 480) {
+			const bossHit = player.x > bossNX - 60 && player.x < bossNX + 60 &&
+				player.y > bossNY - 10 && player.y < bossNY + 90;
+			if (bossHit) {
+				player.score += getCrashPoints(true);
+				player.enemiesCrashed++;
+				losePlayerLife(player, playerNum);
+			}
+		}
+	}
+}
+
 // Funciones de dibujo de objetos del juego
 function drawPill(x, y, pillType) {
 	// Mapear tipos de pastillas a colores BGI (según código Pascal)
@@ -1641,6 +1687,7 @@ function gameLoop() {
 
 			// Verificar colisiones con disparos enemigos
 			checkEnemyShotCollisions();
+			checkPlayerEnemyCollisions();
 
 			// Verificar colisiones con disparos del jugador
 			checkPlayerShotCollisions(1);
