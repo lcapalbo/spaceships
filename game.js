@@ -267,6 +267,8 @@ function setupGameScreen() {
 	// Reinicializar efectos de pastillas
 	resetPlayerEffects(player1);
 	resetPlayerEffects(player2);
+	// Limpiar cualquier pastilla visible antes de empezar un nuevo juego
+	cancelPillDrop();
 
 	// Inicializar posiciones según cantidad de jugadores
 	if (players === 'Uno') {
