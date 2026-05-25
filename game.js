@@ -108,6 +108,13 @@ let statsState = {
 	player2Crashes: 0,
 	player2Efficiency: 0
 };
+// Estado para entrada y visualización de puntajes
+statsState.highscoreChecked = false; // Si ya se verificó si hay highscores al terminar
+statsState.highscoreEntryActive = false; // Si está pidiendo nombre para highscore
+statsState.pendingHighscores = []; // {player, score} pendientes de ingresar
+statsState.currentHighIndex = 0; // índice en pendingHighscores
+statsState.nameBuffer = ''; // buffer para entrada de nombre
+statsState.maxHighscores = 5; // top N
 
 let pillDrop = {
 	active: false,
@@ -133,6 +140,83 @@ function write(text, x, y) {
 	renderer.setColor(12);
 	renderer.outTextXY(x - 1, y - 1, text);
 }
+
+// --- Highscores (almacenamiento local) ---
+function loadHighScores() {
+	try {
+		const raw = localStorage.getItem('spaceships_highscores');
+		if (!raw) return [];
+		const list = JSON.parse(raw);
+		if (!Array.isArray(list)) return [];
+		return list;
+	} catch (e) {
+		return [];
+	}
+}
+
+function saveHighScores(list) {
+	try {
+		localStorage.setItem('spaceships_highscores', JSON.stringify(list));
+	} catch (e) {
+		// ignore
+	}
+}
+
+function getRankPosition(score) {
+	const list = loadHighScores();
+	// ordenar descendente
+	list.sort((a, b) => b.score - a.score);
+	for (let i = 0; i < list.length; i++) {
+		// Pascal used strict greater for insertion
+		if (score > list[i].score) return i;
+	}
+	if (list.length < statsState.maxHighscores) return list.length;
+	return -1;
+}
+
+function addHighScore(name, score, player, efficiency) {
+	const list = loadHighScores();
+	list.push({ name: name.substring(0, 8), score: score, player: player, efficiency: efficiency });
+	list.sort((a, b) => b.score - a.score);
+	const trimmed = list.slice(0, statsState.maxHighscores);
+	saveHighScores(trimmed);
+}
+
+function ensureHighscoreCheck() {
+	if (statsState.highscoreChecked) return;
+	statsState.highscoreChecked = true;
+	statsState.pendingHighscores = [];
+	// Check player1
+	const pos1 = getRankPosition(player1.score);
+	if (pos1 !== -1) statsState.pendingHighscores.push({ player: 1, score: player1.score, efficiency: statsState.player1Efficiency });
+	// Check player2 only if active
+	if (players === 'Dos') {
+		const pos2 = getRankPosition(player2.score);
+		if (pos2 !== -1) statsState.pendingHighscores.push({ player: 2, score: player2.score, efficiency: statsState.player2Efficiency });
+	}
+	if (statsState.pendingHighscores.length > 0) {
+		statsState.highscoreEntryActive = true;
+		statsState.currentHighIndex = 0;
+		statsState.nameBuffer = '';
+	}
+}
+
+function drawHighscoreEntry() {
+	if (!statsState.highscoreEntryActive) return;
+	const entry = statsState.pendingHighscores[statsState.currentHighIndex];
+	if (!entry) return;
+	// Draw a box similar to Pascal's input area; position depends on player (1 or 2)
+	const baseY = entry.player === 1 ? 175 : 225;
+	renderer.setFillStyle(1, 0);
+	renderer.bar(180, baseY, 370, baseY + 50);
+	renderer.setColor(15);
+	renderer.setTextStyle(2, 0, 1.2);
+	renderer.outTextXY(200, baseY + 10, 'Jugador ' + entry.player + '  Puntaje: ' + entry.score);
+	renderer.outTextXY(280, baseY + 30, statsState.nameBuffer + (Date.now() % 1000 < 500 ? '_' : ''));
+	renderer.setColor(11);
+	renderer.outTextXY(200, baseY + 40, 'ENTER para guardar, BACKSPACE para borrar');
+}
+
 
 function drawMenu() {
 	if (!menuInitialized) {
@@ -260,6 +344,13 @@ function setupGameScreen() {
 	player2.score = 0;
 	player1.energy = initialEnergy;
 	player2.energy = initialEnergy;
+
+	// Reset highscore flags for new game
+	statsState.highscoreChecked = false;
+	statsState.highscoreEntryActive = false;
+	statsState.pendingHighscores = [];
+	statsState.currentHighIndex = 0;
+	statsState.nameBuffer = '';
 
 	// Reinicializar estadísticas de enemigos
 	player1.enemiesKilled = 0;
@@ -1798,10 +1889,33 @@ document.addEventListener('keydown', (event) => {
 			prevKeysPressed = {};
 		}
 	} else if (gameState === GAME_STATES.GAME_OVER) {
-		if (event.key === 'Enter') {
-			gameState = GAME_STATES.MENU;
-			menuInitialized = false;
-			keysPressed = {};
+		if (statsState.highscoreEntryActive) {
+			// Handle name input for highscores
+			if (event.key === 'Backspace') {
+				statsState.nameBuffer = statsState.nameBuffer.slice(0, -1);
+			} else if (event.key === 'Enter') {
+				const entry = statsState.pendingHighscores[statsState.currentHighIndex];
+				const name = statsState.nameBuffer.trim() || 'ANON';
+				if (entry) addHighScore(name, entry.score, entry.player, entry.efficiency);
+				statsState.currentHighIndex++;
+				statsState.nameBuffer = '';
+				if (statsState.currentHighIndex >= statsState.pendingHighscores.length) {
+					statsState.highscoreEntryActive = false;
+				}
+			} else if (event.key.length === 1 && statsState.nameBuffer.length < 8) {
+				// Accept printable characters matching Pascal range ASCII 32..122
+				const ch = event.key;
+				const code = ch.charCodeAt(0);
+				if (code >= 32 && code <= 122) {
+					statsState.nameBuffer += ch;
+				}
+			}
+		} else {
+			if (event.key === 'Enter') {
+				gameState = GAME_STATES.MENU;
+				menuInitialized = false;
+				keysPressed = {};
+			}
 		}
 	} else if (gameState === GAME_STATES.HIGHSCORES) {
 		// Cualquier tecla vuelve al menú
@@ -2067,11 +2181,28 @@ function gameLoop() {
 			break;
 		case GAME_STATES.HIGHSCORES:
 			renderer.clearScreen();
-			renderer.setTextStyle(0, 0, 1);
-			renderer.setColor(15);
-			renderer.outTextXY(250, 240, 'Puntajes en desarrollo...');
+			renderer.setTextStyle(3, 0, 2);
+			renderer.setColor(14);
+			renderer.outTextXY(220, 30, 'TOP ' + statsState.maxHighscores + ' PUNTAJES');
+			const list = loadHighScores();
+			for (let i = 0; i < statsState.maxHighscores; i++) {
+				const entry = list[i];
+				const y = 80 + i * 30;
+				if (entry) {
+					renderer.setTextStyle(2, 0, 1.2);
+					renderer.setColor(11);
+					renderer.outTextXY(140, y, (i + 1) + '. ' + entry.name);
+					renderer.outTextXY(360, y, entry.player ? ('P' + entry.player) : '');
+					renderer.outTextXY(420, y, entry.score.toString());
+					renderer.outTextXY(500, y, entry.efficiency !== undefined ? (entry.efficiency + '%') : '');
+				} else {
+					renderer.setTextStyle(2, 0, 1);
+					renderer.setColor(8);
+					renderer.outTextXY(180, y, (i + 1) + '. ---');
+				}
+			}
 			renderer.setColor(11);
-			renderer.outTextXY(200, 400, 'Presione cualquier tecla para volver');
+			renderer.outTextXY(200, 420, 'Presione cualquier tecla para volver');
 			break;
 		case GAME_STATES.LIFE_LOST:
 			renderer.setTextStyle(2, 0, 1);
@@ -2081,7 +2212,9 @@ function gameLoop() {
 			renderer.outTextXY(425, 153, 'Dispare Para Continuar');
 			break;
 		case GAME_STATES.GAME_OVER:
+			// Mostrar estadísticas y chequear highscores una sola vez
 			drawStatsScreen();
+			ensureHighscoreCheck();
 			renderer.setTextStyle(2, 0, 1.2);
 			renderer.setColor(11);
 			if (players === 'Uno') {
@@ -2090,6 +2223,8 @@ function gameLoop() {
 				renderer.outTextXY(460, 395, ': GAME OVER: ');
 			}
 			renderer.setTextStyle(2, 0, 1);
+			// Si hay entradas pendientes, dibujar el prompt
+			drawHighscoreEntry();
 			break;
 	}
 
