@@ -378,7 +378,7 @@ function setupGameScreen() {
 
 	// Inicializar enemigos
 	totalEnemies = 2; // Iniciar con 2 enemigos
-	initEnemies(currentScreen);
+	initEnemies(currentScreen, 5);
 	totalKilled = 0;
 	finalBossActive = false;
 	bossEnergy = 0;
@@ -419,8 +419,8 @@ function updateGameProgression() {
 }
 
 // --- Funciones de enemigos ---
-function initEnemies(screenNumber) {
-	for (let i = 0; i < totalEnemies; i++) {
+function initEnemies(screenNumber, enemiesToInitialize) {
+	for (let i = 0; i < enemiesToInitialize; i++) {
 		enemies[i].x = Math.floor(Math.random() * 380);
 		enemies[i].y = -Math.floor(Math.random() * 90);
 		enemies[i].code = screenNumber; // Default enemy type
@@ -430,7 +430,7 @@ function initEnemies(screenNumber) {
 		enemies[i].control = false;
 	}
 	// Resto de enemigos inactivos
-	for (let i = totalEnemies; i < 5; i++) {
+	for (let i = enemiesToInitialize; i < 5; i++) {
 		enemies[i].y = -20;
 	}
 }
@@ -495,13 +495,13 @@ function updateEnemies(screenNumber) {
 }
 
 function updateEnemyShots(screenNumber) {
-	let difficultyValue = 1;
-	if (difficulty === 'Media') difficultyValue = 2;
-	else if (difficulty === 'Difícil') difficultyValue = 3;
+	let difficultyValue = 200;
+	if (difficulty === 'Media') difficultyValue = 100;
+	else if (difficulty === 'Difícil') difficultyValue = 10;
 
 	for (let i = 0; i < totalEnemies; i++) {
 		// Generar disparo del enemigo
-		if (!enemies[i].firing && Math.random() * difficultyValue < 1) {
+		if (!enemies[i].firing && (Math.floor(Math.random() * difficultyValue) === 3)) {
 			enemies[i].firing = true;
 			enemies[i].shotX = enemies[i].x;
 			enemies[i].shotY = enemies[i].y;
@@ -801,7 +801,7 @@ function nextScreen(playerNum) {
 	// Advance screen (wrap to 1..3)
 	currentScreen = currentScreen === 3 ? 1 : currentScreen + 1;
 	// Reinitialize enemies for the next screen and reset boss
-	initEnemies(currentScreen);
+	initEnemies(currentScreen, totalEnemies);
 	finalBossActive = false;
 	bossEnergy = 0;
 	bossNX = 200;
