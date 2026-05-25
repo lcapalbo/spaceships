@@ -795,6 +795,29 @@ function showEnergy(energy, player) {
 	}
 }
 
+function drawEffectDurationBar(player, playerNum) {
+	const baseY = playerNum === 1 ? 129 : 439;
+	const x0 = 414;
+	const x1 = 516;
+	const y0 = baseY - 1;
+	const y1 = baseY + 3;
+
+	// Limpiar el área de la barra en el panel derecho, incluso si no hay efecto activo
+	renderer.setFillStyle(1, 1);
+	renderer.bar(x0 - 1, y0 - 1, x1 + 1, y1 + 1);
+
+	if (player.effectDuration <= 0) return;
+
+	// La duración máxima de efecto está fijada en 300 frames
+	const maxDuration = 300;
+	const width = Math.max(0, Math.min(100, Math.floor((player.effectDuration / maxDuration) * 100)));
+
+	renderer.setColor(11);
+	renderer.rectangle(x0, y0, x1, y1);
+	renderer.setFillStyle(1, 12);
+	renderer.bar(x0 + 1, y0 + 1, x0 + width, y1 - 1);
+}
+
 function eraseLifeIcon(playerNum, lifeIndex) {
 	const y = playerNum === 1 ? 90 : 400;
 	const x = 650 - (30 * lifeIndex);
@@ -1956,6 +1979,10 @@ function gameLoop() {
 			drawEnemies(currentScreen);
 			if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
 			handleFinalBoss();
+
+			// Dibujar barra de duración de efectos de pastillas
+			drawEffectDurationBar(player1, 1);
+			if (players === 'Dos') drawEffectDurationBar(player2, 2);
 
 			// Verificar colisiones con disparos enemigos
 			checkEnemyShotCollisions();
