@@ -218,6 +218,123 @@ function drawHighscoreEntry() {
 	renderer.outTextXY(200, baseY + 40, 'ENTER para guardar, BACKSPACE para borrar');
 }
 
+function drawRankingScreen() {
+	renderer.clearScreen();
+
+	// Fondo azul y recuadro interior negro
+	renderer.setFillStyle(1, 1);
+	renderer.bar(0, 0, canvas.width, canvas.height);
+	renderer.setFillStyle(0, 1);
+	renderer.bar(72, 182, 608, 403);
+	renderer.setColor(1);
+	renderer.rectangle(70, 180, 610, 405);
+
+	// Encabezado de columnas
+	renderer.setTextStyle(11, 0, 1);
+	renderer.setColor(4);
+	renderer.outTextXY(109, 186, 'Nombre             Puntaje        Jugador   Eficiencia');
+	renderer.setColor(12);
+	renderer.outTextXY(110, 185, 'Nombre             Puntaje        Jugador   Eficiencia');
+
+	// Título principal Space Ships
+	renderer.setTextStyle(4, 0, 8);
+	renderer.setColor(9);
+	renderer.outTextXY(33, 2, 'Space');
+	renderer.setColor(15);
+	renderer.outTextXY(30, 4, 'Space');
+	renderer.setColor(11);
+	renderer.outTextXY(31, 4, 'Space');
+
+	renderer.setTextStyle(4, 0, 7);
+	renderer.setColor(9);
+	renderer.outTextXY(77, 60, 'Ships');
+	renderer.setColor(15);
+	renderer.outTextXY(78, 61, 'Ships');
+	renderer.setColor(11);
+	renderer.outTextXY(79, 61, 'Ships');
+
+	// Adventure subtitle
+	renderer.setTextStyle(2, 1, 6);
+	renderer.setColor(15);
+	renderer.outTextXY(225, 44, 'Adventure!');
+
+	// Ranking title with layered effect
+	renderer.setTextStyle(10, 0, 7);
+	renderer.setColor(12);
+	renderer.outTextXY(255, 10, 'Ranking');
+	renderer.setFillStyle(6, 4);
+	renderer.floodFill(267, 60, 12);
+	renderer.floodFill(350, 90, 12);
+	renderer.floodFill(380, 90, 12);
+	renderer.floodFill(427, 90, 12);
+	renderer.floodFill(490, 90, 12);
+	renderer.floodFill(490, 60, 12);
+	renderer.floodFill(517, 90, 12);
+	renderer.floodFill(570, 90, 12);
+	renderer.setColor(4);
+	renderer.outTextXY(256, 10, 'Ranking');
+	renderer.setColor(9);
+	renderer.outTextXY(255, 12, 'Ranking');
+	renderer.setColor(12);
+	renderer.outTextXY(254, 10, 'Ranking');
+	renderer.setColor(4);
+	renderer.outTextXY(256, 9, 'Ranking');
+	renderer.setColor(9);
+	renderer.outTextXY(256, 11, 'Ranking');
+
+	// Credits
+	renderer.setTextStyle(2, 0, 6);
+	renderer.setColor(11);
+	renderer.outTextXY(370, 125, 'Lucas Capalbo');
+	renderer.setTextStyle(5, 0, 1);
+	renderer.setColor(12);
+	renderer.outTextXY(395, 130, 'Producciones');
+
+	// Marco estilo Starfleet terminal
+	renderer.setColor(10);
+	renderer.line(0, 170, 600, 170);
+	renderer.line(0, 180, 610, 180);
+	renderer.arc(600, 180, 0, 90, 10);
+	renderer.line(0, 415, 600, 415);
+	renderer.line(0, 405, 610, 405);
+	renderer.arc(600, 405, 270, 360, 10);
+
+	renderer.setFillStyle(1, 2);
+	renderer.bar(1, 171, 599, 179);
+	renderer.bar(1, 405, 599, 413);
+
+	renderer.setColor(10);
+	renderer.rectangle(550, 184, 610, 401);
+	renderer.rectangle(0, 184, 70, 401);
+	renderer.setFillStyle(7, 2);
+	renderer.bar(551, 189, 609, 400);
+	renderer.setFillStyle(7, 3);
+	renderer.bar(1, 189, 69, 400);
+
+	// Ranking entries
+	const list = loadHighScores();
+	for (let i = 0; i < statsState.maxHighscores; i++) {
+		const entry = list[i];
+		const y = 190 + i * 40;
+		if (entry) {
+			renderer.setTextStyle(10, 0, 2);
+			renderer.setColor(15);
+			renderer.outTextXY(90, y, entry.name.padEnd(17, ' '));
+			renderer.outTextXY(260, y, entry.score.toString());
+			renderer.outTextXY(410, y, entry.player ? ('P' + entry.player) : '');
+			renderer.outTextXY(470, y, entry.efficiency !== undefined ? (entry.efficiency + '%') : '');
+		} else {
+			renderer.setTextStyle(10, 0, 2);
+			renderer.setColor(8);
+			renderer.outTextXY(90, y, (i + 1) + '. ---');
+		}
+	}
+
+	renderer.setColor(11);
+	renderer.setTextStyle(2, 0, 1);
+	renderer.outTextXY(200, 420, 'Presione cualquier tecla para volver');
+}
+
 
 function drawMenu() {
 	if (!menuInitialized) {
@@ -2194,29 +2311,7 @@ function gameLoop() {
 			drawHelpScreen();
 			break;
 		case GAME_STATES.HIGHSCORES:
-			renderer.clearScreen();
-			renderer.setTextStyle(3, 0, 2);
-			renderer.setColor(14);
-			renderer.outTextXY(220, 30, 'TOP ' + statsState.maxHighscores + ' PUNTAJES');
-			const list = loadHighScores();
-			for (let i = 0; i < statsState.maxHighscores; i++) {
-				const entry = list[i];
-				const y = 80 + i * 30;
-				if (entry) {
-					renderer.setTextStyle(2, 0, 1.2);
-					renderer.setColor(11);
-					renderer.outTextXY(140, y, (i + 1) + '. ' + entry.name);
-					renderer.outTextXY(360, y, entry.player ? ('P' + entry.player) : '');
-					renderer.outTextXY(420, y, entry.score.toString());
-					renderer.outTextXY(500, y, entry.efficiency !== undefined ? (entry.efficiency + '%') : '');
-				} else {
-					renderer.setTextStyle(2, 0, 1);
-					renderer.setColor(8);
-					renderer.outTextXY(180, y, (i + 1) + '. ---');
-				}
-			}
-			renderer.setColor(11);
-			renderer.outTextXY(200, 420, 'Presione cualquier tecla para volver');
+			drawRankingScreen();
 			break;
 		case GAME_STATES.LIFE_LOST:
 			renderer.setTextStyle(2, 0, 1);
