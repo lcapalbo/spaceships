@@ -1108,7 +1108,7 @@ function spawnPillDrop(x, y) {
 	pillDrop.active = true;
 	pillDrop.x = x;
 	pillDrop.y = y;
-	pillDrop.type = Math.floor(Math.random() * 8);
+	pillDrop.type = Math.floor(Math.random() * 7) + 1;
 }
 
 function applyPillEffect(player, playerNum, pillType) {
