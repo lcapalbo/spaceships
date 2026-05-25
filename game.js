@@ -79,6 +79,8 @@ const player2 = {
 // Estado global de enemigos
 let currentScreen = 1; // Pantalla actual (1, 2, 3)
 let totalEnemies = 2; // Cantidad inicial de enemigos
+let maxPlayerShots = 1; // Máximo de disparos simultáneos por jugador
+let lastProgressionCheck = 0; // Para evitar chequeos repetidos
 let finalBossActive = false; // Si el jefe final está activo
 let totalKilled = 0; // Total de enemigos matados para triggear jefe
 let bossEnergy = 0; // Energía del jefe
@@ -226,6 +228,7 @@ function drawMenuArrow(x, y, color) {
 
 function setupGameScreen() {
 	currentScreen = 1;
+	maxPlayerShots = 1;
 
 	// Inicializar valores según dificultad
 	let difficultyLevel = 1;
@@ -374,6 +377,7 @@ function setupGameScreen() {
 	if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
 
 	// Inicializar enemigos
+	totalEnemies = 2; // Iniciar con 2 enemigos
 	initEnemies(currentScreen);
 	totalKilled = 0;
 	finalBossActive = false;
@@ -394,9 +398,28 @@ function writeScore(score, player) {
 	renderer.outTextXY(590, y, scoreStr);
 }
 
+// --- Función de progresión del juego ---
+function updateGameProgression() {
+	if (totalKilled === 1) {
+		totalEnemies = 3;
+	}
+	if (totalKilled === 10) {
+		maxPlayerShots = 2;
+	}
+	if (totalKilled === 20) {
+		totalEnemies = 4;
+	}
+	if (totalKilled === 30) {
+		totalEnemies = 5;
+		maxPlayerShots = 3;
+	}
+	if (totalKilled === 40) {
+		maxPlayerShots = 4;
+	}
+}
+
 // --- Funciones de enemigos ---
 function initEnemies(screenNumber) {
-	totalEnemies = 2; // Iniciar con 2 enemigos
 	for (let i = 0; i < totalEnemies; i++) {
 		enemies[i].x = Math.floor(Math.random() * 380);
 		enemies[i].y = -Math.floor(Math.random() * 90);
@@ -1765,9 +1788,11 @@ document.addEventListener('keydown', (event) => {
 			prevKeysPressed = {};
 		}
 	} else if (gameState === GAME_STATES.GAME_OVER) {
-		gameState = GAME_STATES.MENU;
-		menuInitialized = false;
-		keysPressed = {};
+		if (event.key === 'Enter') {
+			gameState = GAME_STATES.MENU;
+			menuInitialized = false;
+			keysPressed = {};
+		}
 	} else if (gameState === GAME_STATES.HIGHSCORES) {
 		// Cualquier tecla vuelve al menú
 		gameState = GAME_STATES.MENU;
@@ -1815,7 +1840,7 @@ function updatePlayerMovement() {
 
 		// Disparo Player 1: Espacio (solo en el borde de pulsación)
 		if (keysPressed[' '] && !prevKeysPressed[' ']) {
-			if (player1.shots.some(shot => !shot)) {
+			if (player1.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player1.shots.findIndex(shot => !shot);
 				if (shotIndex !== -1) {
 					player1.shots[shotIndex] = true;
@@ -1855,7 +1880,7 @@ function updatePlayerMovement() {
 
 		// Disparo Player 2: Tab (solo en modo dos jugadores)
 		if (keysPressed['1'] && !prevKeysPressed['1']) {
-			if (player2.shots.some(shot => !shot)) {
+			if (player2.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player2.shots.findIndex(shot => !shot);
 				if (shotIndex !== -1) {
 					player2.shots[shotIndex] = true;
@@ -2006,6 +2031,8 @@ function gameLoop() {
 			// Verificar colisiones con disparos del jugador
 			checkPlayerShotCollisions(1);
 			if (players === 'Dos') checkPlayerShotCollisions(2);
+			// Actualizar progresión del juego según totalKilled
+			updateGameProgression();
 			break;
 		case GAME_STATES.BOSS_EXPLOSION:
 			writeScore(player1.score, 1);
