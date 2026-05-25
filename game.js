@@ -413,10 +413,6 @@ function initEnemies(screenNumber) {
 }
 
 function updateEnemies(screenNumber) {
-	let difficultyValue = 1;
-	if (difficulty === 'Media') difficultyValue = 2;
-	else if (difficulty === 'Difícil') difficultyValue = 3;
-
 	for (let i = 0; i < totalEnemies; i++) {
 		// Movimiento según pantalla
 		switch (screenNumber) {
@@ -472,7 +468,15 @@ function updateEnemies(screenNumber) {
 			enemies[i].y = -50;
 			enemies[i].x = Math.floor(Math.random() * 440);
 		}
+	}
+}
 
+function updateEnemyShots(screenNumber) {
+	let difficultyValue = 1;
+	if (difficulty === 'Media') difficultyValue = 2;
+	else if (difficulty === 'Difícil') difficultyValue = 3;
+
+	for (let i = 0; i < totalEnemies; i++) {
 		// Generar disparo del enemigo
 		if (!enemies[i].firing && Math.random() * difficultyValue < 1) {
 			enemies[i].firing = true;
@@ -1985,6 +1989,8 @@ function gameLoop() {
 				updateEnemies(currentScreen);
 				drawEnemies(currentScreen);
 			}
+			// Actualizar disparos de enemigos siempre (incluso durante el jefe final)
+			updateEnemyShots(currentScreen);
 			handleFinalBoss();
 
 			updatePillDrop();
