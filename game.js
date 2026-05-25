@@ -7,6 +7,7 @@ const GAME_STATES = {
 	GAME: 'GAME',
 	BOSS_EXPLOSION: 'BOSS_EXPLOSION',
 	STATS_SCREEN: 'STATS_SCREEN',
+	HIGHSCORE_ENTRY: 'HIGHSCORE_ENTRY',
 	LIFE_LOST: 'LIFE_LOST',
 	GAME_OVER: 'GAME_OVER',
 	HIGHSCORES: 'HIGHSCORES',
@@ -1000,7 +1001,7 @@ function losePlayerLife(player, playerNum) {
 		const otherPlayerDead = playerNum === 1 ? player2.lives === 0 : player1.lives === 0;
 		if (players === 'Uno' || otherPlayerDead) {
 			prepareStatsScreen(null);
-			gameState = GAME_STATES.GAME_OVER;
+			gameState = GAME_STATES.STATS_SCREEN;
 		} else {
 			gameState = GAME_STATES.LIFE_LOST;
 			keysPressed = {};
@@ -1157,6 +1158,7 @@ function calculateEfficiency(kills, crashes) {
 function prepareStatsScreen(targetPlayer) {
 	statsState.active = true;
 	statsState.targetPlayer = targetPlayer;
+	statsState.isGameOver = targetPlayer === null;
 	statsState.player1Kills = player1.enemiesKilled;
 	statsState.player1Crashes = player1.enemiesCrashed;
 	statsState.player1Efficiency = calculateEfficiency(player1.enemiesKilled, player1.enemiesCrashed);
@@ -1883,38 +1885,45 @@ document.addEventListener('keydown', (event) => {
 	} else if (gameState === GAME_STATES.STATS_SCREEN) {
 		if (event.key === 'Enter') {
 			statsState.active = false;
-			nextScreen(statsState.targetPlayer);
-			gameState = GAME_STATES.GAME;
-			keysPressed = {};
-			prevKeysPressed = {};
-		}
-	} else if (gameState === GAME_STATES.GAME_OVER) {
-		if (statsState.highscoreEntryActive) {
-			// Handle name input for highscores
-			if (event.key === 'Backspace') {
-				statsState.nameBuffer = statsState.nameBuffer.slice(0, -1);
-			} else if (event.key === 'Enter') {
-				const entry = statsState.pendingHighscores[statsState.currentHighIndex];
-				const name = statsState.nameBuffer.trim() || 'ANON';
-				if (entry) addHighScore(name, entry.score, entry.player, entry.efficiency);
-				statsState.currentHighIndex++;
-				statsState.nameBuffer = '';
-				if (statsState.currentHighIndex >= statsState.pendingHighscores.length) {
-					statsState.highscoreEntryActive = false;
+			if (statsState.isGameOver) {
+				if (statsState.pendingHighscores.length > 0) {
+					statsState.highscoreEntryActive = true;
+					statsState.currentHighIndex = 0;
+					statsState.nameBuffer = '';
+					gameState = GAME_STATES.HIGHSCORE_ENTRY;
+				} else {
+					gameState = GAME_STATES.MENU;
+					menuInitialized = false;
+					keysPressed = {};
 				}
-			} else if (event.key.length === 1 && statsState.nameBuffer.length < 8) {
-				// Accept printable characters matching Pascal range ASCII 32..122
-				const ch = event.key;
-				const code = ch.charCodeAt(0);
-				if (code >= 32 && code <= 122) {
-					statsState.nameBuffer += ch;
-				}
+			} else {
+				nextScreen(statsState.targetPlayer);
+				gameState = GAME_STATES.GAME;
+				keysPressed = {};
+				prevKeysPressed = {};
 			}
-		} else {
-			if (event.key === 'Enter') {
+		}
+	} else if (gameState === GAME_STATES.HIGHSCORE_ENTRY) {
+		if (event.key === 'Backspace') {
+			statsState.nameBuffer = statsState.nameBuffer.slice(0, -1);
+		} else if (event.key === 'Enter') {
+			const entry = statsState.pendingHighscores[statsState.currentHighIndex];
+			const name = statsState.nameBuffer.trim() || 'ANON';
+			if (entry) addHighScore(name, entry.score, entry.player, entry.efficiency);
+			statsState.currentHighIndex++;
+			statsState.nameBuffer = '';
+			if (statsState.currentHighIndex >= statsState.pendingHighscores.length) {
+				statsState.highscoreEntryActive = false;
 				gameState = GAME_STATES.MENU;
 				menuInitialized = false;
 				keysPressed = {};
+			}
+		} else if (event.key.length === 1 && statsState.nameBuffer.length < 8) {
+			// Accept printable characters matching Pascal range ASCII 32..122
+			const ch = event.key;
+			const code = ch.charCodeAt(0);
+			if (code >= 32 && code <= 122) {
+				statsState.nameBuffer += ch;
 			}
 		}
 	} else if (gameState === GAME_STATES.HIGHSCORES) {
@@ -2171,6 +2180,11 @@ function gameLoop() {
 			break;
 		case GAME_STATES.STATS_SCREEN:
 			drawStatsScreen();
+			if (statsState.isGameOver) ensureHighscoreCheck();
+			break;
+		case GAME_STATES.HIGHSCORE_ENTRY:
+			renderer.clearScreen();
+			drawHighscoreEntry();
 			break;
 		case GAME_STATES.CONFIRM_EXIT:
 			// Mostrar pantalla congelada con mensaje de confirmación
@@ -2210,21 +2224,6 @@ function gameLoop() {
 			renderer.outTextXY(460, 145, 'Una Vida Menos');
 			renderer.setColor(11);
 			renderer.outTextXY(425, 153, 'Dispare Para Continuar');
-			break;
-		case GAME_STATES.GAME_OVER:
-			// Mostrar estadísticas y chequear highscores una sola vez
-			drawStatsScreen();
-			ensureHighscoreCheck();
-			renderer.setTextStyle(2, 0, 1.2);
-			renderer.setColor(11);
-			if (players === 'Uno') {
-				renderer.outTextXY(460, 85, ': GAME OVER: ');
-			} else {
-				renderer.outTextXY(460, 395, ': GAME OVER: ');
-			}
-			renderer.setTextStyle(2, 0, 1);
-			// Si hay entradas pendientes, dibujar el prompt
-			drawHighscoreEntry();
 			break;
 	}
 
