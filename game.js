@@ -583,34 +583,38 @@ function checkPlayerShotCollisions(playerNum) {
 		}
 
 		// Verificar colisiones con disparos angulares
-		if (playerNum === 1 && player1.angularShot) {
+		if (player.angularShot) {
+			const angularShotXRight = player.angularShotXRight;
+			const angularShotXLeft = player.angularShotXLeft;
+			const angularShotY = player.angularShotY;
+
 			for (let e = 0; e < totalEnemies; e++) {
 				// Right ball
-				if (player1.angularShotXRight !== -10 && player1.angularShotY !== -10) {
-					if (player1.angularShotY < enemies[e].y + missileHitboxYBottom &&
-						player1.angularShotY > enemies[e].y + missileHitboxYTop &&
-						player1.angularShotXRight > enemies[e].x - missileHitboxX &&
-						player1.angularShotXRight < enemies[e].x + missileHitboxX) {
+				if (angularShotXRight !== -10 && angularShotY !== -10) {
+					if (angularShotY < enemies[e].y + missileHitboxYBottom &&
+						angularShotY > enemies[e].y + missileHitboxYTop &&
+						angularShotXRight > enemies[e].x - missileHitboxX &&
+						angularShotXRight < enemies[e].x + missileHitboxX) {
 						spawnPillDrop(enemies[e].x, enemies[e].y);
 						enemies[e].y = -80;
 						enemies[e].x = Math.floor(Math.random() * 380);
 						totalKilled++;
-						player1.score += 5;
-						player1.enemiesKilled++;
+						player.score += 5;
+						player.enemiesKilled++;
 					}
 				}
 				// Left ball
-				if (player1.angularShotXLeft !== -10 && player1.angularShotY !== -10) {
-					if (player1.angularShotY < enemies[e].y + missileHitboxYBottom &&
-						player1.angularShotY > enemies[e].y + missileHitboxYTop &&
-						player1.angularShotXLeft > enemies[e].x - missileHitboxX &&
-						player1.angularShotXLeft < enemies[e].x + missileHitboxX) {
+				if (angularShotXLeft !== -10 && angularShotY !== -10) {
+					if (angularShotY < enemies[e].y + missileHitboxYBottom &&
+						angularShotY > enemies[e].y + missileHitboxYTop &&
+						angularShotXLeft > enemies[e].x - missileHitboxX &&
+						angularShotXLeft < enemies[e].x + missileHitboxX) {
 						spawnPillDrop(enemies[e].x, enemies[e].y);
 						enemies[e].y = -80;
 						enemies[e].x = Math.floor(Math.random() * 380);
 						totalKilled++;
-						player1.score += 5;
-						player1.enemiesKilled++;
+						player.score += 5;
+						player.enemiesKilled++;
 					}
 				}
 			}
