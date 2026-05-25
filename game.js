@@ -553,6 +553,8 @@ function drawEnemies(screenNumber) {
 }
 
 function checkPlayerShotCollisions(playerNum) {
+	if (finalBossActive) return;
+
 	const player = playerNum === 1 ? player1 : player2;
 	const missileHitboxX = 16;
 	const missileHitboxYTop = -6;
@@ -625,7 +627,7 @@ function checkPlayerShotCollisions(playerNum) {
 }
 
 function handleFinalBoss() {
-	if (totalKilled % 50 === 0 && totalKilled !== 0 && !finalBossActive) {
+	if (totalKilled % 5 === 0 && totalKilled !== 0 && !finalBossActive) {
 		finalBossActive = true;
 		bossEnergy = 0;
 		bossNX = 200;
@@ -949,24 +951,24 @@ function checkPlayerEnemyCollisions() {
 		const playerNum = entry.num;
 		if (player.lives <= 0) continue;
 
-		for (let i = 0; i < totalEnemies; i++) {
-			const enemy = enemies[i];
-			if (enemy.y < -20 || enemy.y > 480) continue;
+		if (!finalBossActive) {
+			for (let i = 0; i < totalEnemies; i++) {
+				const enemy = enemies[i];
+				if (enemy.y < -20 || enemy.y > 480) continue;
 
-			const enemyHit = player.x > enemy.x - 15 && player.x < enemy.x + 15 &&
-				player.y > enemy.y - 5 && player.y < enemy.y + 25;
-			if (!enemyHit) continue;
+				const enemyHit = player.x > enemy.x - 15 && player.x < enemy.x + 15 &&
+					player.y > enemy.y - 5 && player.y < enemy.y + 25;
+				if (!enemyHit) continue;
 
-			player.score += getCrashPoints(false);
-			player.enemiesCrashed++;
-			totalKilled++;
-			enemy.y = -80;
-			enemy.x = Math.floor(Math.random() * 380);
-			losePlayerLife(player, playerNum);
-			break;
-		}
-
-		if (finalBossActive && bossNY < 480) {
+				player.score += getCrashPoints(false);
+				player.enemiesCrashed++;
+				totalKilled++;
+				enemy.y = -80;
+				enemy.x = Math.floor(Math.random() * 380);
+				losePlayerLife(player, playerNum);
+				break;
+			}
+		} else if (bossNY < 480) {
 			const bossHit = player.x > bossNX - 60 && player.x < bossNX + 60 &&
 				player.y > bossNY - 10 && player.y < bossNY + 90;
 			if (bossHit) {
@@ -1051,7 +1053,6 @@ function drawStatsScreen() {
 		renderer.setTextStyle(3, 0, 3);
 		renderer.outTextXY(200, 80, 'x');
 		renderer.setColor(12);
-		console.info(statsState);
 		renderer.outTextXY(230, 80, statsState.player1Kills.toString());
 		renderer.outTextXY(80, 140, statsState.player1Crashes + ' Choques');
 		renderer.outTextXY(75, 200, ': EFICIENCIA :');
@@ -1979,13 +1980,15 @@ function gameLoop() {
 			// Actualizar y dibujar disparos angulares y proyectiles
 			updateAngularShots();
 			updateShots();
-			updatePillDrop();
-			// Actualizar y dibujar enemigos
-			updateEnemies(currentScreen);
-			drawEnemies(currentScreen);
-			if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
+			// Actualizar y dibujar enemigos solo cuando no está activo el jefe final
+			if (!finalBossActive) {
+				updateEnemies(currentScreen);
+				drawEnemies(currentScreen);
+			}
 			handleFinalBoss();
 
+			updatePillDrop();
+			if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
 			// Dibujar barra de duración de efectos de pastillas
 			drawEffectDurationBar(player1, 1);
 			if (players === 'Dos') drawEffectDurationBar(player2, 2);
