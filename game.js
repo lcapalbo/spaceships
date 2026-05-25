@@ -432,6 +432,7 @@ function initEnemies(screenNumber, enemiesToInitialize) {
 	// Resto de enemigos inactivos
 	for (let i = enemiesToInitialize; i < 5; i++) {
 		enemies[i].y = -20;
+		enemies[i].firing = false;
 	}
 }
 
@@ -499,12 +500,21 @@ function updateEnemyShots(screenNumber) {
 	if (difficulty === 'Media') difficultyValue = 100;
 	else if (difficulty === 'Difícil') difficultyValue = 10;
 
+	if (finalBossActive) {
+		difficultyValue = difficultyValue/2;
+	}
+
 	for (let i = 0; i < totalEnemies; i++) {
 		// Generar disparo del enemigo
 		if (!enemies[i].firing && (Math.floor(Math.random() * difficultyValue) === 3)) {
 			enemies[i].firing = true;
-			enemies[i].shotX = enemies[i].x;
-			enemies[i].shotY = enemies[i].y;
+			if (finalBossActive) {
+				enemies[i].shotX = bossNX + ((i % 2 == 0) ? -60 : 60);
+				enemies[i].shotY = bossNY+ 80;
+			} else {
+				enemies[i].shotX = enemies[i].x;
+				enemies[i].shotY = enemies[i].y;
+			}
 		}
 
 		// Actualizar disparo del enemigo
@@ -654,7 +664,7 @@ function checkPlayerShotCollisions(playerNum) {
 }
 
 function handleFinalBoss() {
-	if (totalKilled % 5 === 0 && totalKilled !== 0 && !finalBossActive) {
+	if (totalKilled % 50 === 0 && totalKilled !== 0 && !finalBossActive) {
 		finalBossActive = true;
 		bossEnergy = 0;
 		bossNX = 200;
