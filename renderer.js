@@ -28,18 +28,18 @@ class Renderer {
 		if (color !== undefined) {
 			this.fillColor = this._resolveColor(color);
 		}
-		
+
 		if (style === 1 || style === 0) {
 			if (this.fillColor) {
 				this.ctx.fillStyle = this.fillColor;
 			}
 			return;
 		}
-		
+
 		// Para patrones, crear dinámicamente
 		const patternCanvas = document.createElement('canvas');
 		const patternCtx = patternCanvas.getContext('2d');
-		
+
 		switch (style) {
 			case 2: // LineFill - líneas horizontales
 				patternCanvas.width = 10;
@@ -52,7 +52,7 @@ class Renderer {
 				patternCtx.lineTo(10, 2);
 				patternCtx.stroke();
 				break;
-				
+
 			case 6: // DiagonalFill - líneas oblicuas
 				patternCanvas.width = 10;
 				patternCanvas.height = 10;
@@ -60,7 +60,7 @@ class Renderer {
 				patternCtx.lineWidth = 1;
 				// Fondo transparente
 				patternCtx.clearRect(0, 0, 10, 10);
-				
+
 				// Dibujar líneas diagonales densas (arriba-izquierda a abajo-derecha)
 				patternCtx.beginPath();
 				// Primera serie de líneas
@@ -81,7 +81,7 @@ class Renderer {
 				patternCtx.lineTo(10, 0);
 				patternCtx.stroke();
 				break;
-				
+
 			case 7: // HatchFill - líneas cruzadas (diagonal + antidiagonal)
 				patternCanvas.width = 10;
 				patternCanvas.height = 10;
@@ -105,7 +105,7 @@ class Renderer {
 				patternCtx.lineTo(5, 10);
 				patternCtx.stroke();
 				break;
-				
+
 			case 10: // WideDotFill - puntos con espaciado amplio
 				patternCanvas.width = 8;
 				patternCanvas.height = 8;
@@ -120,7 +120,7 @@ class Renderer {
 				patternCtx.fillRect(5, 5, 1, 1);
 				break;
 		}
-		
+
 		this.ctx.fillStyle = this.ctx.createPattern(patternCanvas, 'repeat');
 	}
 
@@ -229,11 +229,11 @@ class Renderer {
 
 	bar3d(left, top, right, bottom, depth, topOn) {
 		// Dibujar el rectángulo principal relleno
-		this.bar(left+1, top+1, right-1, bottom-1);
-		
+		this.bar(left + 1, top + 1, right - 1, bottom - 1);
+
 		// Dibujar borde del rectángulo principal
 		this.rectangle(left, top, right, bottom);
-		
+
 		// Dibujar líneas de efecto 3D
 		this.ctx.beginPath();
 		if (topOn) {
