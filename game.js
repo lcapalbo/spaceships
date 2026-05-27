@@ -1039,8 +1039,8 @@ function nextScreen(playerNum) {
 function showEnergy(energy, player) {
 	const baseY = player === 1 ? 129 : 439;
 	for (let i = 1; i <= initialEnergy; i++) {
-		const x1 = 643 - (i * 20);
-		const x2 = 640 - (i * 20);
+		const x1 = 643 - (initialEnergy-i+1) * 20;
+		const x2 = 640 - (initialEnergy-i+1) * 20;
 		if (i <= energy) {
 			// Available energy: two pie slices
 			renderer.setFillStyle(1, 2);
@@ -1053,6 +1053,9 @@ function showEnergy(energy, player) {
 		} else {
 			// Consumed energy: full pie slice
 			renderer.setFillStyle(1, 1);
+			renderer.pieSlice(x1, baseY, 0, 360, 8);
+			renderer.setColor(12);
+			renderer.setFillStyle(0);
 			renderer.pieSlice(x1, baseY, 0, 360, 8);
 		}
 	}
