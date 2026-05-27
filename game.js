@@ -519,24 +519,7 @@ function setupGameScreen() {
 	renderer.rectangle(400, 0, canvas.width, canvas.height);
 
 	// Header of the panel
-	let y_base = players === 'Dos' ? 180 : 300;
-	renderer.setTextStyle(4, 0, 5);
-	renderer.setColor(9);
-	renderer.outTextXY(423, y_base, 'Space');
-	renderer.setColor(15);
-	renderer.outTextXY(420, y_base + 2, 'Space');
-	renderer.setColor(11);
-	renderer.outTextXY(421, y_base + 2, 'Space');
-	renderer.setTextStyle(4, 0, 4);
-	renderer.setColor(9);
-	renderer.outTextXY(447, y_base + 50, 'Ships');
-	renderer.setColor(15);
-	renderer.outTextXY(448, y_base + 51, 'Ships');
-	renderer.setColor(11);
-	renderer.outTextXY(449, y_base + 51, 'Ships');
-	renderer.setColor(15);
-	renderer.setTextStyle(2, 1, 1.7);
-	renderer.outTextXY(605, y_base + 96, 'Adventure!');
+	drawSidePanelLogo();
 
 	// Fixed text and lines for Player 1
 	renderer.setTextStyle(0, 0, 1);
@@ -603,6 +586,28 @@ function setupGameScreen() {
 	bossEnergy = 0;
 	bossNX = 200;
 	bossNY = -110;
+}
+
+function drawSidePanelLogo() {
+	let y_base = players === 'Dos' ? 180 : 300;
+
+	renderer.setTextStyle(4, 0, 5);
+	renderer.setColor(9);
+	renderer.outTextXY(423, y_base, 'Space');
+	renderer.setColor(15);
+	renderer.outTextXY(420, y_base + 2, 'Space');
+	renderer.setColor(11);
+	renderer.outTextXY(421, y_base + 2, 'Space');
+	renderer.setTextStyle(4, 0, 4);
+	renderer.setColor(9);
+	renderer.outTextXY(447, y_base + 50, 'Ships');
+	renderer.setColor(15);
+	renderer.outTextXY(448, y_base + 51, 'Ships');
+	renderer.setColor(11);
+	renderer.outTextXY(449, y_base + 51, 'Ships');
+	renderer.setColor(15);
+	renderer.setTextStyle(2, 1, 1.7);
+	renderer.outTextXY(605, y_base + 96, 'Adventure!');
 }
 
 function writeScore(score, player) {
@@ -919,6 +924,10 @@ function handleFinalBoss() {
 			bossNY -= Math.floor(Math.random() * 5) + 1;
 		}
 
+		// Clear previous boss energy indicator (or game logo when 2 players are playing)
+		renderer.setFillStyle(1, 1);
+		renderer.bar(405, 165, canvas.width-5, 295);
+
 		// Check player 1 shot collisions
 		for (let d = 0; d < player1.shots.length; d++) {
 			if (!player1.shots[d]) continue;
@@ -934,15 +943,6 @@ function handleFinalBoss() {
 					bossEnergy += 15;
 				} else {
 					bossEnergy += 10;
-				}
-
-				if (bossEnergy < 360) {
-					let color = 12;
-					if (currentScreen === 2) color = 11;
-					if (currentScreen === 3) color = 10;
-					renderer.setColor(color);
-					renderer.setFillStyle(6, color);
-					renderer.pieSlice(530, 230, bossEnergy, 360, 60);
 				}
 
 				if (bossEnergy >= 360) {
@@ -986,15 +986,6 @@ function handleFinalBoss() {
 						bossEnergy += 10;
 					}
 
-					if (bossEnergy < 360) {
-						let color = 12;
-						if (currentScreen === 2) color = 11;
-						if (currentScreen === 3) color = 10;
-						renderer.setColor(color);
-						renderer.setFillStyle(6, color);
-						renderer.pieSlice(530, 230, bossEnergy, 360, 60);
-					}
-
 					if (bossEnergy >= 360) {
 						totalKilled++;
 						// Boss defeated: grant bonus and activate explosion animation
@@ -1018,6 +1009,28 @@ function handleFinalBoss() {
 					}
 				}
 			}
+		}
+
+		// Draw boss energy indicator
+		if (bossEnergy < 360) {
+			let color = 12;
+			let fillColor = 12;
+			if (currentScreen === 2) {
+				color = 11;
+				fillColor = 3;
+			}
+			if (currentScreen === 3) {
+				color = 10;
+				fillColor = 2;
+			}
+			renderer.setColor(color);
+			renderer.setFillStyle(6, fillColor);
+			renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+			renderer.setFillStyle(0, fillColor);
+			renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+		} else {
+			// Restore game logo in case it's a 2-players game
+			drawSidePanelLogo();
 		}
 
 		// Draw boss
