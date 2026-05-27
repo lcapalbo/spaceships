@@ -206,16 +206,28 @@ function drawHighscoreEntry() {
 	if (!statsState.highscoreEntryActive) return;
 	const entry = statsState.pendingHighscores[statsState.currentHighIndex];
 	if (!entry) return;
+	
+	renderer.setFillStyle(10, 0);
+	renderer.bar(0, 0, 640, 480);
+
 	// Draw a box similar to Pascal's input area; position depends on player (1 or 2)
 	const baseY = entry.player === 1 ? 175 : 225;
-	renderer.setFillStyle(1, 0);
-	renderer.bar(180, baseY, 370, baseY + 50);
+	const baseX = 150;
+
+	renderer.setFillStyle(1, 1);
+	renderer.bar(baseX, baseY, baseX + 340, baseY + 80);
+	renderer.setColor(12);
+	renderer.rectangle(baseX, baseY, baseX + 340, baseY + 80);
 	renderer.setColor(15);
 	renderer.setTextStyle(2, 0, 1.2);
-	renderer.outTextXY(200, baseY + 10, 'Jugador ' + entry.player + '  Puntaje: ' + entry.score);
-	renderer.outTextXY(280, baseY + 30, statsState.nameBuffer + (Date.now() % 1000 < 500 ? '_' : ''));
+	renderer.outTextXY(baseX + 20, baseY + 10, 'Jugador ' + entry.player + '  Puntaje: ' + entry.score);
+	renderer.setTextStyle(2, 0, 1.4);
+	renderer.outTextXY(baseX + 20, baseY + 30, 'Nombre: ');
+	renderer.setColor(14);
+	renderer.outTextXY(baseX + 85, baseY + 30, statsState.nameBuffer + (Date.now() % 1000 < 500 ? '█' : ''));
+	renderer.setTextStyle(2, 0, 1.2);
 	renderer.setColor(11);
-	renderer.outTextXY(200, baseY + 40, 'ENTER para guardar, BACKSPACE para borrar');
+	renderer.outTextXY(baseX + 20, baseY + 60, 'ENTER para guardar, BACKSPACE para borrar');
 }
 
 function drawRankingScreen() {
@@ -2299,7 +2311,6 @@ function gameLoop() {
 			if (statsState.isGameOver) ensureHighscoreCheck();
 			break;
 		case GAME_STATES.HIGHSCORE_ENTRY:
-			renderer.clearScreen();
 			drawHighscoreEntry();
 			break;
 		case GAME_STATES.CONFIRM_EXIT:
