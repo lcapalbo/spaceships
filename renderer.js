@@ -36,12 +36,12 @@ class Renderer {
 			return;
 		}
 
-		// Para patrones, crear dinámicamente
+		// For patterns, create dynamically
 		const patternCanvas = document.createElement('canvas');
 		const patternCtx = patternCanvas.getContext('2d');
 
 		switch (style) {
-			case 2: // LineFill - líneas horizontales
+			case 2: // LineFill - horizontal lines
 				patternCanvas.width = 10;
 				patternCanvas.height = 4;
 				patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
@@ -53,17 +53,17 @@ class Renderer {
 				patternCtx.stroke();
 				break;
 
-			case 6: // DiagonalFill - líneas oblicuas
+			case 6: // DiagonalFill - diagonal lines
 				patternCanvas.width = 10;
 				patternCanvas.height = 10;
 				patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
 				patternCtx.lineWidth = 1;
-				// Fondo transparente
+				// Transparent background
 				patternCtx.clearRect(0, 0, 10, 10);
 
-				// Dibujar líneas diagonales densas (arriba-izquierda a abajo-derecha)
+				// Draw dense diagonal lines (top-left to bottom-right)
 				patternCtx.beginPath();
-				// Primera serie de líneas
+				// First series of lines
 				patternCtx.moveTo(-5, 0);
 				patternCtx.lineTo(5, 10);
 				patternCtx.moveTo(-5, 5);
@@ -72,7 +72,7 @@ class Renderer {
 				patternCtx.lineTo(10, 5);
 				patternCtx.moveTo(5, -5);
 				patternCtx.lineTo(10, 0);
-				// Segunda serie para mayor densidad
+				// Second series for higher density
 				patternCtx.moveTo(-5, -5);
 				patternCtx.lineTo(10, 10);
 				patternCtx.moveTo(0, -5);
@@ -82,21 +82,21 @@ class Renderer {
 				patternCtx.stroke();
 				break;
 
-			case 7: // HatchFill - líneas cruzadas (diagonal + antidiagonal)
+			case 7: // HatchFill - crossed lines (diagonal + antidiagonal)
 				patternCanvas.width = 10;
 				patternCanvas.height = 10;
 				patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
 				patternCtx.lineWidth = 1;
 				patternCtx.clearRect(0, 0, 10, 10);
 				patternCtx.beginPath();
-				// Líneas diagonales (\) - arriba-izquierda a abajo-derecha
+				// Diagonal lines (\) - top-left to bottom-right
 				patternCtx.moveTo(0, 0);
 				patternCtx.lineTo(10, 10);
 				patternCtx.moveTo(0, 5);
 				patternCtx.lineTo(5, 10);
 				patternCtx.moveTo(5, 0);
 				patternCtx.lineTo(10, 5);
-				// Líneas antidiagonales (/) - arriba-derecha a abajo-izquierda
+				// Antidiagonal lines (/) - top-right to bottom-left
 				patternCtx.moveTo(0, 10);
 				patternCtx.lineTo(10, 0);
 				patternCtx.moveTo(5, 0);
@@ -106,13 +106,13 @@ class Renderer {
 				patternCtx.stroke();
 				break;
 
-			case 10: // WideDotFill - puntos con espaciado amplio
+			case 10: // WideDotFill - wide dot spacing
 				patternCanvas.width = 8;
 				patternCanvas.height = 8;
 				patternCtx.strokeStyle = this.fillColor || this._resolveColor(this.color);
 				patternCtx.lineWidth = 1;
 				patternCtx.clearRect(0, 0, 8, 8);
-				// Dibujar puntos pequeños con mayor densidad
+				// Draw smaller dots with greater density
 				patternCtx.fillStyle = this.fillColor || this._resolveColor(this.color);
 				patternCtx.fillRect(1, 1, 1, 1);
 				patternCtx.fillRect(1, 5, 1, 1);
@@ -198,10 +198,10 @@ class Renderer {
 		this.ctx.textAlign = this.textStyle.align;
 		this.ctx.textBaseline = this.textStyle.baseline;
 
-		// Aplicar transformación para texto vertical (direction === 1)
+		// Apply transform for vertical text (direction === 1)
 		if (this.textStyle.direction === 1) {
 			this.ctx.translate(x, y);
-			this.ctx.rotate(-Math.PI / 2); // 90 grados en sentido anti horario
+			this.ctx.rotate(-Math.PI / 2); // 90 degrees counterclockwise
 			x = 0;
 			y = 0;
 		}
@@ -228,16 +228,16 @@ class Renderer {
 	}
 
 	bar3d(left, top, right, bottom, depth, topOn) {
-		// Dibujar el rectángulo principal relleno
+		// Draw the main filled rectangle
 		this.bar(left + 1, top + 1, right - 1, bottom - 1);
 
-		// Dibujar borde del rectángulo principal
+		// Draw the main rectangle border
 		this.rectangle(left, top, right, bottom);
 
-		// Dibujar líneas de efecto 3D
+		// Draw 3D effect lines
 		this.ctx.beginPath();
 		if (topOn) {
-			// Efecto elevado: líneas hacia arriba y derecha
+			// Raised effect: lines upward and right
 			this.ctx.moveTo(right, top);
 			this.ctx.lineTo(right + depth, top - depth);
 			this.ctx.moveTo(right, bottom);
@@ -247,7 +247,7 @@ class Renderer {
 			this.ctx.lineTo(right + depth, top - depth);
 			this.ctx.lineTo(right + depth, bottom - depth);
 		} else {
-			// Efecto hundido: líneas hacia abajo y derecha
+			// Lowered effect: lines downward and right
 			this.ctx.moveTo(right, top);
 			this.ctx.lineTo(right + depth, top + depth);
 			this.ctx.moveTo(right, bottom);

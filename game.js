@@ -16,32 +16,32 @@ const GAME_STATES = {
 };
 const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
 
-// Estado actual del juego
+// Current game state
 let gameState = GAME_STATES.MENU;
 let menuInitialized = false;
 let previousSelectedOption = -1;
 let confirmExitStartTime = 0;
 let initialEnergy = 3;
 
-let pill = 5; // Posibilidad de pastilla según dificultad
-// Constantes para tipos de pastillas
+let pill = 5; // Pill drop chance by difficulty
+// Constants for pill types
 const PILL_TYPES = {
-	POINTS_100: 1,      // Celeste - 100 puntos
-	ENERGY_FULL: 2,     // Verde - Energía completa
-	CONTROLS_CHANGE: 3, // Roja - Cambio de controles
-	SPEED_BOOST: 4,     // Blanco - Velocidad
-	ANGULAR_SHOT: 5,    // Violeta - Disparo en ángulo
-	LASER: 6,           // Amarilla - Láser
-	SHIELD: 7           // Rosa - Escudo
+	POINTS_100: 1,      // Sky blue - 100 points
+	ENERGY_FULL: 2,     // Green - full energy
+	CONTROLS_CHANGE: 3, // Red - controls swap
+	SPEED_BOOST: 4,     // White - speed boost
+	ANGULAR_SHOT: 5,    // Purple - angular shot
+	LASER: 6,           // Yellow - laser
+	SHIELD: 7           // Pink - shield
 };
 
-// Opciones del menú
+// Menu options
 let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
 let players = 'Uno'; // 'Uno' o 'Dos'
 let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 
-// Estado de jugadores
+// Player state
 const player1 = {
 	x: 200, y: 443,
 	score: 0, lives: 4, energy: 3,
@@ -50,7 +50,7 @@ const player1 = {
 	bulletX: [-10, -10, -10, -10],
 	bulletY: [-10, -10, -10, -10],
 	enemiesKilled: 0, enemiesCrashed: 0,
-	// Efectos de pastillas
+	// Pill effects
 	shield: false, shieldCounter: 0,
 	laser: false, angularShot: false,
 	// Angular shot positions (-10 = inactive)
@@ -67,7 +67,7 @@ const player2 = {
 	bulletX: [-10, -10, -10, -10],
 	bulletY: [-10, -10, -10, -10],
 	enemiesKilled: 0, enemiesCrashed: 0,
-	// Efectos de pastillas
+	// Pill effects
 	shield: false, shieldCounter: 0,
 	laser: false, angularShot: false,
 	// Angular shot positions (-10 = inactive)
@@ -77,17 +77,17 @@ const player2 = {
 	controlsChanged: false
 };
 
-// Estado global de enemigos
-let currentScreen = 1; // Pantalla actual (1, 2, 3)
-let totalEnemies = 2; // Cantidad inicial de enemigos
-let maxPlayerShots = 1; // Máximo de disparos simultáneos por jugador
-let lastProgressionCheck = 0; // Para evitar chequeos repetidos
-let finalBossActive = false; // Si el jefe final está activo
-let totalKilled = 0; // Total de enemigos matados para triggear jefe
-let bossEnergy = 0; // Energía del jefe
-let bossNX = 200; // Posición X del jefe
-let bossNY = -110; // Posición Y del jefe
-let bossControl = false; // Para controlar movimiento oscilante
+// Global enemy state
+let currentScreen = 1; // Current screen (1, 2, 3)
+let totalEnemies = 2; // Initial enemy count
+let maxPlayerShots = 1; // Max simultaneous shots per player
+let lastProgressionCheck = 0; // To avoid repeated checks
+let finalBossActive = false; // If the final boss is active
+let totalKilled = 0; // Total enemies killed for boss trigger
+let bossEnergy = 0; // Boss energy
+let bossNX = 200; // Boss X position
+let bossNY = -110; // Boss Y position
+let bossControl = false; // To control oscillating movement
 let bossExplosionState = {
 	active: false,
 	x: 0,
@@ -109,12 +109,12 @@ let statsState = {
 	player2Crashes: 0,
 	player2Efficiency: 0
 };
-// Estado para entrada y visualización de puntajes
-statsState.highscoreChecked = false; // Si ya se verificó si hay highscores al terminar
-statsState.highscoreEntryActive = false; // Si está pidiendo nombre para highscore
-statsState.pendingHighscores = []; // {player, score} pendientes de ingresar
-statsState.currentHighIndex = 0; // índice en pendingHighscores
-statsState.nameBuffer = ''; // buffer para entrada de nombre
+// State for highscore entry and display
+statsState.highscoreChecked = false; // Whether highscores have been checked after finishing
+statsState.highscoreEntryActive = false; // Whether highscore name entry is active
+statsState.pendingHighscores = []; // {player, score} pending entry
+statsState.currentHighIndex = 0; // index in pendingHighscores
+statsState.nameBuffer = ''; // buffer for name entry
 statsState.maxHighscores = 5; // top N
 
 let pillDrop = {
@@ -124,7 +124,7 @@ let pillDrop = {
 	type: 0
 };
 
-// Arrays de enemigos (máximo 5 por pantalla)
+// Enemy arrays (max 5 per screen)
 const enemies = [
 	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false },
 	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false },
@@ -142,7 +142,7 @@ function write(text, x, y) {
 	renderer.outTextXY(x - 1, y - 1, text);
 }
 
-// --- Highscores (almacenamiento local) ---
+// --- Highscores (local storage) ---
 function loadHighScores() {
 	try {
 		const raw = localStorage.getItem('spaceships_highscores');
@@ -165,7 +165,7 @@ function saveHighScores(list) {
 
 function getRankPosition(score) {
 	const list = loadHighScores();
-	// ordenar descendente
+	// descending order by score
 	list.sort((a, b) => b.score - a.score);
 	for (let i = 0; i < list.length; i++) {
 		// Pascal used strict greater for insertion
@@ -233,7 +233,7 @@ function drawHighscoreEntry() {
 function drawRankingScreen() {
 	renderer.clearScreen();
 
-	// Fondo azul y recuadro interior negro
+	// Blue background and inner black frame
 	renderer.setFillStyle(1, 1);
 	renderer.bar(0, 0, canvas.width, canvas.height);
 	renderer.setFillStyle(0, 1);
@@ -241,14 +241,14 @@ function drawRankingScreen() {
 	renderer.setColor(1);
 	renderer.rectangle(70, 180, 610, 405);
 
-	// Encabezado de columnas
+	// Column header
 	renderer.setTextStyle(11, 0, 1);
 	renderer.setColor(4);
 	renderer.outTextXY(109, 186, 'Nombre                Puntaje        Jugador    Eficiencia');
 	renderer.setColor(12);
 	renderer.outTextXY(110, 185, 'Nombre                Puntaje        Jugador    Eficiencia');
 
-	// Título principal Space Ships
+	// Main Space Ships title
 	renderer.setTextStyle(4, 0, 5);
 	renderer.setColor(9);
 	renderer.outTextXY(33, 32, 'Space');
@@ -302,7 +302,7 @@ function drawRankingScreen() {
 	renderer.setColor(12);
 	renderer.outTextXY(395, 130, 'Producciones');
 
-	// Marco estilo Starfleet terminal
+	// Starfleet terminal style borders and lines
 	renderer.setColor(10);
 	renderer.setFillStyle(1, 2);
 	renderer.line(0, 170, 600, 170);
@@ -349,11 +349,11 @@ function drawRankingScreen() {
 
 function drawMenu() {
 	if (!menuInitialized) {
-		// Primera vez: dibujar fondo, título, subtítulo, opciones iniciales, créditos
-		renderer.setFillStyle(0, 1); // patrón sólido, color 1 = azul oscuro
+		// First time: draw background, title, subtitle, initial options, credits
+		renderer.setFillStyle(0, 1); // solid pattern, color 1 = dark blue
 		renderer.bar(0, 0, canvas.width, canvas.height);
 
-		// Título grande en estilo 'Space Ships'
+		// Stylish big title 'Space Ships'
 		renderer.setTextStyle(4, 0, 10);
 		renderer.setColor(9);
 		renderer.outTextXY(106, 0, 'Space');
@@ -373,12 +373,12 @@ function drawMenu() {
 		renderer.setColor(15);
 		renderer.outTextXY(460, 200, 'Adventure!');
 
-		// Subtítulo
+		// Subtitle
 		renderer.setTextStyle(0, 0, 1);
 		renderer.setColor(14);
 		renderer.outTextXY(canvas.width - 120, 10, 'Edición Especial');
 
-		// Créditos
+		// Credits
 		renderer.setTextStyle(2, 0, 1.5);
 		renderer.setColor(11);
 		renderer.outTextXY(500, canvas.height - 35, 'Lucas Capalbo');
@@ -386,7 +386,7 @@ function drawMenu() {
 		renderer.setColor(12);
 		renderer.outTextXY(525, canvas.height - 25, 'Producciones');
 
-		// Instrucciones del menú
+		// Menu instructions
 		renderer.setTextStyle(2, 0, 1);
 		renderer.setColor(7);
 		renderer.outTextXY(20, canvas.height - 25, 'Arriba/Abajo: seleccionar   Izquierda/Derecha: cambiar   Enter: aceptar');
@@ -395,11 +395,11 @@ function drawMenu() {
 		previousSelectedOption = selectedOption;
 	}
 
-	// Actualizar opciones si cambiaron
+	// Update options if changed
 	renderer.setFillStyle(0, 1);
 	renderer.bar(200, 230, 500, 250 + menuOptions.length * 30);
 
-	// Dibujar opciones actuales
+	// Draw current options
 	renderer.setTextStyle(0, 0, 2);
 	for (let i = 0; i < menuOptions.length; i++) {
 		const y = 250 + i * 30;
@@ -413,13 +413,13 @@ function drawMenu() {
 		write(text, x + 30, y);
 	}
 
-	// Borrar flecha anterior si cambió
+	// Clear previous arrow if changed
 	if (previousSelectedOption !== selectedOption && previousSelectedOption !== -1) {
 		renderer.setFillStyle(0, 1);
 		renderer.bar(160, 230, 200, 250 + menuOptions.length * 30);
 	}
 
-	// Dibujar flecha actual
+	// Draw current arrow
 	if (selectedOption >= 0 && selectedOption < menuOptions.length) {
 		const y = 250 + selectedOption * 30;
 		drawMenuArrow(170, y + 5, 14);
@@ -443,7 +443,7 @@ function setupGameScreen() {
 	currentScreen = 1;
 	maxPlayerShots = 1;
 
-	// Inicializar valores según dificultad
+	// Initialize values by difficulty
 	let difficultyLevel = 1;
 	if (difficulty === 'Media') difficultyLevel = 2;
 	else if (difficulty === 'Difícil') difficultyLevel = 3;
@@ -481,19 +481,19 @@ function setupGameScreen() {
 	statsState.currentHighIndex = 0;
 	statsState.nameBuffer = '';
 
-	// Reinicializar estadísticas de enemigos
+	// Reset enemy statistics
 	player1.enemiesKilled = 0;
 	player1.enemiesCrashed = 0;
 	player2.enemiesKilled = 0;
 	player2.enemiesCrashed = 0;
 
-	// Reinicializar efectos de pastillas
+	// Reset pill effects
 	resetPlayerEffects(player1);
 	resetPlayerEffects(player2);
-	// Limpiar cualquier pastilla visible antes de empezar un nuevo juego
+	// Clear any visible pill before starting a new game
 	cancelPillDrop();
 
-	// Inicializar posiciones según cantidad de jugadores
+	// Initialize positions based on player count
 	if (players === 'Uno') {
 		player1.x = 200;
 		player1.y = 443;
@@ -503,23 +503,23 @@ function setupGameScreen() {
 		player2.x = 100;
 		player2.y = 443;
 	}
-	// Inicializar estado de balas
+	// Initialize player shots
 	resetPlayerShots(player1);
 	resetPlayerShots(player2);
 
-	// Area de juego izquierdo
-	renderer.setFillStyle(0, 0); // fondo sólido negro
+	// Left game area
+	renderer.setFillStyle(0, 0); // solid black background
 	renderer.bar(0, 0, 400, canvas.height);
 
-	// Panel derecho
-	renderer.setFillStyle(1, 1); // fondo sólido azul
+	// Right panel
+	renderer.setFillStyle(1, 1); // solid blue background
 	renderer.bar(400, 0, canvas.width, canvas.height);
 
-	// Bordes del panel
+	// Panel borders
 	renderer.setColor(12);
 	renderer.rectangle(400, 0, canvas.width, canvas.height);
 
-	// Cabecera del panel
+	// Header of the panel
 	let y_base = players === 'Dos' ? 180 : 300;
 	renderer.setTextStyle(4, 0, 5);
 	renderer.setColor(9);
@@ -539,7 +539,7 @@ function setupGameScreen() {
 	renderer.setTextStyle(2, 1, 1.7);
 	renderer.outTextXY(605, y_base + 96, 'Adventure!');
 
-	// Textos fijos y líneas para Jugador 1
+	// Fixed text and lines for Player 1
 	renderer.setTextStyle(0, 0, 1);
 	renderer.setColor(4);
 	renderer.outTextXY(579, 23, 'Puntaje');
@@ -558,7 +558,7 @@ function setupGameScreen() {
 	renderer.line(403, 65, 636, 65);
 	renderer.line(403, 115, 636, 115);
 
-	// Textos fijos y líneas para Jugador 2 si activo
+	// Fixed text and lines for Player 2 if active
 	if (players === 'Dos') {
 		renderer.setColor(4);
 		renderer.outTextXY(579, 333, 'Puntaje');
@@ -578,7 +578,7 @@ function setupGameScreen() {
 		renderer.line(403, 425, 636, 425);
 	}
 
-	// Dibujar vidas iniciales
+	// Draw initial lives
 	for (let i = 1; i <= player1.lives; i++) {
 		drawPlayer(650 - (30 * i), 90, 1, false);
 	}
@@ -588,16 +588,16 @@ function setupGameScreen() {
 		}
 	}
 
-	// Mostrar energía inicial
+	// Show initial energy
 	showEnergy(player1.energy, 1);
 	if (players === 'Dos') showEnergy(player2.energy, 2);
 
-	// Dibujar naves de jugadores en posiciones iniciales
+	// Draw player ships in initial positions
 	drawPlayer(player1.x, player1.y, 1);
 	if (players === 'Dos') drawPlayer(player2.x, player2.y, 2);
 
-	// Inicializar enemigos
-	totalEnemies = 2; // Iniciar con 2 enemigos
+	// Initialize enemies
+	totalEnemies = 2; // Start with 2 enemies
 	initEnemies(currentScreen, 5);
 	totalKilled = 0;
 	finalBossActive = false;
@@ -618,7 +618,7 @@ function writeScore(score, player) {
 	renderer.outTextXY(590, y, scoreStr);
 }
 
-// --- Función de progresión del juego ---
+// --- Game progression function ---
 function updateGameProgression() {
 	if (totalKilled === 1) {
 		totalEnemies = 3;
@@ -638,7 +638,7 @@ function updateGameProgression() {
 	}
 }
 
-// --- Funciones de enemigos ---
+// --- Enemy functions ---
 function initEnemies(screenNumber, enemiesToInitialize) {
 	for (let i = 0; i < enemiesToInitialize; i++) {
 		enemies[i].x = Math.floor(Math.random() * 380);
@@ -649,7 +649,7 @@ function initEnemies(screenNumber, enemiesToInitialize) {
 		enemies[i].shotY = -10;
 		enemies[i].control = false;
 	}
-	// Resto de enemigos inactivos
+	// Remaining inactive enemies
 	for (let i = enemiesToInitialize; i < 5; i++) {
 		enemies[i].y = -20;
 		enemies[i].firing = false;
@@ -658,10 +658,10 @@ function initEnemies(screenNumber, enemiesToInitialize) {
 
 function updateEnemies(screenNumber) {
 	for (let i = 0; i < totalEnemies; i++) {
-		// Movimiento según pantalla
+		// Movement based on screen
 		switch (screenNumber) {
 			case 1:
-				// Acercarse horizontalmente hacia el jugador
+				// Move horizontally toward the player
 				if (Math.random() < 0.5) {
 					if (enemies[i].x > player1.x) {
 						enemies[i].x -= Math.floor(Math.random() * 3) + 1;
@@ -677,7 +677,7 @@ function updateEnemies(screenNumber) {
 				}
 				break;
 			case 2:
-				// Movimiento oscilante
+				// Oscillating movement
 				if (enemies[i].y % 150 === 0) {
 					enemies[i].control = !enemies[i].control;
 				}
@@ -688,7 +688,7 @@ function updateEnemies(screenNumber) {
 				}
 				break;
 			case 3:
-				// Movimiento vertical especial
+				// Special vertical movement
 				if (enemies[i].y % 18 === 0) {
 					enemies[i].y += 19;
 				} else if (Math.random() < 0.5) {
@@ -697,18 +697,18 @@ function updateEnemies(screenNumber) {
 				break;
 		}
 
-		// Limitar horizontalmente
+		// Limit horizontally
 		if (enemies[i].x < 30) enemies[i].x = 30;
 		if (enemies[i].x > 380) enemies[i].x = 380;
 
-		// Movimiento vertical (excepto screenNumber=3)
+		// Vertical movement (except for screenNumber=3)
 		if (screenNumber !== 3) {
 			enemies[i].y++;
 		}
 
-		// Reiniciar si sale por abajo
+		// Reset if it exits below
 		if (enemies[i].y > 480) {
-			totalKilled++; // Contar como escape
+			totalKilled++; // Count as escape
 			enemies[i].y = -50;
 			enemies[i].x = Math.floor(Math.random() * 440);
 		}
@@ -725,7 +725,7 @@ function updateEnemyShots(screenNumber) {
 	}
 
 	for (let i = 0; i < totalEnemies; i++) {
-		// Generar disparo del enemigo
+		// Generate enemy shot
 		if (!enemies[i].firing && (Math.floor(Math.random() * difficultyValue) === 3)) {
 			enemies[i].firing = true;
 			if (finalBossActive) {
@@ -737,7 +737,7 @@ function updateEnemyShots(screenNumber) {
 			}
 		}
 
-		// Actualizar disparo del enemigo
+		// Update enemy shot
 		if (enemies[i].firing) {
 			updateEnemyShot(i, screenNumber);
 		}
@@ -747,18 +747,18 @@ function updateEnemyShots(screenNumber) {
 function updateEnemyShot(enemyIndex, screenNumber) {
 	const e = enemies[enemyIndex];
 
-	// Mover bala según pantalla
+	// Move shot based on screen
 	if (screenNumber === 1) {
 		e.shotY += 2; // Vertical
 	} else if (screenNumber === 2 || screenNumber === 3) {
 		if (finalBossActive && screenNumber !== 3) {
-			e.shotY += 5; // Más rápido si hay jefe
+			e.shotY += 5; // Faster when boss is active
 		} else {
 			e.shotY += 3;
 		}
 	}
 
-	// Movimiento horizontal aleatorio
+	// Random horizontal movement
 	if (screenNumber === 1 || screenNumber === 3) {
 		const playerX = players === 'Dos' ? player1.x : player1.x;
 		if (Math.random() < 0.5) {
@@ -776,17 +776,17 @@ function updateEnemyShot(enemyIndex, screenNumber) {
 		}
 	}
 
-	// Limitar X
+	// Limit X
 	if (e.shotX > 396) e.shotX = 396;
 
-	// Dibujar bala enemiga
+	// Draw enemy shot
 	renderer.setColor(12);
 	renderer.circle(e.shotX, e.shotY, 3);
 	renderer.circle(e.shotX, e.shotY, 2);
 	renderer.setColor(14);
 	renderer.circle(e.shotX, e.shotY, 1);
 
-	// Desactivar si sale de pantalla
+	// Deactivate if off-screen
 	if (e.shotY > 479) {
 		e.firing = false;
 	}
@@ -795,10 +795,9 @@ function updateEnemyShot(enemyIndex, screenNumber) {
 function drawEnemies(screenNumber) {
 	for (let i = 0; i < totalEnemies; i++) {
 		if (!finalBossActive) {
-			// Si no es la pantalla 3, dibuja según el código de enemigo asignado.
-			// En la pantalla 3 el Pascal original alterna entre las variantes 3 y 4
-			// según la fila (F[e] MOD 18 > 12): cuando true usa la variante 4 (K),
-			// si no usa la variante 3 (L).
+			// If not screen 3, draw according to assigned enemy code.
+			// On screen 3 the original Pascal alternates between variants 3 and 4
+			// based on the Y position
 			if (screenNumber !== 3) {
 				drawEnemy(enemies[i].x, enemies[i].y, enemies[i].code);
 			} else {
@@ -817,7 +816,7 @@ function checkPlayerShotCollisions(playerNum) {
 	const missileHitboxYTop = -6;
 	const missileHitboxYBottom = 20;
 
-	// Verificar colisiones con disparos normales
+	// Check collisions with normal shots
 	for (let d = 0; d < player.shots.length; d++) {
 		if (!player.shots[d]) continue;
 
@@ -827,14 +826,14 @@ function checkPlayerShotCollisions(playerNum) {
 				player.bulletY[d] > enemies[e].y + missileHitboxYTop &&
 				player.bulletX[d] > enemies[e].x - missileHitboxX &&
 				player.bulletX[d] < enemies[e].x + missileHitboxX) {
-				// Colisión!
+				// Collision!
 				if (!player.laser) {
 					player.shots[d] = false;
 					player.bulletX[d] = -10;
 					player.bulletY[d] = -10;
 				}
 				spawnPillDrop(enemies[e].x, enemies[e].y);
-				// Reiniciar enemigo
+				// Reset enemy
 				enemies[e].y = -80;
 				enemies[e].x = Math.floor(Math.random() * 380);
 				totalKilled++;
@@ -843,7 +842,7 @@ function checkPlayerShotCollisions(playerNum) {
 			}
 		}
 
-		// Verificar colisiones con disparos angulares
+		// Check collisions with angular shots
 		if (player.angularShot) {
 			const angularShotXRight = player.angularShotXRight;
 			const angularShotXLeft = player.angularShotXLeft;
@@ -892,7 +891,7 @@ function handleFinalBoss() {
 	}
 
 	if (finalBossActive) {
-		// Movimiento del jefe según pantalla
+		// Boss movement by screen
 		switch (currentScreen) {
 			case 1:
 				if (Math.random() < 0.5 && bossNX < 320) {
@@ -903,7 +902,7 @@ function handleFinalBoss() {
 				break;
 			case 2:
 			case 3:
-				// Oscilación controlada
+				// Controlled oscillation
 				if ((bossNX % 330 <= 1 || bossNX < 70) || (bossNX % 35 === 1 && Math.random() < 0.5)) {
 					bossControl = !bossControl;
 				}
@@ -921,13 +920,13 @@ function handleFinalBoss() {
 			bossNY -= Math.floor(Math.random() * 5) + 1;
 		}
 
-		// Verificar colisiones con disparos del jugador 1
+		// Check player 1 shot collisions
 		for (let d = 0; d < player1.shots.length; d++) {
 			if (!player1.shots[d]) continue;
 
 			if (player1.bulletY[d] < bossNY + 100 && player1.bulletY[d] > bossNY &&
 				player1.bulletX[d] > bossNX - 25 && player1.bulletX[d] < bossNX + 25) {
-				// Golpe al jefe
+				// Boss hit!
 				renderer.setColor(1);
 				renderer.setFillStyle(1, 1);
 				renderer.pieSlice(530, 230, bossEnergy, 360, 60);
@@ -949,7 +948,7 @@ function handleFinalBoss() {
 
 				if (bossEnergy >= 360) {
 					totalKilled++;
-					// Jefe derrotado: otorgar bonificación y activar animación de explosión
+					// Boss defeated: grant bonus and activate explosion animation
 					player1.score += 50;
 					player1.enemiesKilled++;
 					bossExplosionState.active = true;
@@ -971,7 +970,7 @@ function handleFinalBoss() {
 			}
 		}
 
-		// Si hay jugador 2, verificar sus disparos también
+		// If player 2 exists, also check their shots
 		if (players === 'Dos') {
 			for (let d = 0; d < player2.shots.length; d++) {
 				if (!player2.shots[d]) continue;
@@ -999,7 +998,7 @@ function handleFinalBoss() {
 
 					if (bossEnergy >= 360) {
 						totalKilled++;
-						// Jefe derrotado: otorgar bonificación y activar animación de explosión
+						// Boss defeated: grant bonus and activate explosion animation
 						player2.score += 50;
 						player2.enemiesKilled++;
 						bossExplosionState.active = true;
@@ -1022,7 +1021,7 @@ function handleFinalBoss() {
 			}
 		}
 
-		// Dibujar jefe
+		// Draw boss
 		drawEnemyBossShip(bossNX, bossNY, currentScreen);
 	}
 }
@@ -1044,7 +1043,7 @@ function showEnergy(energy, player) {
 		const x1 = 643 - (i * 20);
 		const x2 = 640 - (i * 20);
 		if (i <= energy) {
-			// Energía disponible: dos pieSlice
+			// Available energy: two pie slices
 			renderer.setFillStyle(1, 2);
 			renderer.pieSlice(x1, baseY, 20, 340, 8);
 			renderer.setColor(14);
@@ -1053,7 +1052,7 @@ function showEnergy(energy, player) {
 			renderer.setFillStyle(1, 12);
 			renderer.pieSlice(x2, baseY, 110, 250, 5);
 		} else {
-			// Energía consumida: pieSlice completo
+			// Consumed energy: full pie slice
 			renderer.setFillStyle(1, 1);
 			renderer.pieSlice(x1, baseY, 0, 360, 8);
 		}
@@ -1067,13 +1066,13 @@ function drawEffectDurationBar(player, playerNum) {
 	const y0 = baseY - 1;
 	const y1 = baseY + 3;
 
-	// Limpiar el área de la barra en el panel derecho, incluso si no hay efecto activo
+	// Clear the right panel bar area even if no effect is active
 	renderer.setFillStyle(1, 1);
 	renderer.bar(x0 - 1, y0 - 1, x1 + 1, y1 + 1);
 
 	if (player.effectDuration <= 0) return;
 
-	// La duración máxima de efecto está fijada en 300 frames
+	// Max effect duration is fixed at 300 frames
 	const maxDuration = 300;
 	const width = Math.max(0, Math.min(100, Math.floor((player.effectDuration / maxDuration) * 100)));
 
@@ -1346,9 +1345,9 @@ function drawStatsScreen() {
 	}
 }
 
-// Funciones de dibujo de objetos del juego
+// Object drawing functions for the game
 function drawPill(x, y, pillType) {
-	// Mapear tipos de pastillas a colores BGI (según código Pascal)
+	// Map pill types to Pascal BGI colors
 	let color;
 	switch (pillType) {
 		case PILL_TYPES.POINTS_100: color = 11; break;
@@ -1361,25 +1360,25 @@ function drawPill(x, y, pillType) {
 		default: color = 0; break;
 	}
 
-	// Dibujar arcos exteriores (equivalente a Arc en Pascal)
+	// Draw outer arcs
 	renderer.setColor(color);
 	renderer.arc(x, y, 0, 90, 5);
 	renderer.arc(x, y, 0, 90, 6);
 	renderer.arc(x, y, 180, 270, 5);
 	renderer.arc(x, y, 180, 270, 6);
 
-	// Dibujar círculos concéntricos
-	renderer.setColor(12); // Rojo para borde
+	// Draw concentric circles
+	renderer.setColor(12); // Red for border
 	renderer.circle(x, y, 3);
-	renderer.setColor(4);  // Rojo oscuro
+	renderer.setColor(4);  // Dark red for inner border
 	renderer.circle(x, y, 2);
-	renderer.setColor(14); // Amarillo para centro
+	renderer.setColor(14); // Yellow for center
 	renderer.circle(x, y, 1);
 }
 
 function clearPill(x, y) {
-	// Borrar pastilla dibujando rectángulo negro (equivalente a BAR en Pascal)
-	renderer.setFillStyle(0, 0); // Negro sólido
+	// Erase pill by drawing a black rectangle over it
+	renderer.setFillStyle(0, 0); // Solid black
 	renderer.bar(x - 6, y - 7, x + 6, y + 7);
 }
 
@@ -1734,20 +1733,20 @@ function drawEnemyBossShip(nx, ny, screenNumber) {
 	return ny;
 }
 
-// --- Disparos: misiles, láser y disparos angulares (para ambos jugadores)
+// --- Shots: missiles, lasers and angular shots (both players)
 function drawMissile(x, y, color) {
 	renderer.setColor(color);
-	// Cuerpo del proyectil (dos trazos verticales)
+	// Projectile bodies
 	renderer.line(x - 5, y, x - 5, y - 7);
 	renderer.line(x + 5, y, x + 5, y - 7);
-	// Punta semicircular
-	// Centrar los arcos en la misma coordenada Y que en el Pascal original
+	// Semicircular tips
+	// Center the arcs on the same Y coordinate as in the original Pascal
 	renderer.arc(x - 5, y, 0, 180, 3);
 	renderer.arc(x + 5, y, 0, 180, 3);
 }
 
 function drawLaser(x, y, color) {
-	// Draw laser as two fast projectiles (left and right) similar to Pascal's Disparar
+	// Draw laser as two fast projectiles (left and right)
 	// Draw several vertical lines to give thickness and color variation
 	// Left
 	renderer.setColor(2);
@@ -1771,9 +1770,9 @@ function drawLaser(x, y, color) {
 
 function drawAngledShot(x, y, side, color) {
 	renderer.setColor(color);
-	// Centro pequeño
+	// Small center
 	renderer.circle(x, y, 2);
-	// Trazos en ángulo
+	// Angled lines
 	if (side === 'left') {
 		renderer.line(x, y, x - 8, y - 12);
 		renderer.line(x - 2, y - 2, x - 6, y - 10);
@@ -1788,14 +1787,14 @@ function updateShots() {
 	// Player 1
 	for (let i = 0; i < player1.shots.length; i++) {
 		if (!player1.shots[i]) continue;
-		// Mover bala y dibujar: si es láser dibujamos versión láser en la posición de la bala
+		// Move bullet and draw: if it's a laser we draw the laser version at the bullet's position
 		player1.bulletY[i] -= missileSpeed;
 		if (player1.laser) {
 			drawLaser(player1.bulletX[i], player1.bulletY[i], 14);
 		} else {
 			drawMissile(player1.bulletX[i], player1.bulletY[i], 14);
 		}
-		// Fuera de pantalla -> desactivar
+		// Out of screen -> deactivate
 		if (player1.bulletY[i] < -20 || player1.bulletX[i] < -50 || player1.bulletX[i] > 450) {
 			player1.shots[i] = false;
 			player1.bullets = Math.max(0, player1.bullets - 1);
@@ -1821,7 +1820,7 @@ function updateShots() {
 function updateAngularShots() {
 	// Bounds to avoid drawing into the right panel
 	const leftBound = 6;
-	const rightBound = 389; // similar to Pascal
+	const rightBound = 389;
 	const topBound = 4;
 
 	// Player 1
@@ -1904,11 +1903,11 @@ function updateAngularShots() {
 }
 
 
-// Estado de controles del juego
+// Game control state
 let keysPressed = {};
 let prevKeysPressed = {};
 
-// Manejo de teclado
+// Keyboard handling
 document.addEventListener('keydown', (event) => {
 	if (gameState === GAME_STATES.MENU) {
 		switch (event.key) {
@@ -1955,7 +1954,7 @@ document.addEventListener('keydown', (event) => {
 			case 'Enter':
 				if (selectedOption === 0) {
 					gameState = GAME_STATES.GAME_START;
-					menuInitialized = false; // Reset para próxima vez que entre al menú
+					menuInitialized = false; // Reset for next time entering the menu
 					keysPressed = {};
 				} else if (selectedOption === 3) {
 					gameState = GAME_STATES.HIGHSCORES;
@@ -1965,15 +1964,15 @@ document.addEventListener('keydown', (event) => {
 				break;
 		}
 	} else if (gameState === GAME_STATES.GAME_START) {
-		// Cualquier tecla inicia el juego
+		// Any key starts the game
 		gameState = GAME_STATES.GAME;
 		keysPressed = {};
 	} else if (gameState === GAME_STATES.GAME) {
-		// Rastrear teclas presionadas
+		// Track pressed keys
 		keysPressed[event.key.toLowerCase()] = true;
 		keysPressed[event.key.toUpperCase()] = true;
 
-		// Manejo de Escape para salir
+		// Escape handling to exit
 		if (event.key === 'Escape') {
 			gameState = GAME_STATES.CONFIRM_EXIT;
 			confirmExitStartTime = Date.now();
@@ -1981,15 +1980,15 @@ document.addEventListener('keydown', (event) => {
 			gameState = GAME_STATES.HELP;
 		}
 	} else if (gameState === GAME_STATES.CONFIRM_EXIT) {
-		// Solo procesar teclado después de medio segundo para evitar cancelación accidental
+		// Only process keyboard after half a second to avoid accidental cancellation
 		if (Date.now() - confirmExitStartTime >= 500) {
 			if (event.key === 'Escape') {
-				// Confirmar salida al menú
+				// Confirm exit to menu
 				gameState = GAME_STATES.MENU;
 				keysPressed = {};
 				menuInitialized = false;
 			} else {
-				// Cualquier otra tecla cancela la confirmación y vuelve al juego
+				// Any other key cancels confirmation and returns to the game
 				gameState = GAME_STATES.GAME;
 				keysPressed = {};
 			}
@@ -2055,7 +2054,7 @@ document.addEventListener('keydown', (event) => {
 			}
 		}
 	} else if (gameState === GAME_STATES.HIGHSCORES) {
-		// Cualquier tecla vuelve al menú
+		// Any key returns to the menu
 		gameState = GAME_STATES.MENU;
 		menuInitialized = false;
 		keysPressed = {};
@@ -2070,7 +2069,7 @@ document.addEventListener('keyup', (event) => {
 });
 
 function updatePlayerMovement() {
-	const moveSpeed = 5; // Píxeles por frame
+	const moveSpeed = 5; // Pixels per frame
 	const gameAreaWidth = 400;
 
 	updatePlayerEffects(player1);
@@ -2084,7 +2083,7 @@ function updatePlayerMovement() {
 	const p1Left = player1.controlsChanged ? 'arrowright' : 'arrowleft';
 	const p1Right = player1.controlsChanged ? 'arrowleft' : 'arrowright';
 
-	// Player 1: Flechas
+	// Player 1: Arrows and space
 	if (player1.lives > 0) {
 		if (keysPressed[p1Up]) {
 			player1.y = Math.max(20, player1.y - player1Speed);
@@ -2099,7 +2098,7 @@ function updatePlayerMovement() {
 			player1.x = Math.min(gameAreaWidth - 12, player1.x + player1Speed);
 		}
 
-		// Disparo Player 1: Espacio (solo en el borde de pulsación)
+		// Player 1 shot: Space (edge press only)
 		if (keysPressed[' '] && !prevKeysPressed[' ']) {
 			if (player1.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player1.shots.findIndex(shot => !shot);
@@ -2110,7 +2109,7 @@ function updatePlayerMovement() {
 					player1.bullets++;
 				}
 			}
-			// Iniciar disparo angular adicional si está activo y no hay uno en curso
+			// Start additional angular shot if active and none is in progress
 			if (player1.angularShot && ((player1.angularShotXLeft === -10 && player1.angularShotXRight === -10) || player1.angularShotY === -10)) {
 				player1.angularShotXLeft = player1.x;
 				player1.angularShotXRight = player1.x;
@@ -2124,7 +2123,7 @@ function updatePlayerMovement() {
 	const p2Left = player2.controlsChanged ? 'd' : 'a';
 	const p2Right = player2.controlsChanged ? 'a' : 'd';
 
-	// Player 2: AWSD (solo en modo dos jugadores)
+	// Player 2: AWSD and 1 (two-player mode only)
 	if (players === 'Dos' && player2.lives > 0) {
 		if (keysPressed[p2Up]) {
 			player2.y = Math.max(20, player2.y - player2Speed);
@@ -2139,7 +2138,7 @@ function updatePlayerMovement() {
 			player2.x = Math.min(gameAreaWidth - 12, player2.x + player2Speed);
 		}
 
-		// Disparo Player 2: Tab (solo en modo dos jugadores)
+		// Player 2 shot: 1 (two-player mode only)
 		if (keysPressed['1'] && !prevKeysPressed['1']) {
 			if (player2.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player2.shots.findIndex(shot => !shot);
@@ -2150,7 +2149,7 @@ function updatePlayerMovement() {
 					player2.bullets++;
 				}
 			}
-			// Iniciar disparo angular adicional si está activo y no hay uno en curso
+			// Start additional angular shot if active and none is in progress
 			if (player2.angularShot && ((player2.angularShotXLeft === -10 && player2.angularShotXRight === -10) || player2.angularShotY === -10)) {
 				player2.angularShotXLeft = player2.x;
 				player2.angularShotXRight = player2.x;
@@ -2159,7 +2158,7 @@ function updatePlayerMovement() {
 		}
 	}
 
-	// Actualizar prevKeysPressed para el siguiente frame (detección de borde)
+	// Update prevKeysPressed for next frame (edge detection)
 	prevKeysPressed = Object.assign({}, keysPressed);
 }
 
@@ -2169,60 +2168,60 @@ function drawConfirmExitScreen() {
 	renderer.setColor(12);
 	renderer.rectangle(60, 200, 340, 230);
 
-	// Mostrar mensaje de confirmación
+	// Show confirmation message
 	renderer.setTextStyle(2, 0, 1);
 	renderer.setColor(14);
 	renderer.outTextXY(75, 210, 'Presione ESC nuevamente para salir');
 }
 
 function drawHelpScreen() {
-	// Dibujar ventana de ayuda
+	// Draw help window
 	renderer.setFillStyle(1, 0);
 	renderer.bar(100, 100, 350, 405);
-	renderer.setFillStyle(6, 8); // Patrón \, color gris
-	renderer.setColor(12); // Rojo para borde
+	renderer.setFillStyle(6, 8); // \ pattern, grey color
+	renderer.setColor(12); // Red for boder
 	renderer.bar3d(100, 100, 350, 405, 4, true);
 
-	// Títulos
+	// Titles
 	renderer.setTextStyle(0, 0, 1.2);
 	renderer.setColor(11); // Cyan
 	renderer.outTextXY(115, 110, 'Lucas Capalbo Producciones');
-	renderer.setColor(10); // Verde
+	renderer.setColor(10); // Green
 	renderer.outTextXY(130, 125, 'Space Ships Adventure');
 
-	// Mostrar ejemplos de pastillas con descripciones
+	// Show examples of pills with descriptions
 	renderer.setTextStyle(0, 0, 1);
-	renderer.setColor(14); // Amarillo
+	renderer.setColor(14); // Yellow
 
-	// Pastilla 1: 100 puntos
+	// Pill 1: 100 points
 	drawPill(170, 150, PILL_TYPES.POINTS_100);
 	renderer.outTextXY(185, 148, '100 Puntos');
 
-	// Pastilla 2: Energía completa
+	// Pill 2: full energy
 	drawPill(170, 170, PILL_TYPES.ENERGY_FULL);
 	renderer.outTextXY(185, 168, 'Energía');
 
-	// Pastilla 3: Cambio de controles
+	// Pill 3: controls swap
 	drawPill(170, 190, PILL_TYPES.CONTROLS_CHANGE);
 	renderer.outTextXY(185, 188, 'Cambio De Controles');
 
-	// Pastilla 4: Velocidad
+	// Pill 4: speed boost
 	drawPill(170, 210, PILL_TYPES.SPEED_BOOST);
 	renderer.outTextXY(185, 208, 'Velocidad');
 
-	// Pastilla 5: Disparo en ángulo
+	// Pill 5: angular shot
 	drawPill(170, 230, PILL_TYPES.ANGULAR_SHOT);
 	renderer.outTextXY(185, 228, 'Disparo En Ángulo');
 
-	// Pastilla 6: Láser
+	// Pill 6: laser
 	drawPill(170, 250, PILL_TYPES.LASER);
 	renderer.outTextXY(185, 248, 'Laser');
 
-	// Pastilla 7: Escudo
+	// Pill 7: shield
 	drawPill(170, 270, PILL_TYPES.SHIELD);
 	renderer.outTextXY(185, 268, 'Escudo x 5');
 
-	// Información adicional
+	// Additional information
 	renderer.outTextXY(120, 290, 'Pastillas: 5 Puntos');
 	renderer.outTextXY(120, 304, 'Enemigos: 5 Puntos');
 	renderer.outTextXY(120, 318, 'Monstruos: 50 Puntos');
@@ -2243,7 +2242,7 @@ function gameLoop() {
 			drawMenu();
 			break;
 		case GAME_STATES.GAME_START:
-			// Inicializar pantalla de juego y mostrar mensaje
+			// Initialize game screen and show message
 			setupGameScreen();
 			renderer.setTextStyle(2, 0, 1.5);
 			renderer.setColor(12);
@@ -2255,11 +2254,11 @@ function gameLoop() {
 
 			updatePlayerMovement();
 
-			// Redibujar área de juego
+			// Redraw game area
 			renderer.setFillStyle(0, 0);
 			renderer.bar(0, 0, 400, canvas.height);
 
-			// Dibujar naves de jugadores en sus posiciones actuales
+			// Draw player ships in current positions
 			if (player1.lives > 0) {
 				drawPlayer(player1.x, player1.y, 1);
 			}
@@ -2267,32 +2266,32 @@ function gameLoop() {
 				drawPlayer(player2.x, player2.y, 2);
 			}
 
-			// Actualizar y dibujar disparos angulares y proyectiles
+			// Update and draw angular shots and projectiles
 			updateAngularShots();
 			updateShots();
-			// Actualizar y dibujar enemigos solo cuando no está activo el jefe final
+			// Update and draw enemies only when the final boss is not active
 			if (!finalBossActive) {
 				updateEnemies(currentScreen);
 				drawEnemies(currentScreen);
 			}
-			// Actualizar disparos de enemigos siempre (incluso durante el jefe final)
+			// Always update enemy shots (even during the final boss)
 			updateEnemyShots(currentScreen);
 			handleFinalBoss();
 
 			updatePillDrop();
 			if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
-			// Dibujar barra de duración de efectos de pastillas
+			// Draw pill duration bar
 			drawEffectDurationBar(player1, 1);
 			if (players === 'Dos') drawEffectDurationBar(player2, 2);
 
-			// Verificar colisiones con disparos enemigos
+			// Check collisions with enemy shots
 			checkEnemyShotCollisions();
 			checkPlayerEnemyCollisions();
 
-			// Verificar colisiones con disparos del jugador
+			// Check collisions with player shots
 			checkPlayerShotCollisions(1);
 			if (players === 'Dos') checkPlayerShotCollisions(2);
-			// Actualizar progresión del juego según totalKilled
+			// Update game progression based on totalKilled
 			updateGameProgression();
 			break;
 		case GAME_STATES.BOSS_EXPLOSION:
@@ -2314,7 +2313,7 @@ function gameLoop() {
 			drawHighscoreEntry();
 			break;
 		case GAME_STATES.CONFIRM_EXIT:
-			// Mostrar pantalla congelada con mensaje de confirmación
+			// Show frozen screen with confirmation message
 			drawConfirmExitScreen();
 			break;
 		case GAME_STATES.HELP:
