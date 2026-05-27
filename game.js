@@ -304,17 +304,16 @@ function drawRankingScreen() {
 
 	// Starfleet terminal style borders and lines
 	renderer.setColor(10);
-	renderer.setFillStyle(1, 2);
 	renderer.line(0, 170, 600, 170);
 	renderer.line(0, 180, 610, 180);
-	renderer.pieSlice(600, 180, 0, 180, 10);
 	renderer.line(0, 415, 600, 415);
 	renderer.line(0, 405, 610, 405);
-	renderer.pieSlice(600, 405, 180, 360, 10);
-
+	
 	renderer.setFillStyle(1, 2);
-	renderer.bar(0, 171, 599, 179);
-	renderer.bar(0, 405, 599, 414);
+	renderer.pieSlice(600, 179, 0, 90, 10);
+	renderer.pieSlice(600, 406, 270, 360, 10);
+	renderer.bar(0, 171, 600, 179);
+	renderer.bar(0, 406, 600, 414);
 
 	renderer.setColor(10);
 	renderer.rectangle(550, 184, 610, 401);
