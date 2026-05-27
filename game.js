@@ -951,7 +951,7 @@ function handleFinalBoss() {
 					player1.score += 50;
 					player1.enemiesKilled++;
 					bossExplosionState.active = true;
-					bossExplosionState.x = bossNX;
+					bossExplosionState.x = Math.min(bossNX, 300);
 					bossExplosionState.y = bossNY;
 					bossExplosionState.suma = 1;
 					bossExplosionState.repeats = 0;
