@@ -762,9 +762,22 @@ function updateEnemyShot(enemyIndex, screenNumber) {
 		}
 	}
 
-	// Random horizontal movement
+	// Random horizontal movement toward the nearest alive player on screens 1 and 3
 	if (screenNumber === 1 || screenNumber === 3) {
-		const playerX = players === 'Uno' || enemyIndex % 2 === 0 ? player1.x : player2.x;
+		let playerX = player1.x;
+		if (players === 'Dos') {
+			const player1Alive = player1.lives > 0;
+			const player2Alive = player2.lives > 0;
+			if (!player1Alive && player2Alive) {
+				playerX = player2.x;
+			} else if (player1Alive && !player2Alive) {
+				playerX = player1.x;
+			} else if (player1Alive && player2Alive) {
+				const dist1 = Math.abs(e.shotX - player1.x);
+				const dist2 = Math.abs(e.shotX - player2.x);
+				playerX = dist1 <= dist2 ? player1.x : player2.x;
+			}
+		}
 		if (Math.random() < 0.5) {
 			if (e.shotX > playerX) {
 				e.shotX -= Math.random() * 7;
