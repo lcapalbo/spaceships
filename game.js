@@ -2262,6 +2262,13 @@ function gameLoop() {
 			renderer.setTextStyle(2, 0, 1.5);
 			renderer.setColor(12);
 			renderer.outTextXY(50, 200, 'Presione una tecla para comenzar');
+			renderer.setTextStyle(2, 0, 1.3);
+			renderer.outTextXY(50, 240, '? - Ayuda');
+			renderer.outTextXY(50, 260, 'Esc - Volver a menu');
+			renderer.outTextXY(50, 280, '↑←↓→ - Jugador 1   Espacio - Disparo');
+			if(players === 'Dos') {
+				renderer.outTextXY(50, 300, 'WASD - Jugador 2   1 - Disparo');
+			}
 			break;
 		case GAME_STATES.GAME:
 			writeScore(player1.score, 1);
