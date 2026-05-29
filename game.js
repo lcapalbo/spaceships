@@ -206,7 +206,7 @@ function drawHighscoreEntry() {
 	if (!statsState.highscoreEntryActive) return;
 	const entry = statsState.pendingHighscores[statsState.currentHighIndex];
 	if (!entry) return;
-	
+
 	renderer.setFillStyle(10, 0);
 	renderer.bar(0, 0, 640, 480);
 
@@ -308,7 +308,7 @@ function drawRankingScreen() {
 	renderer.line(0, 180, 610, 180);
 	renderer.line(0, 415, 600, 415);
 	renderer.line(0, 405, 610, 405);
-	
+
 	renderer.setFillStyle(1, 2);
 	renderer.pieSlice(600, 179, 0, 90, 10);
 	renderer.pieSlice(600, 406, 270, 360, 10);
@@ -331,7 +331,7 @@ function drawRankingScreen() {
 		renderer.setTextStyle(0, 0, 2.2);
 		renderer.setColor(15);
 		if (entry) {
-			renderer.outTextXY(90, y, entry.name.substring(0,8));
+			renderer.outTextXY(90, y, entry.name.substring(0, 8));
 			renderer.outTextXY(260, y, entry.score.toString());
 			renderer.outTextXY(470, y, entry.efficiency !== undefined ? (entry.efficiency + '%') : '');
 			drawPlayer(400, y + 15, entry.player);
@@ -725,7 +725,7 @@ function updateEnemyShots(screenNumber) {
 	else if (difficulty === 'Difícil') difficultyValue = 10;
 
 	if (finalBossActive) {
-		difficultyValue = difficultyValue/2;
+		difficultyValue = difficultyValue / 2;
 	}
 
 	for (let i = 0; i < totalEnemies; i++) {
@@ -734,7 +734,7 @@ function updateEnemyShots(screenNumber) {
 			enemies[i].firing = true;
 			if (finalBossActive) {
 				enemies[i].shotX = bossNX + ((i % 2 == 0) ? -60 : 60);
-				enemies[i].shotY = bossNY+ 80;
+				enemies[i].shotY = bossNY + 80;
 			} else {
 				enemies[i].shotX = enemies[i].x;
 				enemies[i].shotY = enemies[i].y;
@@ -926,7 +926,7 @@ function handleFinalBoss() {
 
 		// Clear previous boss energy indicator (or game logo when 2 players are playing)
 		renderer.setFillStyle(1, 1);
-		renderer.bar(405, 165, canvas.width-5, 295);
+		renderer.bar(405, 165, canvas.width - 5, 295);
 
 		// Check player 1 shot collisions
 		for (let d = 0; d < player1.shots.length; d++) {
@@ -1052,8 +1052,8 @@ function nextScreen(playerNum) {
 function showEnergy(energy, player) {
 	const baseY = player === 1 ? 129 : 439;
 	for (let i = 1; i <= initialEnergy; i++) {
-		const x1 = 643 - (initialEnergy-i+1) * 20;
-		const x2 = 640 - (initialEnergy-i+1) * 20;
+		const x1 = 643 - (initialEnergy - i + 1) * 20;
+		const x2 = 640 - (initialEnergy - i + 1) * 20;
 		if (i <= energy) {
 			// Available energy: two pie slices
 			renderer.setFillStyle(1, 2);
@@ -2266,7 +2266,7 @@ function gameLoop() {
 			renderer.outTextXY(50, 240, '? - Ayuda');
 			renderer.outTextXY(50, 260, 'Esc - Volver a menu');
 			renderer.outTextXY(50, 280, '↑←↓→ - Jugador 1   Espacio - Disparo');
-			if(players === 'Dos') {
+			if (players === 'Dos') {
 				renderer.outTextXY(50, 300, 'WASD - Jugador 2   1 - Disparo');
 			}
 			break;
