@@ -2060,6 +2060,7 @@ document.addEventListener('keydown', (event) => {
 		}
 	} else if (gameState === GAME_STATES.HIGHSCORE_ENTRY) {
 		if (event.key === 'Backspace') {
+			event.preventDefault();
 			statsState.nameBuffer = statsState.nameBuffer.slice(0, -1);
 		} else if (event.key === 'Enter') {
 			const entry = statsState.pendingHighscores[statsState.currentHighIndex];
