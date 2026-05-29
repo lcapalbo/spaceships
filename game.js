@@ -764,7 +764,7 @@ function updateEnemyShot(enemyIndex, screenNumber) {
 
 	// Random horizontal movement
 	if (screenNumber === 1 || screenNumber === 3) {
-		const playerX = players === 'Dos' ? player1.x : player1.x;
+		const playerX = players === 'Uno' || enemyIndex % 2 === 0 ? player1.x : player2.x;
 		if (Math.random() < 0.5) {
 			if (e.shotX > playerX) {
 				e.shotX -= Math.random() * 7;
