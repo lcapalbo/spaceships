@@ -40,6 +40,13 @@ let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4
 let players = 'Uno'; // 'Uno' o 'Dos'
 let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
+let lastGameUpdateTime = 0;
+
+function getGameSpeedInterval() {
+	if (speed === 'Lento') return 35;
+	if (speed === 'Rápido') return 1;
+	return 20; // Normal
+}
 
 // Player state
 const player1 = {
@@ -2265,109 +2272,123 @@ function drawHelpScreen() {
 }
 
 
-function gameLoop() {
-	switch (gameState) {
-		case GAME_STATES.MENU:
-			drawMenu();
-			break;
-		case GAME_STATES.GAME_START:
-			// Initialize game screen and show message
-			setupGameScreen();
-			renderer.setTextStyle(2, 0, 1.5);
-			renderer.setColor(12);
-			renderer.outTextXY(50, 200, 'Presione una tecla para comenzar');
-			renderer.setTextStyle(2, 0, 1.3);
-			renderer.outTextXY(50, 240, '? - Ayuda');
-			renderer.outTextXY(50, 260, 'Esc - Volver a menu');
-			renderer.outTextXY(50, 280, '↑←↓→ - Jugador 1   Espacio - Disparo');
-			if (players === 'Dos') {
-				renderer.outTextXY(50, 300, 'WASD - Jugador 2   1 - Disparo');
-			}
-			break;
-		case GAME_STATES.GAME:
-			writeScore(player1.score, 1);
-			if (players === 'Dos') writeScore(player2.score, 2);
+function gameLoop(timestamp) {
+	const interval = getGameSpeedInterval();
+	const isGameRunning = gameState === GAME_STATES.GAME || gameState === GAME_STATES.BOSS_EXPLOSION;
+	const shouldUpdate = !isGameRunning || timestamp - lastGameUpdateTime >= interval;
 
-			updatePlayerMovement();
+	if (shouldUpdate) {
+		if (isGameRunning) {
+			lastGameUpdateTime = timestamp;
+		}
+		switch (gameState) {
+			case GAME_STATES.MENU:
+				drawMenu();
+				break;
+			case GAME_STATES.GAME_START:
+				// Initialize game screen and show message
+				setupGameScreen();
+				renderer.setTextStyle(2, 0, 1.5);
+				renderer.setColor(12);
+				renderer.outTextXY(50, 200, 'Presione una tecla para comenzar');
+				renderer.setTextStyle(2, 0, 1.3);
+				renderer.outTextXY(50, 240, '? - Ayuda');
+				renderer.outTextXY(50, 260, 'Esc - Volver a menu');
+				renderer.outTextXY(50, 280, '↑←↓→ - Jugador 1   Espacio - Disparo');
+				if (players === 'Dos') {
+					renderer.outTextXY(50, 300, 'WASD - Jugador 2   1 - Disparo');
+				}
+				break;
+			case GAME_STATES.GAME:
+				writeScore(player1.score, 1);
+				if (players === 'Dos') writeScore(player2.score, 2);
 
-			// Redraw game area
-			renderer.setFillStyle(0, 0);
-			renderer.bar(0, 0, 400, canvas.height);
+				updatePlayerMovement();
 
-			// Draw player ships in current positions
-			if (player1.lives > 0) {
-				drawPlayer(player1.x, player1.y, 1);
-			}
-			if (players === 'Dos' && player2.lives > 0) {
-				drawPlayer(player2.x, player2.y, 2);
-			}
+				// Redraw game area
+				renderer.setFillStyle(0, 0);
+				renderer.bar(0, 0, 400, canvas.height);
 
-			// Update and draw angular shots and projectiles
-			updateAngularShots();
-			updateShots();
-			// Update and draw enemies only when the final boss is not active
-			if (!finalBossActive) {
-				updateEnemies(currentScreen);
-				drawEnemies(currentScreen);
-			}
-			// Always update enemy shots (even during the final boss)
-			updateEnemyShots(currentScreen);
-			handleFinalBoss();
+				// Draw player ships in current positions
+				if (player1.lives > 0) {
+					drawPlayer(player1.x, player1.y, 1);
+				}
+				if (players === 'Dos' && player2.lives > 0) {
+					drawPlayer(player2.x, player2.y, 2);
+				}
 
-			updatePillDrop();
-			if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
-			// Draw pill duration bar
-			drawEffectDurationBar(player1, 1);
-			if (players === 'Dos') drawEffectDurationBar(player2, 2);
+				// Update and draw angular shots and projectiles
+				updateAngularShots();
+				updateShots();
+				// Update and draw enemies only when the final boss is not active
+				if (!finalBossActive) {
+					updateEnemies(currentScreen);
+					drawEnemies(currentScreen);
+				}
+				// Always update enemy shots (even during the final boss)
+				updateEnemyShots(currentScreen);
+				handleFinalBoss();
 
-			// Check collisions with enemy shots
-			checkEnemyShotCollisions();
-			checkPlayerEnemyCollisions();
+				updatePillDrop();
+				if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
+				// Draw pill duration bar
+				drawEffectDurationBar(player1, 1);
+				if (players === 'Dos') drawEffectDurationBar(player2, 2);
 
-			// Check collisions with player shots
-			checkPlayerShotCollisions(1);
-			if (players === 'Dos') checkPlayerShotCollisions(2);
-			// Update game progression based on totalKilled
-			updateGameProgression();
-			break;
-		case GAME_STATES.BOSS_EXPLOSION:
-			writeScore(player1.score, 1);
-			if (players === 'Dos') writeScore(player2.score, 2);
+				// Check collisions with enemy shots
+				checkEnemyShotCollisions();
+				checkPlayerEnemyCollisions();
 
-			renderer.setFillStyle(0, 0);
-			renderer.bar(0, 0, 400, canvas.height);
-			if (player1.lives > 0) drawPlayer(player1.x, player1.y, 1);
-			if (players === 'Dos' && player2.lives > 0) drawPlayer(player2.x, player2.y, 2);
-			updateBossExplosion(16);
-			renderBossExplosion();
-			break;
-		case GAME_STATES.STATS_SCREEN:
-			drawStatsScreen();
-			if (statsState.isGameOver) ensureHighscoreCheck();
-			break;
-		case GAME_STATES.HIGHSCORE_ENTRY:
-			drawHighscoreEntry();
-			break;
-		case GAME_STATES.CONFIRM_EXIT:
-			// Show frozen screen with confirmation message
-			drawConfirmExitScreen();
-			break;
-		case GAME_STATES.HELP:
-			drawHelpScreen();
-			break;
-		case GAME_STATES.HIGHSCORES:
-			drawRankingScreen();
-			break;
-		case GAME_STATES.LIFE_LOST:
-			renderer.setTextStyle(2, 0, 1);
-			renderer.setColor(15);
-			renderer.outTextXY(460, 145, 'Una Vida Menos');
-			renderer.setColor(11);
-			renderer.outTextXY(425, 153, 'Dispare Para Continuar');
-			break;
+				// Check collisions with player shots
+				checkPlayerShotCollisions(1);
+				if (players === 'Dos') checkPlayerShotCollisions(2);
+				// Update game progression based on totalKilled
+				updateGameProgression();
+				break;
+			case GAME_STATES.BOSS_EXPLOSION:
+				writeScore(player1.score, 1);
+				if (players === 'Dos') writeScore(player2.score, 2);
+
+				renderer.setFillStyle(0, 0);
+				renderer.bar(0, 0, 400, canvas.height);
+				if (player1.lives > 0) drawPlayer(player1.x, player1.y, 1);
+				if (players === 'Dos' && player2.lives > 0) drawPlayer(player2.x, player2.y, 2);
+				updateBossExplosion(16);
+				renderBossExplosion();
+				break;
+			case GAME_STATES.STATS_SCREEN:
+				drawStatsScreen();
+				if (statsState.isGameOver) ensureHighscoreCheck();
+				break;
+			case GAME_STATES.HIGHSCORE_ENTRY:
+				drawHighscoreEntry();
+				break;
+			case GAME_STATES.CONFIRM_EXIT:
+				// Show frozen screen with confirmation message
+				drawConfirmExitScreen();
+				break;
+			case GAME_STATES.HELP:
+				drawHelpScreen();
+				break;
+			case GAME_STATES.HIGHSCORES:
+				drawRankingScreen();
+				break;
+			case GAME_STATES.LIFE_LOST:
+				renderer.setTextStyle(2, 0, 1);
+				renderer.setColor(15);
+				renderer.outTextXY(460, 145, 'Una Vida Menos');
+				renderer.setColor(11);
+				renderer.outTextXY(425, 153, 'Dispare Para Continuar');
+				break;
+		}
 	}
-
 	requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => {
+		requestAnimationFrame(gameLoop);
+	});
+} else {
+	requestAnimationFrame(gameLoop);
+}
