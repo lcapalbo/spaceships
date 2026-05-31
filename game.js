@@ -981,11 +981,9 @@ function handleFinalBoss() {
 					gameState = GAME_STATES.BOSS_EXPLOSION;
 				}
 
-				if (!player1.laser) {
-					player1.shots[d] = false;
-					player1.bulletX[d] = -10;
-					player1.bulletY[d] = -10;
-				}
+				player1.shots[d] = false;
+				player1.bulletX[d] = -10;
+				player1.bulletY[d] = -10;
 			}
 		}
 
@@ -1022,11 +1020,9 @@ function handleFinalBoss() {
 						gameState = GAME_STATES.BOSS_EXPLOSION;
 					}
 
-					if (!player2.laser) {
-						player2.shots[d] = false;
-						player2.bulletX[d] = -10;
-						player2.bulletY[d] = -10;
-					}
+					player2.shots[d] = false;
+					player2.bulletX[d] = -10;
+					player2.bulletY[d] = -10;
 				}
 			}
 		}
@@ -1107,8 +1103,8 @@ function drawEffectDurationBar(player, playerNum) {
 
 	if (player.effectDuration <= 0) return;
 
-	// Max effect duration is fixed at 300 frames
-	const maxDuration = 300;
+	// Max effect duration is fixed at 800 frames
+	const maxDuration = 800;
 	const width = Math.max(0, Math.min(100, Math.floor((player.effectDuration / maxDuration) * 100)));
 
 	renderer.setColor(11);
@@ -1444,11 +1440,11 @@ function applyPillEffect(player, playerNum, pillType) {
 			break;
 		case PILL_TYPES.CONTROLS_CHANGE:
 			player.controlsChanged = true;
-			player.effectDuration = 300;
+			player.effectDuration = 800;
 			break;
 		case PILL_TYPES.SPEED_BOOST:
 			player.speedBoost = true;
-			player.effectDuration = 300;
+			player.effectDuration = 800;
 			break;
 		case PILL_TYPES.ANGULAR_SHOT:
 			player.angularShot = true;
@@ -1818,7 +1814,7 @@ function drawAngledShot(x, y, side, color) {
 }
 
 function updateShots() {
-	const missileSpeed = 6;
+	const missileSpeed = 5;
 	// Player 1
 	for (let i = 0; i < player1.shots.length; i++) {
 		if (!player1.shots[i]) continue;
@@ -2105,7 +2101,7 @@ document.addEventListener('keyup', (event) => {
 });
 
 function updatePlayerMovement() {
-	const moveSpeed = 5; // Pixels per frame
+	const moveSpeed = 2; // Pixels per frame
 	const gameAreaWidth = 400;
 
 	updatePlayerEffects(player1);
