@@ -914,185 +914,148 @@ function handleFinalBoss() {
 		bossNY = -110;
 	}
 
-	if (finalBossActive) {
-		let originalBossEnergy = bossEnergy;
+	if (!finalBossActive) return;
 
-		// Boss movement by screen
-		switch (currentScreen) {
-			case 1:
-				if (Math.random() < 0.5 && bossNX < 320) {
-					bossNX += Math.floor(Math.random() * 5) + 1;
-				} else if (bossNX > 80) {
-					bossNX -= Math.floor(Math.random() * 5) + 1;
-				}
-				break;
-			case 2:
-			case 3:
-				// Controlled oscillation
-				if ((bossNX % 330 <= 1 || bossNX < 70) || (bossNX % 35 === 1 && Math.random() < 0.5)) {
-					bossControl = !bossControl;
-				}
-				if (bossControl) {
-					bossNX += 4 - currentScreen;
-				} else {
-					bossNX -= 4 - currentScreen;
-				}
-				break;
-		}
+	const addBossEnergyFromShot = () => {
+		return currentScreen === 1 ? 15 : 10;
+	};
 
-		if (bossNY < 100) {
-			bossNY += Math.floor(Math.random() * 5) + 1;
-		} else {
-			bossNY -= Math.floor(Math.random() * 5) + 1;
-		}
+	const resolveBossDefeat = (player, playerNum) => {
+		totalKilled++;
+		player.score += 50;
+		player.enemiesKilled++;
+		bossExplosionState.active = true;
+		bossExplosionState.x = playerNum === 1 ? Math.min(bossNX, 300) : bossNX;
+		bossExplosionState.y = bossNY;
+		bossExplosionState.suma = 1;
+		bossExplosionState.repeats = 0;
+		bossExplosionState.rx = 0;
+		bossExplosionState.timer = 0;
+		bossExplosionState.targetPlayer = playerNum;
+		gameState = GAME_STATES.BOSS_EXPLOSION;
+	};
 
-		// Clear previous boss energy indicator (or game logo when 2 players are playing)
-		renderer.setFillStyle(1, 1);
-		renderer.bar(405, 165, canvas.width - 5, 295);
+	const processNormalShotsToBoss = (player, playerNum) => {
+		for (let d = 0; d < player.shots.length; d++) {
+			if (!player.shots[d]) continue;
 
-		// Check player 1 shot collisions
-		for (let d = 0; d < player1.shots.length; d++) {
-			if (!player1.shots[d]) continue;
-
-			if (player1.bulletY[d] < bossNY + 100 && player1.bulletY[d] > bossNY &&
-				player1.bulletX[d] > bossNX - 25 && player1.bulletX[d] < bossNX + 25) {
-				// Boss hit!
-				if (currentScreen === 1) {
-					bossEnergy += 15;
-				} else {
-					bossEnergy += 10;
-				}
+			if (player.bulletY[d] < bossNY + 100 && player.bulletY[d] > bossNY &&
+				player.bulletX[d] > bossNX - 25 && player.bulletX[d] < bossNX + 25) {
+				bossEnergy += addBossEnergyFromShot();
+				player.shots[d] = false;
+				player.bulletX[d] = -10;
+				player.bulletY[d] = -10;
 
 				if (bossEnergy >= 360) {
-					totalKilled++;
-					// Boss defeated: grant bonus and activate explosion animation
-					player1.score += 50;
-					player1.enemiesKilled++;
-					bossExplosionState.active = true;
-					bossExplosionState.x = Math.min(bossNX, 300);
-					bossExplosionState.y = bossNY;
-					bossExplosionState.suma = 1;
-					bossExplosionState.repeats = 0;
-					bossExplosionState.rx = 0;
-					bossExplosionState.timer = 0;
-					bossExplosionState.targetPlayer = 1;
-					gameState = GAME_STATES.BOSS_EXPLOSION;
-				}
-
-				player1.shots[d] = false;
-				player1.bulletX[d] = -10;
-				player1.bulletY[d] = -10;
-			}
-		}
-
-		// Check player 1 angular shots against the boss
-		if (player1.angularShot && player1.angularShotY !== -10) {
-			const rightX = player1.angularShotXRight;
-			const leftX = player1.angularShotXLeft;
-			const shotY = player1.angularShotY;
-
-			if (rightX !== -10 && shotY < bossNY + 100 && shotY > bossNY && rightX > bossNX - 25 && rightX < bossNX + 25) {
-				bossEnergy = Math.max(360, bossEnergy + 20);
-				player1.angularShotXRight = -10;
-			}
-
-			if (leftX !== -10 && shotY < bossNY + 100 && shotY > bossNY && leftX > bossNX - 25 && leftX < bossNX + 25) {
-				bossEnergy = Math.max(360, bossEnergy + 20);
-				player1.angularShotXLeft = -10;
-			}
-
-			if (player1.angularShotXRight === -10 && player1.angularShotXLeft === -10) {
-				player1.angularShotY = -10;
-			}
-		}
-
-		// If player 2 exists, also check their shots
-		if (players === 'Dos') {
-			for (let d = 0; d < player2.shots.length; d++) {
-				if (!player2.shots[d]) continue;
-
-				if (player2.bulletY[d] < bossNY + 100 && player2.bulletY[d] > bossNY &&
-					player2.bulletX[d] > bossNX - 25 && player2.bulletX[d] < bossNX + 25) {
-					if (currentScreen === 1) {
-						bossEnergy += 15;
-					} else {
-						bossEnergy += 10;
-					}
-
-					if (bossEnergy >= 360) {
-						totalKilled++;
-						// Boss defeated: grant bonus and activate explosion animation
-						player2.score += 50;
-						player2.enemiesKilled++;
-						bossExplosionState.active = true;
-						bossExplosionState.x = bossNX;
-						bossExplosionState.y = bossNY;
-						bossExplosionState.suma = 1;
-						bossExplosionState.repeats = 0;
-						bossExplosionState.rx = 0;
-						bossExplosionState.timer = 0;
-						bossExplosionState.targetPlayer = 2;
-						gameState = GAME_STATES.BOSS_EXPLOSION;
-					}
-
-					player2.shots[d] = false;
-					player2.bulletX[d] = -10;
-					player2.bulletY[d] = -10;
+					resolveBossDefeat(player, playerNum);
+					return true;
 				}
 			}
 		}
 
-		// Check player 2 angular shots against the boss
-		if (player2.angularShot && player2.angularShotY !== -10) {
-			const rightX = player2.angularShotXRight;
-			const leftX = player2.angularShotXLeft;
-			const shotY = player2.angularShotY;
+		return false;
+	};
 
-			if (rightX !== -10 && shotY < bossNY + 100 && shotY > bossNY && rightX > bossNX - 25 && rightX < bossNX + 25) {
-				bossEnergy = Math.max(360, bossEnergy + 20);
-				player2.angularShotXRight = -10;
-			}
+	const processAngularShotsToBoss = (player, playerNum) => {
+		if (!player.angularShot || player.angularShotY === -10) return false;
 
-			if (leftX !== -10 && shotY < bossNY + 100 && shotY > bossNY && leftX > bossNX - 25 && leftX < bossNX + 25) {
-				bossEnergy = Math.max(360, bossEnergy + 20);
-				player2.angularShotXLeft = -10;
-			}
+		const rightX = player.angularShotXRight;
+		const leftX = player.angularShotXLeft;
+		const shotY = player.angularShotY;
 
-			if (player2.angularShotXRight === -10 && player2.angularShotXLeft === -10) {
-				player2.angularShotY = -10;
+		// Angular shots deal 20 energy
+		if (rightX !== -10 && shotY < bossNY + 100 && shotY > bossNY && rightX > bossNX - 25 && rightX < bossNX + 25) {
+			bossEnergy += 20;
+			player.angularShotXRight = -10;
+
+			if (bossEnergy >= 360) {
+				resolveBossDefeat(player, playerNum);
+				return true;
 			}
 		}
 
-		// Clean and draw boss energy indicator
-		if (originalBossEnergy != bossEnergy) {
-			renderer.setColor(1);
-			renderer.setFillStyle(1, 1);
-			renderer.pieSlice(530, 230, bossEnergy, 360, 60);
-		}
-		if (bossEnergy < 360) {
-			let color = 12;
-			let fillColor = 12;
-			if (currentScreen === 2) {
-				color = 11;
-				fillColor = 3;
+		if (leftX !== -10 && shotY < bossNY + 100 && shotY > bossNY && leftX > bossNX - 25 && leftX < bossNX + 25) {
+			bossEnergy += 20;
+			player.angularShotXLeft = -10;
+
+			if (bossEnergy >= 360) {
+				resolveBossDefeat(player, playerNum);
+				return true;
 			}
-			if (currentScreen === 3) {
-				color = 10;
-				fillColor = 2;
-			}
-			renderer.setColor(color);
-			renderer.setFillStyle(6, fillColor);
-			renderer.pieSlice(530, 230, bossEnergy, 360, 60);
-			renderer.setFillStyle(0, fillColor);
-			renderer.pieSlice(530, 230, bossEnergy, 360, 60);
-		} else {
-			// Restore game logo in case it's a 2-players game
-			drawSidePanelLogo();
 		}
 
-		// Draw boss
-		drawEnemyBossShip(bossNX, bossNY, currentScreen);
+		if (player.angularShotXRight === -10 && player.angularShotXLeft === -10) {
+			player.angularShotY = -10;
+		}
+
+		return false;
+	};
+
+	// Boss movement by screen
+	switch (currentScreen) {
+		case 1:
+			if (Math.random() < 0.5 && bossNX < 320) {
+				bossNX += Math.floor(Math.random() * 5) + 1;
+			} else if (bossNX > 80) {
+				bossNX -= Math.floor(Math.random() * 5) + 1;
+			}
+			break;
+		case 2:
+		case 3:
+			// Controlled oscillation
+			if ((bossNX % 330 <= 1 || bossNX < 70) || (bossNX % 35 === 1 && Math.random() < 0.5)) {
+				bossControl = !bossControl;
+			}
+			if (bossControl) {
+				bossNX += 4 - currentScreen;
+			} else {
+				bossNX -= 4 - currentScreen;
+			}
+			break;
 	}
+
+	if (bossNY < 100) {
+		bossNY += Math.floor(Math.random() * 5) + 1;
+	} else {
+		bossNY -= Math.floor(Math.random() * 5) + 1;
+	}
+
+	// Clear previous boss energy indicator (or game logo when 2 players are playing)
+	renderer.setFillStyle(1, 1);
+	renderer.bar(405, 165, canvas.width - 5, 295);
+
+	const bossWasDefeated = processNormalShotsToBoss(player1, 1)
+		|| processAngularShotsToBoss(player1, 1)
+		|| (players === 'Dos'
+			&& (
+				processNormalShotsToBoss(player2, 2)
+				|| processAngularShotsToBoss(player2, 2)
+			)
+		);
+
+	if (bossEnergy < 360) {
+		let color = 12;
+		let fillColor = 12;
+		if (currentScreen === 2) {
+			color = 11;
+			fillColor = 3;
+		}
+		if (currentScreen === 3) {
+			color = 10;
+			fillColor = 2;
+		}
+		renderer.setColor(color);
+		renderer.setFillStyle(6, fillColor);
+		renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+		renderer.setFillStyle(0, fillColor);
+		renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+	} else {
+		// Restore game logo in case it's a 2-players game
+		drawSidePanelLogo();
+	}
+
+	// Draw boss
+	drawEnemyBossShip(bossNX, bossNY, currentScreen);
 }
 
 function nextScreen(playerNum) {
