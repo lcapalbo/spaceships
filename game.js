@@ -915,6 +915,8 @@ function handleFinalBoss() {
 	}
 
 	if (finalBossActive) {
+		let originalBossEnergy = bossEnergy;
+
 		// Boss movement by screen
 		switch (currentScreen) {
 			case 1:
@@ -955,10 +957,6 @@ function handleFinalBoss() {
 			if (player1.bulletY[d] < bossNY + 100 && player1.bulletY[d] > bossNY &&
 				player1.bulletX[d] > bossNX - 25 && player1.bulletX[d] < bossNX + 25) {
 				// Boss hit!
-				renderer.setColor(1);
-				renderer.setFillStyle(1, 1);
-				renderer.pieSlice(530, 230, bossEnergy, 360, 60);
-
 				if (currentScreen === 1) {
 					bossEnergy += 15;
 				} else {
@@ -987,6 +985,27 @@ function handleFinalBoss() {
 			}
 		}
 
+		// Check player 1 angular shots against the boss
+		if (player1.angularShot && player1.angularShotY !== -10) {
+			const rightX = player1.angularShotXRight;
+			const leftX = player1.angularShotXLeft;
+			const shotY = player1.angularShotY;
+
+			if (rightX !== -10 && shotY < bossNY + 100 && shotY > bossNY && rightX > bossNX - 25 && rightX < bossNX + 25) {
+				bossEnergy = Math.max(360, bossEnergy + 20);
+				player1.angularShotXRight = -10;
+			}
+
+			if (leftX !== -10 && shotY < bossNY + 100 && shotY > bossNY && leftX > bossNX - 25 && leftX < bossNX + 25) {
+				bossEnergy = Math.max(360, bossEnergy + 20);
+				player1.angularShotXLeft = -10;
+			}
+
+			if (player1.angularShotXRight === -10 && player1.angularShotXLeft === -10) {
+				player1.angularShotY = -10;
+			}
+		}
+
 		// If player 2 exists, also check their shots
 		if (players === 'Dos') {
 			for (let d = 0; d < player2.shots.length; d++) {
@@ -994,10 +1013,6 @@ function handleFinalBoss() {
 
 				if (player2.bulletY[d] < bossNY + 100 && player2.bulletY[d] > bossNY &&
 					player2.bulletX[d] > bossNX - 25 && player2.bulletX[d] < bossNX + 25) {
-					renderer.setColor(1);
-					renderer.setFillStyle(1, 1);
-					renderer.pieSlice(530, 230, bossEnergy, 360, 60);
-
 					if (currentScreen === 1) {
 						bossEnergy += 15;
 					} else {
@@ -1027,7 +1042,33 @@ function handleFinalBoss() {
 			}
 		}
 
-		// Draw boss energy indicator
+		// Check player 2 angular shots against the boss
+		if (player2.angularShot && player2.angularShotY !== -10) {
+			const rightX = player2.angularShotXRight;
+			const leftX = player2.angularShotXLeft;
+			const shotY = player2.angularShotY;
+
+			if (rightX !== -10 && shotY < bossNY + 100 && shotY > bossNY && rightX > bossNX - 25 && rightX < bossNX + 25) {
+				bossEnergy = Math.max(360, bossEnergy + 20);
+				player2.angularShotXRight = -10;
+			}
+
+			if (leftX !== -10 && shotY < bossNY + 100 && shotY > bossNY && leftX > bossNX - 25 && leftX < bossNX + 25) {
+				bossEnergy = Math.max(360, bossEnergy + 20);
+				player2.angularShotXLeft = -10;
+			}
+
+			if (player2.angularShotXRight === -10 && player2.angularShotXLeft === -10) {
+				player2.angularShotY = -10;
+			}
+		}
+
+		// Clean and draw boss energy indicator
+		if (originalBossEnergy != bossEnergy) {
+			renderer.setColor(1);
+			renderer.setFillStyle(1, 1);
+			renderer.pieSlice(530, 230, bossEnergy, 360, 60);
+		}
 		if (bossEnergy < 360) {
 			let color = 12;
 			let fillColor = 12;
