@@ -146,11 +146,21 @@ class Renderer {
 		this.textStyle.outline = (font === 0 || font === 4);
 	}
 
-	clearScreen() {
+	clearScreen(clearTransparent = false) {
+		const width = this.ctx.canvas.width;
+		const height = this.ctx.canvas.height;
 		this.ctx.save();
-		this.ctx.fillStyle = this._resolveColor(0);
-		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+		if (clearTransparent) {
+			this.ctx.clearRect(0, 0, width, height);
+		} else {
+			this.ctx.fillStyle = this._resolveColor(0);
+			this.ctx.fillRect(0, 0, width, height);
+		}
 		this.ctx.restore();
+	}
+
+	drawImage(image, x, y) {
+		this.ctx.drawImage(image, x, y);
 	}
 
 	line(x1, y1, x2, y2) {

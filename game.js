@@ -140,6 +140,459 @@ const enemies = [
 	{ x: 0, y: -20, code: 1, firing: false, shotX: -10, shotY: -10, control: false }
 ];
 
+const spriteCache = {};
+const spriteSpecs = {
+	player1: { width: 32, height: 34, anchorX: 16, anchorY: 20 },
+	player1_shield: { width: 32, height: 34, anchorX: 16, anchorY: 20 },
+	player2: { width: 32, height: 34, anchorX: 16, anchorY: 20 },
+	player2_shield: { width: 32, height: 34, anchorX: 16, anchorY: 20 },
+	enemy1: { width: 121, height: 96, anchorX: 60, anchorY: 5 },
+	enemy2: { width: 121, height: 70, anchorX: 60, anchorY: 5 },
+	enemy3: { width: 70, height: 90, anchorX: 35, anchorY: 0 },
+	enemy4: { width: 70, height: 90, anchorX: 35, anchorY: 0 },
+	boss1: { width: 140, height: 120, anchorX: 70, anchorY: 0 },
+	boss2: { width: 140, height: 110, anchorX: 70, anchorY: 30 },
+	boss3_0: { width: 140, height: 100, anchorX: 70, anchorY: 0 },
+	boss3_1: { width: 140, height: 100, anchorX: 70, anchorY: 0 },
+	boss3_2: { width: 140, height: 100, anchorX: 70, anchorY: 0 }
+};
+
+function createSpriteCanvas(width, height) {
+	const canvas = document.createElement('canvas');
+	canvas.width = width;
+	canvas.height = height;
+	return canvas;
+}
+
+function buildSpriteCanvas(spec, drawFn) {
+	const canvas = createSpriteCanvas(spec.width, spec.height);
+	const previousCtx = renderer.ctx;
+	renderer.ctx = canvas.getContext('2d');
+	renderer.clearScreen(true);
+	drawFn();
+	renderer.ctx = previousCtx;
+	return canvas;
+}
+
+function buildSpriteCache() {
+	if (spriteCache.player1_even) return;
+
+	spriteCache.player1_even = {
+		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, 16, 20, 1, false, false)),
+		anchorX: spriteSpecs.player1.anchorX,
+		anchorY: spriteSpecs.player1.anchorY
+	};
+	spriteCache.player1_odd = {
+		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, 16, 21, 1, false, false)),
+		anchorX: spriteSpecs.player1.anchorX,
+		anchorY: spriteSpecs.player1.anchorY
+	};
+	spriteCache.player1_even_shield = {
+		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, 16, 20, 1, true, true)),
+		anchorX: spriteSpecs.player1_shield.anchorX,
+		anchorY: spriteSpecs.player1_shield.anchorY
+	};
+	spriteCache.player1_odd_shield = {
+		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, 16, 21, 1, true, true)),
+		anchorX: spriteSpecs.player1_shield.anchorX,
+		anchorY: spriteSpecs.player1_shield.anchorY
+	};
+
+	spriteCache.player2_even = {
+		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, 16, 20, 2, false, false)),
+		anchorX: spriteSpecs.player2.anchorX,
+		anchorY: spriteSpecs.player2.anchorY
+	};
+	spriteCache.player2_odd = {
+		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, 16, 21, 2, false, false)),
+		anchorX: spriteSpecs.player2.anchorX,
+		anchorY: spriteSpecs.player2.anchorY
+	};
+	spriteCache.player2_even_shield = {
+		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, 16, 20, 2, true, true)),
+		anchorX: spriteSpecs.player2_shield.anchorX,
+		anchorY: spriteSpecs.player2_shield.anchorY
+	};
+	spriteCache.player2_odd_shield = {
+		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, 16, 21, 2, true, true)),
+		anchorX: spriteSpecs.player2_shield.anchorX,
+		anchorY: spriteSpecs.player2_shield.anchorY
+	};
+
+	spriteCache.enemy1 = {
+		image: buildSpriteCanvas(spriteSpecs.enemy1, () => drawEnemySprite(renderer, 60, 5, 1)),
+		anchorX: spriteSpecs.enemy1.anchorX,
+		anchorY: spriteSpecs.enemy1.anchorY
+	};
+	spriteCache.enemy2 = {
+		image: buildSpriteCanvas(spriteSpecs.enemy2, () => drawEnemySprite(renderer, 60, 5, 2)),
+		anchorX: spriteSpecs.enemy2.anchorX,
+		anchorY: spriteSpecs.enemy2.anchorY
+	};
+	spriteCache.enemy3 = {
+		image: buildSpriteCanvas(spriteSpecs.enemy3, () => drawEnemySprite(renderer, 35, 0, 3)),
+		anchorX: spriteSpecs.enemy3.anchorX,
+		anchorY: spriteSpecs.enemy3.anchorY
+	};
+	spriteCache.enemy4 = {
+		image: buildSpriteCanvas(spriteSpecs.enemy4, () => drawEnemySprite(renderer, 35, 0, 4)),
+		anchorX: spriteSpecs.enemy4.anchorX,
+		anchorY: spriteSpecs.enemy4.anchorY
+	};
+
+	spriteCache.boss1 = {
+		image: buildSpriteCanvas(spriteSpecs.boss1, () => drawEnemyBossSprite(renderer, 70, 0, 1, 0)),
+		anchorX: spriteSpecs.boss1.anchorX,
+		anchorY: spriteSpecs.boss1.anchorY
+	};
+	spriteCache.boss2 = {
+		image: buildSpriteCanvas(spriteSpecs.boss2, () => drawEnemyBossSprite(renderer, 70, 30, 2, 0)),
+		anchorX: spriteSpecs.boss2.anchorX,
+		anchorY: spriteSpecs.boss2.anchorY
+	};
+	spriteCache.boss3_0 = {
+		image: buildSpriteCanvas(spriteSpecs.boss3_0, () => drawEnemyBossSprite(renderer, 70, 0, 3, 0)),
+		anchorX: spriteSpecs.boss3_0.anchorX,
+		anchorY: spriteSpecs.boss3_0.anchorY
+	};
+	spriteCache.boss3_1 = {
+		image: buildSpriteCanvas(spriteSpecs.boss3_1, () => drawEnemyBossSprite(renderer, 70, 0, 3, 1)),
+		anchorX: spriteSpecs.boss3_1.anchorX,
+		anchorY: spriteSpecs.boss3_1.anchorY
+	};
+	spriteCache.boss3_2 = {
+		image: buildSpriteCanvas(spriteSpecs.boss3_2, () => drawEnemyBossSprite(renderer, 70, 0, 3, 2)),
+		anchorX: spriteSpecs.boss3_2.anchorX,
+		anchorY: spriteSpecs.boss3_2.anchorY
+	};
+}
+
+function initSpriteCache() {
+	buildSpriteCache();
+}
+
+function drawSprite(object, x, y) {
+	renderer.drawImage(object.image, x - object.anchorX, y - object.anchorY);
+}
+
+function getPlayerSprite(player, y, showShield) {
+	const parity = y % 2 === 0 ? 'even' : 'odd';
+	const shieldSuffix = showShield ? '_shield' : '';
+	return spriteCache[`player${player}_${parity}${shieldSuffix}`];
+}
+
+function getEnemySprite(code) {
+	return spriteCache[`enemy${code}`];
+}
+
+function getBossSprite(screenNumber, cod) {
+	if (screenNumber === 1) return spriteCache.boss1;
+	if (screenNumber === 2) return spriteCache.boss2;
+	if (screenNumber === 3) {
+		if (cod === 0) return spriteCache.boss3_0;
+		return spriteCache[`boss3_${cod === 2 ? 2 : 1}`];
+	}
+	return null;
+}
+
+function drawPlayer(x, y, player, showShield = true) {
+	const sprite = getPlayerSprite(player, y, showShield && (player === 1 ? player1.shield : player2.shield));
+	if (sprite) {
+		drawSprite(sprite, x, y);
+		return;
+	}
+	drawPlayerSprite(renderer, x, y, player, showShield);
+}
+
+function drawEnemy(c, f, enemyCode) {
+	const sprite = getEnemySprite(enemyCode);
+	if (sprite) {
+		drawSprite(sprite, c, f);
+		return;
+	}
+	drawEnemySprite(renderer, c, f, enemyCode);
+}
+
+function drawEnemyBossShip(nx, ny, screenNumber) {
+	let cod = 0;
+	if (screenNumber === 3) {
+		if (nx % 50 > 25) {
+			if (nx > 30) {
+				ny--;
+				cod = 1;
+			}
+		} else {
+			if (ny < 400) {
+				ny++;
+				cod = 2;
+			}
+		}
+	}
+
+	const sprite = getBossSprite(screenNumber, cod);
+	if (sprite) {
+		drawSprite(sprite, nx, ny);
+		return ny;
+	}
+
+	drawEnemyBossSprite(renderer, nx, ny, screenNumber, cod);
+	return ny;
+}
+
+function drawPlayerSprite(targetRenderer, x, y, player, showShield = true, shieldActive = null) {
+	const hasShield = showShield && (shieldActive !== null ? shieldActive : (player === 1 ? player1.shield : player2.shield));
+	if (player === 1) {
+		targetRenderer.setColor(12);
+	} else {
+		targetRenderer.setColor(11);
+	}
+
+	targetRenderer.line(x - 2, y, x, y - 20);
+	targetRenderer.line(x + 2, y, x, y - 20);
+
+	if (y % 2 === 0) {
+		targetRenderer.setColor(14);
+	} else {
+		targetRenderer.setColor(12);
+	}
+
+	targetRenderer.ellipse(x - 5, y, 180, 0, 3, 5);
+	targetRenderer.ellipse(x + 5, y, 180, 0, 3, 5);
+
+	if (y % 2 === 0) {
+		targetRenderer.setColor(12);
+	} else {
+		targetRenderer.setColor(14);
+	}
+
+	targetRenderer.ellipse(x - 5, y, 180, 0, 1, 5);
+	targetRenderer.ellipse(x + 5, y, 180, 0, 1, 5);
+
+	if (player === 1) {
+		targetRenderer.setColor(14);
+	} else {
+		targetRenderer.setColor(13);
+	}
+
+	targetRenderer.arc(x, y, 0, 180, 8);
+	targetRenderer.arc(x, y, 0, 180, 6);
+
+	if (hasShield) {
+		targetRenderer.setColor(10);
+		targetRenderer.ellipse(x, y - 5, 0, 360, 11, 15);
+	}
+
+	if (player === 1) {
+		targetRenderer.setColor(11);
+	} else {
+		targetRenderer.setColor(12);
+	}
+
+	targetRenderer.line(x, y - 20, x + 10, y);
+	targetRenderer.line(x, y - 20, x - 10, y);
+	targetRenderer.line(x - 10, y, x + 10, y);
+
+	targetRenderer.line(x - 10, y - 2, x - 10, y - 9);
+	targetRenderer.line(x - 8, y - 2, x - 10, y - 9);
+	targetRenderer.line(x + 10, y - 2, x + 10, y - 9);
+	targetRenderer.line(x + 8, y - 2, x + 10, y - 9);
+}
+
+function drawEnemySprite(targetRenderer, c, f, enemyCode) {
+	if (enemyCode === 1) {
+		targetRenderer.setColor(2);
+		targetRenderer.ellipse(c, f, 150, 30, 5, 10);
+		targetRenderer.ellipse(c, f, 150, 30, 4, 9);
+		targetRenderer.ellipse(c, f, 150, 30, 3, 8);
+
+		targetRenderer.setColor(11);
+		targetRenderer.ellipse(c, f + 20, 0, 360, 2, 3);
+
+		targetRenderer.setColor(8);
+		targetRenderer.ellipse(c - 9, f + 3, 0, 360, 2, 3);
+		targetRenderer.ellipse(c + 9, f + 3, 0, 360, 2, 3);
+		targetRenderer.ellipse(c - 9, f + 3, 0, 360, 1, 2);
+		targetRenderer.ellipse(c + 9, f + 3, 0, 360, 1, 2);
+
+		targetRenderer.setColor(10);
+		targetRenderer.line(c + 2, f, c, f + 20);
+		targetRenderer.line(c - 2, f, c, f + 20);
+		targetRenderer.line(c - 10, f - 5, c + 10, f - 5);
+		targetRenderer.line(c + 10, f - 5, c + 15, f + 3);
+		targetRenderer.line(c - 10, f - 5, c - 15, f + 3);
+		targetRenderer.line(c - 14, f + 3, c - 11, f + 15);
+		targetRenderer.line(c - 11, f + 15, c - 4, f + 5);
+		targetRenderer.line(c + 14, f + 3, c + 11, f + 15);
+		targetRenderer.line(c + 11, f + 15, c + 4, f + 5);
+
+		targetRenderer.setColor(14);
+		targetRenderer.line(c - 15, f + 3, c - 12, f + 15);
+		targetRenderer.line(c - 12, f + 15, c - 5, f + 5);
+		targetRenderer.line(c + 15, f + 3, c + 12, f + 15);
+		targetRenderer.line(c + 12, f + 15, c + 5, f + 5);
+	} else if (enemyCode === 2) {
+		targetRenderer.setColor(12);
+		targetRenderer.ellipse(c, f + 5, 0, 180, 15, 10);
+		targetRenderer.line(c - 15, f + 5, c - 5, f + 12);
+		targetRenderer.line(c + 15, f + 5, c + 5, f + 12);
+		targetRenderer.line(c - 5, f + 11, c + 5, f + 11);
+
+		targetRenderer.setColor(3);
+		targetRenderer.ellipse(c, f + 15, 160, 15, 5, 8);
+		targetRenderer.ellipse(c, f + 15, 145, 25, 3, 6);
+
+		targetRenderer.setColor(5);
+		targetRenderer.line(c - 12, f + 8, c - 15, f + 18);
+		targetRenderer.line(c + 12, f + 8, c + 15, f + 18);
+		targetRenderer.line(c - 5, f + 10, c - 15, f + 18);
+		targetRenderer.line(c + 5, f + 10, c + 15, f + 18);
+
+		targetRenderer.setFillStyle(9, 4);
+		targetRenderer.floodFill(c, f, 12);
+
+		targetRenderer.setColor(3);
+		targetRenderer.circle(c, f + 15, 3);
+		targetRenderer.circle(c, f + 15, 2);
+
+		targetRenderer.setColor(11);
+		targetRenderer.circle(c, f + 15, 1);
+	} else if (enemyCode === 3 || enemyCode === 4) {
+		targetRenderer.setColor(11);
+		targetRenderer.ellipse(c, f + 17, 0, 360, 15, 5);
+		targetRenderer.circle(c, f + 19, 4);
+
+		targetRenderer.setColor(10);
+		targetRenderer.line(c - 7, f + 15, c - 15, f + (enemyCode === 3 ? 8 : 5));
+		targetRenderer.line(c - 15, f + (enemyCode === 3 ? 8 : 5), c - 7, f + (enemyCode === 3 ? 3 : -5));
+		targetRenderer.line(c - 15, f + (enemyCode === 3 ? 8 : 5), c + 7, f + 15);
+		targetRenderer.line(c + 15, f + (enemyCode === 3 ? 8 : 5), c - 7, f + 15);
+		targetRenderer.line(c + 7, f + 15, c + 15, f + (enemyCode === 3 ? 8 : 5));
+		targetRenderer.line(c + 15, f + (enemyCode === 3 ? 8 : 5), c + 7, f + (enemyCode === 3 ? 3 : -5));
+
+		targetRenderer.setColor(11);
+		targetRenderer.circle(c, f + 20, 3);
+
+		targetRenderer.setColor(6);
+		targetRenderer.line(c - 1, f + 20, c - 1, f + 13);
+		targetRenderer.circle(c, f + 20, 2);
+		targetRenderer.line(c + 1, f + 20, c + 1, f + 13);
+
+		targetRenderer.setColor(12);
+		targetRenderer.line(c, f + 20, c, f + 10);
+
+		targetRenderer.setFillStyle(1, 12);
+		targetRenderer.floodFill(c - 8, f + 12, 10);
+		targetRenderer.floodFill(c + 8, f + 12, 10);
+	}
+}
+
+function drawEnemyBossSprite(targetRenderer, nx, ny, screenNumber, cod = 0) {
+	switch (screenNumber) {
+		case 1:
+			targetRenderer.setColor(10);
+			targetRenderer.line(nx - 10, ny + 10, nx + 10, ny + 10);
+			targetRenderer.line(nx - 15, ny, nx - 10, ny + 10);
+			targetRenderer.line(nx + 15, ny, nx + 10, ny + 10);
+			targetRenderer.line(nx - 15, ny, nx - 18, ny + 5);
+			targetRenderer.line(nx + 15, ny, nx + 18, ny + 5);
+			targetRenderer.line(nx - 18, ny + 5, nx - 30, ny + 8);
+			targetRenderer.line(nx + 18, ny + 5, nx + 30, ny + 8);
+			targetRenderer.line(nx - 30, ny + 8, nx - 60, ny + 40);
+			targetRenderer.line(nx + 30, ny + 8, nx + 60, ny + 40);
+			targetRenderer.line(nx - 53, ny + 60, nx - 30, ny + 50);
+			targetRenderer.line(nx + 53, ny + 60, nx + 30, ny + 50);
+			targetRenderer.line(nx - 30, ny + 8, nx - 30, ny + 50);
+			targetRenderer.line(nx + 30, ny + 8, nx + 30, ny + 50);
+			targetRenderer.line(nx - 30, ny + 50, nx - 20, ny + 50);
+			targetRenderer.line(nx + 30, ny + 50, nx + 20, ny + 50);
+			targetRenderer.setColor(2);
+			targetRenderer.line(nx - 18, ny + 5, nx - 18, ny + 30);
+			targetRenderer.line(nx + 18, ny + 5, nx + 18, ny + 30);
+			targetRenderer.line(nx - 18, ny + 30, nx - 5, ny + 30);
+			targetRenderer.line(nx + 18, ny + 30, nx + 5, ny + 30);
+			targetRenderer.setColor(14);
+			targetRenderer.line(nx - 60, ny + 40, nx - 53, ny + 60);
+			targetRenderer.line(nx + 60, ny + 40, nx + 53, ny + 60);
+			targetRenderer.line(nx - 59, ny + 44, nx - 59, ny + 75);
+			targetRenderer.line(nx + 59, ny + 44, nx + 59, ny + 75);
+			targetRenderer.line(nx - 59, ny + 75, nx - 53, ny + 55);
+			targetRenderer.line(nx + 59, ny + 75, nx + 53, ny + 55);
+			targetRenderer.setColor(12);
+			targetRenderer.ellipse(nx, ny + 45, 0, 180, 5, 20);
+			targetRenderer.ellipse(nx, ny + 55, 0, 70, 10, 10);
+			targetRenderer.ellipse(nx, ny + 55, 110, 180, 10, 10);
+			targetRenderer.ellipse(nx, ny + 50, 180, 360, 25, 7);
+			targetRenderer.ellipse(nx, ny + 58, 180, 360, 7, 10);
+			targetRenderer.ellipse(nx, ny + 90, 0, 360, 4, 8);
+			targetRenderer.ellipse(nx, ny + 90, 180, 360, 5, 9);
+			targetRenderer.line(nx - 3, ny + 67, nx - 2, ny + 82);
+			targetRenderer.line(nx + 3, ny + 67, nx + 2, ny + 82);
+			targetRenderer.setFillStyle(1, 4);
+			targetRenderer.floodFill(nx, ny + 70, 12);
+			targetRenderer.setFillStyle(1, 12);
+			targetRenderer.floodFill(nx, ny + 60, 12);
+		break;
+		case 2:
+			targetRenderer.setColor(11);
+			targetRenderer.ellipse(nx, ny + 55, 160, 17, 20, 32);
+			targetRenderer.ellipse(nx, ny + 55, 150, 25, 12, 24);
+			targetRenderer.setColor(5);
+			targetRenderer.line(nx - 48, ny + 18, nx - 60, ny + 72);
+			targetRenderer.line(nx + 48, ny + 18, nx + 60, ny + 72);
+			targetRenderer.line(nx - 20, ny + 40, nx - 60, ny + 72);
+			targetRenderer.line(nx + 20, ny + 40, nx + 60, ny + 72);
+			targetRenderer.setColor(12);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 60, 35);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 60, 30);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 60, 20);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 60, 10);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 50, 35);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 40, 35);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 30, 35);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 30, 35);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 20, 35);
+			targetRenderer.ellipse(nx, ny + 5, 0, 180, 10, 35);
+			targetRenderer.line(nx - 60, ny + 5, nx + 60, ny + 5);
+			targetRenderer.line(nx - 60, ny + 5, nx - 20, ny + 44);
+			targetRenderer.line(nx + 60, ny + 5, nx + 20, ny + 44);
+			targetRenderer.line(nx - 20, ny + 44, nx + 20, ny + 44);
+			targetRenderer.setColor(3);
+			targetRenderer.circle(nx, ny + 60, 3);
+			targetRenderer.circle(nx, ny + 60, 2);
+			targetRenderer.setColor(11);
+			targetRenderer.circle(nx, ny + 60, 1);
+		break;
+		case 3:
+			targetRenderer.setColor(11);
+			targetRenderer.ellipse(nx, ny + 67, 110, 70, 50, 18);
+			targetRenderer.ellipse(nx, ny + 65, 110, 70, 30, 20);
+			targetRenderer.ellipse(nx, ny + 65, 110, 70, 29, 19);
+			targetRenderer.setColor(12);
+			targetRenderer.ellipse(nx, ny + 40, 0, 360, 10, 40);
+			targetRenderer.setColor(10);
+			if (cod === 1) {
+				targetRenderer.line(nx - 25, ny + 55, nx - 60, ny + 30);
+				targetRenderer.line(nx + 25, ny + 55, nx + 60, ny + 30);
+				targetRenderer.line(nx - 11, ny + 40, nx - 60, ny + 30);
+				targetRenderer.line(nx + 11, ny + 40, nx + 60, ny + 30);
+				targetRenderer.line(nx - 60, ny + 30, nx - 15, ny + 10);
+				targetRenderer.line(nx + 60, ny + 30, nx + 15, ny + 10);
+				targetRenderer.line(nx - 15, ny + 10, nx - 55, ny + 35);
+				targetRenderer.line(nx + 15, ny + 10, nx + 55, ny + 35);
+			} else if (cod === 2) {
+				targetRenderer.line(nx - 25, ny + 55, nx - 60, ny + 20);
+				targetRenderer.line(nx + 25, ny + 55, nx + 60, ny + 20);
+				targetRenderer.line(nx - 11, ny + 40, nx - 60, ny + 20);
+				targetRenderer.line(nx + 11, ny + 40, nx + 60, ny + 20);
+				targetRenderer.line(nx - 60, ny + 20, nx - 15, ny - 10);
+				targetRenderer.line(nx + 60, ny + 20, nx + 15, ny - 10);
+				targetRenderer.line(nx - 15, ny - 10, nx - 55, ny + 25);
+				targetRenderer.line(nx + 15, ny - 10, nx + 55, ny + 25);
+			}
+		break;
+	}
+}
+
 function write(text, x, y) {
 	renderer.setColor(9);
 	renderer.outTextXY(x, y, text);
@@ -1498,276 +1951,6 @@ function updatePillDrop() {
 	if (players === 'Dos' && player2.lives > 0) checkPillPickup(player2, 2);
 }
 
-function drawPlayer(x, y, player, showShield = true) {
-	if (player === 1) {
-		renderer.setColor(12);
-	} else {
-		renderer.setColor(11);
-	}
-
-	renderer.line(x - 2, y, x, y - 20);
-	renderer.line(x + 2, y, x, y - 20);
-
-	if (y % 2 === 0) {
-		renderer.setColor(14);
-	} else {
-		renderer.setColor(12);
-	}
-
-	renderer.ellipse(x - 5, y, 180, 0, 3, 5);
-	renderer.ellipse(x + 5, y, 180, 0, 3, 5);
-
-	if (y % 2 === 0) {
-		renderer.setColor(12);
-	} else {
-		renderer.setColor(14);
-	}
-
-	renderer.ellipse(x - 5, y, 180, 0, 1, 5);
-	renderer.ellipse(x + 5, y, 180, 0, 1, 5);
-
-	if (player === 1) {
-		renderer.setColor(14);
-	} else {
-		renderer.setColor(13);
-	}
-
-	renderer.arc(x, y, 0, 180, 8);
-	renderer.arc(x, y, 0, 180, 6);
-
-	const hasShield = showShield && (player === 1 ? player1.shield : player2.shield);
-	if (hasShield) {
-		renderer.setColor(10);
-		renderer.ellipse(x, y - 5, 0, 360, 11, 15);
-	}
-
-	if (player === 1) {
-		renderer.setColor(11);
-	} else {
-		renderer.setColor(12);
-	}
-
-	renderer.line(x, y - 20, x + 10, y);
-	renderer.line(x, y - 20, x - 10, y);
-	renderer.line(x - 10, y, x + 10, y);
-
-	renderer.line(x - 10, y - 2, x - 10, y - 9);
-	renderer.line(x - 8, y - 2, x - 10, y - 9);
-	renderer.line(x + 10, y - 2, x + 10, y - 9);
-	renderer.line(x + 8, y - 2, x + 10, y - 9);
-}
-
-function drawEnemy(c, f, enemyCode) {
-	if (enemyCode === 1) {
-		renderer.setColor(2);
-		renderer.ellipse(c, f, 150, 30, 5, 10);
-		renderer.ellipse(c, f, 150, 30, 4, 9);
-		renderer.ellipse(c, f, 150, 30, 3, 8);
-
-		renderer.setColor(11);
-		renderer.ellipse(c, f + 20, 0, 360, 2, 3);
-
-		renderer.setColor(8);
-		renderer.ellipse(c - 9, f + 3, 0, 360, 2, 3);
-		renderer.ellipse(c + 9, f + 3, 0, 360, 2, 3);
-		renderer.ellipse(c - 9, f + 3, 0, 360, 1, 2);
-		renderer.ellipse(c + 9, f + 3, 0, 360, 1, 2);
-
-		renderer.setColor(10);
-		renderer.line(c + 2, f, c, f + 20);
-		renderer.line(c - 2, f, c, f + 20);
-		renderer.line(c - 10, f - 5, c + 10, f - 5);
-		renderer.line(c + 10, f - 5, c + 15, f + 3);
-		renderer.line(c - 10, f - 5, c - 15, f + 3);
-		renderer.line(c - 14, f + 3, c - 11, f + 15);
-		renderer.line(c - 11, f + 15, c - 4, f + 5);
-		renderer.line(c + 14, f + 3, c + 11, f + 15);
-		renderer.line(c + 11, f + 15, c + 4, f + 5);
-
-		renderer.setColor(14);
-		renderer.line(c - 15, f + 3, c - 12, f + 15);
-		renderer.line(c - 12, f + 15, c - 5, f + 5);
-		renderer.line(c + 15, f + 3, c + 12, f + 15);
-		renderer.line(c + 12, f + 15, c + 5, f + 5);
-	} else if (enemyCode === 2) {
-		renderer.setColor(12);
-		renderer.ellipse(c, f + 5, 0, 180, 15, 10);
-		renderer.line(c - 15, f + 5, c - 5, f + 12);
-		renderer.line(c + 15, f + 5, c + 5, f + 12);
-		renderer.line(c - 5, f + 11, c + 5, f + 11);
-
-		renderer.setColor(3);
-		renderer.ellipse(c, f + 15, 160, 15, 5, 8);
-		renderer.ellipse(c, f + 15, 145, 25, 3, 6);
-
-		renderer.setColor(5);
-		renderer.line(c - 12, f + 8, c - 15, f + 18);
-		renderer.line(c + 12, f + 8, c + 15, f + 18);
-		renderer.line(c - 5, f + 10, c - 15, f + 18);
-		renderer.line(c + 5, f + 10, c + 15, f + 18);
-
-		renderer.setFillStyle(9, 4);
-		renderer.floodFill(c, f, 12);
-
-		renderer.setColor(3);
-		renderer.circle(c, f + 15, 3);
-		renderer.circle(c, f + 15, 2);
-
-		renderer.setColor(11);
-		renderer.circle(c, f + 15, 1);
-	} else if (enemyCode === 3 || enemyCode === 4) {
-		renderer.setColor(11);
-		renderer.ellipse(c, f + 17, 0, 360, 15, 5);
-		renderer.circle(c, f + 19, 4);
-
-		renderer.setColor(10);
-		renderer.line(c - 7, f + 15, c - 15, f + (enemyCode === 3 ? 8 : 5));
-		renderer.line(c - 15, f + (enemyCode === 3 ? 8 : 5), c - 7, f + (enemyCode === 3 ? 3 : -5));
-		renderer.line(c - 15, f + (enemyCode === 3 ? 8 : 5), c + 7, f + 15);
-		renderer.line(c + 15, f + (enemyCode === 3 ? 8 : 5), c - 7, f + 15);
-		renderer.line(c + 7, f + 15, c + 15, f + (enemyCode === 3 ? 8 : 5));
-		renderer.line(c + 15, f + (enemyCode === 3 ? 8 : 5), c + 7, f + (enemyCode === 3 ? 3 : -5));
-
-		renderer.setColor(11);
-		renderer.circle(c, f + 20, 3);
-
-		renderer.setColor(6);
-		renderer.line(c - 1, f + 20, c - 1, f + 13);
-		renderer.circle(c, f + 20, 2);
-		renderer.line(c + 1, f + 20, c + 1, f + 13);
-
-		renderer.setColor(12);
-		renderer.line(c, f + 20, c, f + 10);
-
-		renderer.setFillStyle(1, 12);
-		renderer.floodFill(c - 8, f + 12, 10);
-		renderer.floodFill(c + 8, f + 12, 10);
-	}
-}
-
-function drawEnemyBossShip(nx, ny, screenNumber) {
-	let cod = 0;
-	if (screenNumber === 3) {
-		if (nx % 50 > 25) {
-			if (nx > 30) {
-				ny--;
-				cod = 1;
-			}
-		} else {
-			if (ny < 400) {
-				ny++;
-				cod = 2;
-			}
-		}
-	}
-
-	switch (screenNumber) {
-		case 1:
-			renderer.setColor(10);
-			renderer.line(nx - 10, ny + 10, nx + 10, ny + 10);
-			renderer.line(nx - 15, ny, nx - 10, ny + 10);
-			renderer.line(nx + 15, ny, nx + 10, ny + 10);
-			renderer.line(nx - 15, ny, nx - 18, ny + 5);
-			renderer.line(nx + 15, ny, nx + 18, ny + 5);
-			renderer.line(nx - 18, ny + 5, nx - 30, ny + 8);
-			renderer.line(nx + 18, ny + 5, nx + 30, ny + 8);
-			renderer.line(nx - 30, ny + 8, nx - 60, ny + 40);
-			renderer.line(nx + 30, ny + 8, nx + 60, ny + 40);
-			renderer.line(nx - 53, ny + 60, nx - 30, ny + 50);
-			renderer.line(nx + 53, ny + 60, nx + 30, ny + 50);
-			renderer.line(nx - 30, ny + 8, nx - 30, ny + 50);
-			renderer.line(nx + 30, ny + 8, nx + 30, ny + 50);
-			renderer.line(nx - 30, ny + 50, nx - 20, ny + 50);
-			renderer.line(nx + 30, ny + 50, nx + 20, ny + 50);
-			renderer.setColor(2);
-			renderer.line(nx - 18, ny + 5, nx - 18, ny + 30);
-			renderer.line(nx + 18, ny + 5, nx + 18, ny + 30);
-			renderer.line(nx - 18, ny + 30, nx - 5, ny + 30);
-			renderer.line(nx + 18, ny + 30, nx + 5, ny + 30);
-			renderer.setColor(14);
-			renderer.line(nx - 60, ny + 40, nx - 53, ny + 60);
-			renderer.line(nx + 60, ny + 40, nx + 53, ny + 60);
-			renderer.line(nx - 59, ny + 44, nx - 59, ny + 75);
-			renderer.line(nx + 59, ny + 44, nx + 59, ny + 75);
-			renderer.line(nx - 59, ny + 75, nx - 53, ny + 55);
-			renderer.line(nx + 59, ny + 75, nx + 53, ny + 55);
-			renderer.setColor(12);
-			renderer.ellipse(nx, ny + 45, 0, 180, 5, 20);
-			renderer.ellipse(nx, ny + 55, 0, 70, 10, 10);
-			renderer.ellipse(nx, ny + 55, 110, 180, 10, 10);
-			renderer.ellipse(nx, ny + 50, 180, 360, 25, 7);
-			renderer.ellipse(nx, ny + 58, 180, 360, 7, 10);
-			renderer.ellipse(nx, ny + 90, 0, 360, 4, 8);
-			renderer.ellipse(nx, ny + 90, 180, 360, 5, 9);
-			renderer.line(nx - 3, ny + 67, nx - 2, ny + 82);
-			renderer.line(nx + 3, ny + 67, nx + 2, ny + 82);
-			renderer.setFillStyle(1, 4);
-			renderer.floodFill(nx, ny + 70, 12);
-			renderer.setFillStyle(1, 12);
-			renderer.floodFill(nx, ny + 60, 12);
-			break;
-		case 2:
-			renderer.setColor(11);
-			renderer.ellipse(nx, ny + 55, 160, 17, 20, 32);
-			renderer.ellipse(nx, ny + 55, 150, 25, 12, 24);
-			renderer.setColor(5);
-			renderer.line(nx - 48, ny + 18, nx - 60, ny + 72);
-			renderer.line(nx + 48, ny + 18, nx + 60, ny + 72);
-			renderer.line(nx - 20, ny + 40, nx - 60, ny + 72);
-			renderer.line(nx + 20, ny + 40, nx + 60, ny + 72);
-			renderer.setColor(12);
-			renderer.ellipse(nx, ny + 5, 0, 180, 60, 35);
-			renderer.ellipse(nx, ny + 5, 0, 180, 60, 30);
-			renderer.ellipse(nx, ny + 5, 0, 180, 60, 20);
-			renderer.ellipse(nx, ny + 5, 0, 180, 60, 10);
-			renderer.ellipse(nx, ny + 5, 0, 180, 50, 35);
-			renderer.ellipse(nx, ny + 5, 0, 180, 40, 35);
-			renderer.ellipse(nx, ny + 5, 0, 180, 30, 35);
-			renderer.ellipse(nx, ny + 5, 0, 180, 30, 35);
-			renderer.ellipse(nx, ny + 5, 0, 180, 20, 35);
-			renderer.ellipse(nx, ny + 5, 0, 180, 10, 35);
-			renderer.line(nx - 60, ny + 5, nx + 60, ny + 5);
-			renderer.line(nx - 60, ny + 5, nx - 20, ny + 44);
-			renderer.line(nx + 60, ny + 5, nx + 20, ny + 44);
-			renderer.line(nx - 20, ny + 44, nx + 20, ny + 44);
-			renderer.setColor(3);
-			renderer.circle(nx, ny + 60, 3);
-			renderer.circle(nx, ny + 60, 2);
-			renderer.setColor(11);
-			renderer.circle(nx, ny + 60, 1);
-			break;
-		case 3:
-			renderer.setColor(11);
-			renderer.ellipse(nx, ny + 67, 110, 70, 50, 18);
-			renderer.ellipse(nx, ny + 65, 110, 70, 30, 20);
-			renderer.ellipse(nx, ny + 65, 110, 70, 29, 19);
-			renderer.setColor(12);
-			renderer.ellipse(nx, ny + 40, 0, 360, 10, 40);
-			renderer.setColor(10);
-			if (cod === 1) {
-				renderer.line(nx - 25, ny + 55, nx - 60, ny + 30);
-				renderer.line(nx + 25, ny + 55, nx + 60, ny + 30);
-				renderer.line(nx - 11, ny + 40, nx - 60, ny + 30);
-				renderer.line(nx + 11, ny + 40, nx + 60, ny + 30);
-				renderer.line(nx - 60, ny + 30, nx - 15, ny + 10);
-				renderer.line(nx + 60, ny + 30, nx + 15, ny + 10);
-				renderer.line(nx - 15, ny + 10, nx - 55, ny + 35);
-				renderer.line(nx + 15, ny + 10, nx + 55, ny + 35);
-			} else if (cod === 2) {
-				renderer.line(nx - 25, ny + 55, nx - 60, ny + 20);
-				renderer.line(nx + 25, ny + 55, nx + 60, ny + 20);
-				renderer.line(nx - 11, ny + 40, nx - 60, ny + 20);
-				renderer.line(nx + 11, ny + 40, nx + 60, ny + 20);
-				renderer.line(nx - 60, ny + 20, nx - 15, ny - 10);
-				renderer.line(nx + 60, ny + 20, nx + 15, ny - 10);
-				renderer.line(nx - 15, ny - 10, nx - 55, ny + 25);
-				renderer.line(nx + 15, ny - 10, nx + 55, ny + 25);
-			}
-			break;
-	}
-	return ny;
-}
-
 // --- Shots: missiles, lasers and angular shots (both players)
 function drawMissile(x, y, color) {
 	renderer.setColor(color);
@@ -2387,8 +2570,10 @@ function gameLoop(timestamp) {
 
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', () => {
+		initSpriteCache();
 		requestAnimationFrame(gameLoop);
 	});
 } else {
+	initSpriteCache();
 	requestAnimationFrame(gameLoop);
 }
