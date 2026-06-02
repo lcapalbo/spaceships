@@ -304,13 +304,13 @@ function drawPlayer(x, y, player, showShield = true) {
 	drawPlayerSprite(renderer, x, y, player, showShield);
 }
 
-function drawEnemy(c, f, enemyCode) {
+function drawEnemy(x, y, enemyCode) {
 	const sprite = getEnemySprite(enemyCode);
 	if (sprite) {
-		drawSprite(sprite, c, f);
+		drawSprite(sprite, x, y);
 		return;
 	}
-	drawEnemySprite(renderer, c, f, enemyCode);
+	drawEnemySprite(renderer, x, y, enemyCode);
 }
 
 function drawEnemyBossShip(nx, ny, screenNumber) {
@@ -398,91 +398,91 @@ function drawPlayerSprite(targetRenderer, x, y, player, showShield = true, shiel
 	targetRenderer.line(x + 8, y - 2, x + 10, y - 9);
 }
 
-function drawEnemySprite(targetRenderer, c, f, enemyCode) {
+function drawEnemySprite(targetRenderer, x, f, enemyCode) {
 	if (enemyCode === 1) {
 		targetRenderer.setColor(2);
-		targetRenderer.ellipse(c, f, 150, 30, 5, 10);
-		targetRenderer.ellipse(c, f, 150, 30, 4, 9);
-		targetRenderer.ellipse(c, f, 150, 30, 3, 8);
+		targetRenderer.ellipse(x, f, 150, 30, 5, 10);
+		targetRenderer.ellipse(x, f, 150, 30, 4, 9);
+		targetRenderer.ellipse(x, f, 150, 30, 3, 8);
 
 		targetRenderer.setColor(11);
-		targetRenderer.ellipse(c, f + 20, 0, 360, 2, 3);
+		targetRenderer.ellipse(x, f + 20, 0, 360, 2, 3);
 
 		targetRenderer.setColor(8);
-		targetRenderer.ellipse(c - 9, f + 3, 0, 360, 2, 3);
-		targetRenderer.ellipse(c + 9, f + 3, 0, 360, 2, 3);
-		targetRenderer.ellipse(c - 9, f + 3, 0, 360, 1, 2);
-		targetRenderer.ellipse(c + 9, f + 3, 0, 360, 1, 2);
+		targetRenderer.ellipse(x - 9, f + 3, 0, 360, 2, 3);
+		targetRenderer.ellipse(x + 9, f + 3, 0, 360, 2, 3);
+		targetRenderer.ellipse(x - 9, f + 3, 0, 360, 1, 2);
+		targetRenderer.ellipse(x + 9, f + 3, 0, 360, 1, 2);
 
 		targetRenderer.setColor(10);
-		targetRenderer.line(c + 2, f, c, f + 20);
-		targetRenderer.line(c - 2, f, c, f + 20);
-		targetRenderer.line(c - 10, f - 5, c + 10, f - 5);
-		targetRenderer.line(c + 10, f - 5, c + 15, f + 3);
-		targetRenderer.line(c - 10, f - 5, c - 15, f + 3);
-		targetRenderer.line(c - 14, f + 3, c - 11, f + 15);
-		targetRenderer.line(c - 11, f + 15, c - 4, f + 5);
-		targetRenderer.line(c + 14, f + 3, c + 11, f + 15);
-		targetRenderer.line(c + 11, f + 15, c + 4, f + 5);
+		targetRenderer.line(x + 2, f, x, f + 20);
+		targetRenderer.line(x - 2, f, x, f + 20);
+		targetRenderer.line(x - 10, f - 5, x + 10, f - 5);
+		targetRenderer.line(x + 10, f - 5, x + 15, f + 3);
+		targetRenderer.line(x - 10, f - 5, x - 15, f + 3);
+		targetRenderer.line(x - 14, f + 3, x - 11, f + 15);
+		targetRenderer.line(x - 11, f + 15, x - 4, f + 5);
+		targetRenderer.line(x + 14, f + 3, x + 11, f + 15);
+		targetRenderer.line(x + 11, f + 15, x + 4, f + 5);
 
 		targetRenderer.setColor(14);
-		targetRenderer.line(c - 15, f + 3, c - 12, f + 15);
-		targetRenderer.line(c - 12, f + 15, c - 5, f + 5);
-		targetRenderer.line(c + 15, f + 3, c + 12, f + 15);
-		targetRenderer.line(c + 12, f + 15, c + 5, f + 5);
+		targetRenderer.line(x - 15, f + 3, x - 12, f + 15);
+		targetRenderer.line(x - 12, f + 15, x - 5, f + 5);
+		targetRenderer.line(x + 15, f + 3, x + 12, f + 15);
+		targetRenderer.line(x + 12, f + 15, x + 5, f + 5);
 	} else if (enemyCode === 2) {
 		targetRenderer.setColor(12);
-		targetRenderer.ellipse(c, f + 5, 0, 180, 15, 10);
-		targetRenderer.line(c - 15, f + 5, c - 5, f + 12);
-		targetRenderer.line(c + 15, f + 5, c + 5, f + 12);
-		targetRenderer.line(c - 5, f + 11, c + 5, f + 11);
+		targetRenderer.ellipse(x, f + 5, 0, 180, 15, 10);
+		targetRenderer.line(x - 15, f + 5, x - 5, f + 12);
+		targetRenderer.line(x + 15, f + 5, x + 5, f + 12);
+		targetRenderer.line(x - 5, f + 11, x + 5, f + 11);
 
 		targetRenderer.setColor(3);
-		targetRenderer.ellipse(c, f + 15, 160, 15, 5, 8);
-		targetRenderer.ellipse(c, f + 15, 145, 25, 3, 6);
+		targetRenderer.ellipse(x, f + 15, 160, 15, 5, 8);
+		targetRenderer.ellipse(x, f + 15, 145, 25, 3, 6);
 
 		targetRenderer.setColor(5);
-		targetRenderer.line(c - 12, f + 8, c - 15, f + 18);
-		targetRenderer.line(c + 12, f + 8, c + 15, f + 18);
-		targetRenderer.line(c - 5, f + 10, c - 15, f + 18);
-		targetRenderer.line(c + 5, f + 10, c + 15, f + 18);
+		targetRenderer.line(x - 12, f + 8, x - 15, f + 18);
+		targetRenderer.line(x + 12, f + 8, x + 15, f + 18);
+		targetRenderer.line(x - 5, f + 10, x - 15, f + 18);
+		targetRenderer.line(x + 5, f + 10, x + 15, f + 18);
 
 		targetRenderer.setFillStyle(9, 4);
-		targetRenderer.floodFill(c, f, 12);
+		targetRenderer.floodFill(x, f, 12);
 
 		targetRenderer.setColor(3);
-		targetRenderer.circle(c, f + 15, 3);
-		targetRenderer.circle(c, f + 15, 2);
+		targetRenderer.circle(x, f + 15, 3);
+		targetRenderer.circle(x, f + 15, 2);
 
 		targetRenderer.setColor(11);
-		targetRenderer.circle(c, f + 15, 1);
+		targetRenderer.circle(x, f + 15, 1);
 	} else if (enemyCode === 3 || enemyCode === 4) {
 		targetRenderer.setColor(11);
-		targetRenderer.ellipse(c, f + 17, 0, 360, 15, 5);
-		targetRenderer.circle(c, f + 19, 4);
+		targetRenderer.ellipse(x, f + 17, 0, 360, 15, 5);
+		targetRenderer.circle(x, f + 19, 4);
 
 		targetRenderer.setColor(10);
-		targetRenderer.line(c - 7, f + 15, c - 15, f + (enemyCode === 3 ? 8 : 5));
-		targetRenderer.line(c - 15, f + (enemyCode === 3 ? 8 : 5), c - 7, f + (enemyCode === 3 ? 3 : -5));
-		targetRenderer.line(c - 15, f + (enemyCode === 3 ? 8 : 5), c + 7, f + 15);
-		targetRenderer.line(c + 15, f + (enemyCode === 3 ? 8 : 5), c - 7, f + 15);
-		targetRenderer.line(c + 7, f + 15, c + 15, f + (enemyCode === 3 ? 8 : 5));
-		targetRenderer.line(c + 15, f + (enemyCode === 3 ? 8 : 5), c + 7, f + (enemyCode === 3 ? 3 : -5));
+		targetRenderer.line(x - 7, f + 15, x - 15, f + (enemyCode === 3 ? 8 : 5));
+		targetRenderer.line(x - 15, f + (enemyCode === 3 ? 8 : 5), x - 7, f + (enemyCode === 3 ? 3 : -5));
+		targetRenderer.line(x - 15, f + (enemyCode === 3 ? 8 : 5), x + 7, f + 15);
+		targetRenderer.line(x + 15, f + (enemyCode === 3 ? 8 : 5), x - 7, f + 15);
+		targetRenderer.line(x + 7, f + 15, x + 15, f + (enemyCode === 3 ? 8 : 5));
+		targetRenderer.line(x + 15, f + (enemyCode === 3 ? 8 : 5), x + 7, f + (enemyCode === 3 ? 3 : -5));
 
 		targetRenderer.setColor(11);
-		targetRenderer.circle(c, f + 20, 3);
+		targetRenderer.circle(x, f + 20, 3);
 
 		targetRenderer.setColor(6);
-		targetRenderer.line(c - 1, f + 20, c - 1, f + 13);
-		targetRenderer.circle(c, f + 20, 2);
-		targetRenderer.line(c + 1, f + 20, c + 1, f + 13);
+		targetRenderer.line(x - 1, f + 20, x - 1, f + 13);
+		targetRenderer.circle(x, f + 20, 2);
+		targetRenderer.line(x + 1, f + 20, x + 1, f + 13);
 
 		targetRenderer.setColor(12);
-		targetRenderer.line(c, f + 20, c, f + 10);
+		targetRenderer.line(x, f + 20, x, f + 10);
 
 		targetRenderer.setFillStyle(1, 12);
-		targetRenderer.floodFill(c - 8, f + 12, 10);
-		targetRenderer.floodFill(c + 8, f + 12, 10);
+		targetRenderer.floodFill(x - 8, f + 12, 10);
+		targetRenderer.floodFill(x + 8, f + 12, 10);
 	}
 }
 
