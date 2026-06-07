@@ -2438,7 +2438,7 @@ function drawHelpScreen() {
 
 	// Fecha y instrucción de salida
 	renderer.setColor(12); // Rojo
-	renderer.outTextXY(130, 370, 'Septiembre de 2K, Argentina');
+	renderer.outTextXY(145, 370, 'Junio de 2026, Argentina');
 	renderer.setColor(11); // Cyan
 	renderer.outTextXY(132, 385, 'Presione Escape Para Cerrar');
 }
