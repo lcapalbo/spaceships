@@ -522,7 +522,7 @@ function drawEnemyBossSprite(targetRenderer, nx, ny, screenNumber, cod = 0) {
 			targetRenderer.floodFill(nx, ny + 70, 12);
 			targetRenderer.setFillStyle(1, 12);
 			targetRenderer.floodFill(nx, ny + 60, 12);
-		break;
+			break;
 		case 2:
 			targetRenderer.setColor(11);
 			targetRenderer.ellipse(nx, ny + 55, 160, 17, 20, 32);
@@ -552,7 +552,7 @@ function drawEnemyBossSprite(targetRenderer, nx, ny, screenNumber, cod = 0) {
 			targetRenderer.circle(nx, ny + 60, 2);
 			targetRenderer.setColor(11);
 			targetRenderer.circle(nx, ny + 60, 1);
-		break;
+			break;
 		case 3:
 			targetRenderer.setColor(11);
 			targetRenderer.ellipse(nx, ny + 67, 110, 70, 50, 18);
@@ -580,7 +580,7 @@ function drawEnemyBossSprite(targetRenderer, nx, ny, screenNumber, cod = 0) {
 				targetRenderer.line(nx - 15, ny - 10, nx - 55, ny + 25);
 				targetRenderer.line(nx + 15, ny - 10, nx + 55, ny + 25);
 			}
-		break;
+			break;
 	}
 }
 
@@ -793,7 +793,7 @@ function drawRankingScreen() {
 
 	renderer.setColor(11);
 	renderer.setTextStyle(2, 0, 1);
-	renderer.outTextXY(200, 420, 'Presione cualquier tecla para volver');
+	renderer.outTextXY(200, 425, 'Presione cualquier tecla para volver');
 }
 
 
@@ -945,8 +945,8 @@ function setupGameScreen() {
 
 	// Initialize positions based on player count
 	if (players === 'Uno') {
-		player1.x = 200;
 		player1.y = 443;
+		player1.x = 200;
 	} else {
 		player1.x = 300;
 		player1.y = 443;
@@ -1594,7 +1594,7 @@ function losePlayerLife(player, playerNum) {
 	eraseLifeIcon(playerNum, player.lives);
 	player.lives = Math.max(0, player.lives - 1);
 	resetPlayerEffects(player);
-	player.x = 200;
+	player.x = playerNum == 2 ? 100 : players === 'Uno' ? 200 : 300;
 	player.y = 443;
 	player.energy = initialEnergy;
 	showEnergy(player.energy, playerNum);
@@ -1796,7 +1796,7 @@ function drawStatsScreen() {
 		renderer.outTextXY(160, 260, statsState.player1Efficiency + '%');
 		renderer.setTextStyle(11, 0, 1);
 		renderer.setColor(11);
-		renderer.outTextXY(80, 335, 'Presione ENTER Para Continuar');
+		renderer.outTextXY(100, 333, 'Presione ENTER Para Continuar');
 		drawEnemy(160, 90, currentScreen);
 	} else {
 		renderer.line(51, 445, 350, 445);
@@ -1818,7 +1818,7 @@ function drawStatsScreen() {
 		renderer.outTextXY(160, 390, statsState.player2Efficiency + '%');
 		renderer.setTextStyle(11, 0, 1);
 		renderer.setColor(11);
-		renderer.outTextXY(80, 455, 'Presione ENTER Para Continuar');
+		renderer.outTextXY(100, 453, 'Presione ENTER Para Continuar');
 		drawEnemy(160, 30, currentScreen);
 		drawEnemy(160, 250, currentScreen);
 	}
@@ -2442,7 +2442,7 @@ function drawHelpScreen() {
 	renderer.setColor(12); // Rojo
 	renderer.outTextXY(130, 370, 'Septiembre de 2K, Argentina');
 	renderer.setColor(11); // Cyan
-	renderer.outTextXY(132, 384, 'Presione Escape Para Cerrar');
+	renderer.outTextXY(132, 385, 'Presione Escape Para Cerrar');
 }
 
 
@@ -2556,7 +2556,7 @@ function gameLoop(timestamp) {
 				break;
 		}
 	}
-	
+
 	requestAnimationFrame(gameLoop);
 }
 
