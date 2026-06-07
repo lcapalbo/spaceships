@@ -43,9 +43,9 @@ let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
 let lastGameUpdateTime = 0;
 
 function getGameSpeedInterval() {
-	if (speed === 'Lento') return 35;
-	if (speed === 'Rápido') return 1;
-	return 20; // Normal
+	if (speed === 'Lento') return 20;
+	if (speed === 'Rápido') return 0;
+	return 16; // Normal
 }
 
 // Player state
@@ -142,19 +142,18 @@ const enemies = [
 
 const spriteCache = {};
 const spriteSpecs = {
-	player1: { width: 32, height: 34, anchorX: 16, anchorY: 20 },
-	player1_shield: { width: 32, height: 34, anchorX: 16, anchorY: 20 },
-	player2: { width: 32, height: 34, anchorX: 16, anchorY: 20 },
-	player2_shield: { width: 32, height: 34, anchorX: 16, anchorY: 20 },
-	enemy1: { width: 121, height: 96, anchorX: 60, anchorY: 5 },
-	enemy2: { width: 121, height: 70, anchorX: 60, anchorY: 5 },
-	enemy3: { width: 70, height: 90, anchorX: 35, anchorY: 0 },
-	enemy4: { width: 70, height: 90, anchorX: 35, anchorY: 0 },
-	boss1: { width: 140, height: 120, anchorX: 70, anchorY: 0 },
-	boss2: { width: 140, height: 110, anchorX: 70, anchorY: 30 },
-	boss3_0: { width: 140, height: 100, anchorX: 70, anchorY: 0 },
-	boss3_1: { width: 140, height: 100, anchorX: 70, anchorY: 0 },
-	boss3_2: { width: 140, height: 100, anchorX: 70, anchorY: 0 }
+	player1: { width: 24, height: 32, anchorX: 12, anchorY: 20 },
+	player1_shield: { width: 24, height: 32, anchorX: 12, anchorY: 20 },
+	player2: { width: 24, height: 32, anchorX: 12, anchorY: 20 },
+	player2_shield: { width: 24, height: 32, anchorX: 12, anchorY: 20 },
+	enemy1: { width: 32, height: 30, anchorX: 16, anchorY: 5 },
+	enemy2: { width: 30, height: 30, anchorX: 15, anchorY: 6 },
+	enemy3: { width: 30, height: 22, anchorX: 15, anchorY: -2 },
+	enemy4: { width: 30, height: 30, anchorX: 15, anchorY: 5 },
+	boss1: { width: 120, height: 100, anchorX: 60, anchorY: 0 },
+	boss2: { width: 120, height: 120, anchorX: 60, anchorY: 30 },
+	boss3_1: { width: 120, height: 85, anchorX: 60, anchorY: 0 },
+	boss3_2: { width: 120, height: 95, anchorX: 60, anchorY: 10 }
 };
 
 function createSpriteCanvas(width, height) {
@@ -178,90 +177,85 @@ function buildSpriteCache() {
 	if (spriteCache.player1_even) return;
 
 	spriteCache.player1_even = {
-		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, 16, 20, 1, false, false)),
+		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY, 1, false, false)),
 		anchorX: spriteSpecs.player1.anchorX,
 		anchorY: spriteSpecs.player1.anchorY
 	};
 	spriteCache.player1_odd = {
-		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, 16, 21, 1, false, false)),
+		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY, 1, false, false)),
 		anchorX: spriteSpecs.player1.anchorX,
 		anchorY: spriteSpecs.player1.anchorY
 	};
 	spriteCache.player1_even_shield = {
-		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, 16, 20, 1, true, true)),
+		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY, 1, true, true)),
 		anchorX: spriteSpecs.player1_shield.anchorX,
 		anchorY: spriteSpecs.player1_shield.anchorY
 	};
 	spriteCache.player1_odd_shield = {
-		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, 16, 21, 1, true, true)),
+		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY, 1, true, true)),
 		anchorX: spriteSpecs.player1_shield.anchorX,
 		anchorY: spriteSpecs.player1_shield.anchorY
 	};
 
 	spriteCache.player2_even = {
-		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, 16, 20, 2, false, false)),
+		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY, 2, false, false)),
 		anchorX: spriteSpecs.player2.anchorX,
 		anchorY: spriteSpecs.player2.anchorY
 	};
 	spriteCache.player2_odd = {
-		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, 16, 21, 2, false, false)),
+		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY, 2, false, false)),
 		anchorX: spriteSpecs.player2.anchorX,
 		anchorY: spriteSpecs.player2.anchorY
 	};
 	spriteCache.player2_even_shield = {
-		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, 16, 20, 2, true, true)),
+		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY, 2, true, true)),
 		anchorX: spriteSpecs.player2_shield.anchorX,
 		anchorY: spriteSpecs.player2_shield.anchorY
 	};
 	spriteCache.player2_odd_shield = {
-		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, 16, 21, 2, true, true)),
+		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY, 2, true, true)),
 		anchorX: spriteSpecs.player2_shield.anchorX,
 		anchorY: spriteSpecs.player2_shield.anchorY
 	};
 
 	spriteCache.enemy1 = {
-		image: buildSpriteCanvas(spriteSpecs.enemy1, () => drawEnemySprite(renderer, 60, 5, 1)),
+		image: buildSpriteCanvas(spriteSpecs.enemy1, () => drawEnemySprite(renderer, spriteSpecs.enemy1.anchorX, spriteSpecs.enemy1.anchorY, 1)),
 		anchorX: spriteSpecs.enemy1.anchorX,
 		anchorY: spriteSpecs.enemy1.anchorY
 	};
 	spriteCache.enemy2 = {
-		image: buildSpriteCanvas(spriteSpecs.enemy2, () => drawEnemySprite(renderer, 60, 5, 2)),
+		image: buildSpriteCanvas(spriteSpecs.enemy2, () => drawEnemySprite(renderer, spriteSpecs.enemy2.anchorX, spriteSpecs.enemy2.anchorY, 2)),
 		anchorX: spriteSpecs.enemy2.anchorX,
 		anchorY: spriteSpecs.enemy2.anchorY
 	};
 	spriteCache.enemy3 = {
-		image: buildSpriteCanvas(spriteSpecs.enemy3, () => drawEnemySprite(renderer, 35, 0, 3)),
+		image: buildSpriteCanvas(spriteSpecs.enemy3, () => drawEnemySprite(renderer, spriteSpecs.enemy3.anchorX, spriteSpecs.enemy3.anchorY, 3)),
 		anchorX: spriteSpecs.enemy3.anchorX,
 		anchorY: spriteSpecs.enemy3.anchorY
 	};
 	spriteCache.enemy4 = {
-		image: buildSpriteCanvas(spriteSpecs.enemy4, () => drawEnemySprite(renderer, 35, 0, 4)),
+		image: buildSpriteCanvas(spriteSpecs.enemy4, () => drawEnemySprite(renderer, spriteSpecs.enemy4.anchorX, spriteSpecs.enemy4.anchorY, 4)),
 		anchorX: spriteSpecs.enemy4.anchorX,
 		anchorY: spriteSpecs.enemy4.anchorY
 	};
 
 	spriteCache.boss1 = {
-		image: buildSpriteCanvas(spriteSpecs.boss1, () => drawEnemyBossSprite(renderer, 70, 0, 1, 0)),
+		image: buildSpriteCanvas(spriteSpecs.boss1, () => drawEnemyBossSprite(renderer, spriteSpecs.boss1.anchorX, spriteSpecs.boss1.anchorY, 1, 0)),
 		anchorX: spriteSpecs.boss1.anchorX,
 		anchorY: spriteSpecs.boss1.anchorY
 	};
 	spriteCache.boss2 = {
-		image: buildSpriteCanvas(spriteSpecs.boss2, () => drawEnemyBossSprite(renderer, 70, 30, 2, 0)),
+		image: buildSpriteCanvas(spriteSpecs.boss2, () => drawEnemyBossSprite(renderer, spriteSpecs.boss2.anchorX, spriteSpecs.boss2.anchorY, 2, 0)),
 		anchorX: spriteSpecs.boss2.anchorX,
 		anchorY: spriteSpecs.boss2.anchorY
 	};
-	spriteCache.boss3_0 = {
-		image: buildSpriteCanvas(spriteSpecs.boss3_0, () => drawEnemyBossSprite(renderer, 70, 0, 3, 0)),
-		anchorX: spriteSpecs.boss3_0.anchorX,
-		anchorY: spriteSpecs.boss3_0.anchorY
-	};
 	spriteCache.boss3_1 = {
-		image: buildSpriteCanvas(spriteSpecs.boss3_1, () => drawEnemyBossSprite(renderer, 70, 0, 3, 1)),
+		image: buildSpriteCanvas(spriteSpecs.boss3_1, () => drawEnemyBossSprite(renderer, spriteSpecs.boss3_1.anchorX, spriteSpecs.boss3_1.anchorY, 3, 1)),
 		anchorX: spriteSpecs.boss3_1.anchorX,
 		anchorY: spriteSpecs.boss3_1.anchorY
 	};
 	spriteCache.boss3_2 = {
-		image: buildSpriteCanvas(spriteSpecs.boss3_2, () => drawEnemyBossSprite(renderer, 70, 0, 3, 2)),
+		image: buildSpriteCanvas(spriteSpecs.boss3_2, () => drawEnemyBossSprite(renderer, spriteSpecs.boss3_2.anchorX, spriteSpecs.boss3_2.anchorY, 3, 2)),
 		anchorX: spriteSpecs.boss3_2.anchorX,
 		anchorY: spriteSpecs.boss3_2.anchorY
 	};
@@ -288,10 +282,7 @@ function getEnemySprite(code) {
 function getBossSprite(screenNumber, cod) {
 	if (screenNumber === 1) return spriteCache.boss1;
 	if (screenNumber === 2) return spriteCache.boss2;
-	if (screenNumber === 3) {
-		if (cod === 0) return spriteCache.boss3_0;
-		return spriteCache[`boss3_${cod === 2 ? 2 : 1}`];
-	}
+	if (screenNumber === 3) return spriteCache[`boss3_${cod === 2 ? 2 : 1}`];
 	return null;
 }
 
@@ -398,91 +389,91 @@ function drawPlayerSprite(targetRenderer, x, y, player, showShield = true, shiel
 	targetRenderer.line(x + 8, y - 2, x + 10, y - 9);
 }
 
-function drawEnemySprite(targetRenderer, x, f, enemyCode) {
+function drawEnemySprite(targetRenderer, x, y, enemyCode) {
 	if (enemyCode === 1) {
 		targetRenderer.setColor(2);
-		targetRenderer.ellipse(x, f, 150, 30, 5, 10);
-		targetRenderer.ellipse(x, f, 150, 30, 4, 9);
-		targetRenderer.ellipse(x, f, 150, 30, 3, 8);
+		targetRenderer.ellipse(x, y, 150, 30, 5, 10);
+		targetRenderer.ellipse(x, y, 150, 30, 4, 9);
+		targetRenderer.ellipse(x, y, 150, 30, 3, 8);
 
 		targetRenderer.setColor(11);
-		targetRenderer.ellipse(x, f + 20, 0, 360, 2, 3);
+		targetRenderer.ellipse(x, y + 20, 0, 360, 2, 3);
 
 		targetRenderer.setColor(8);
-		targetRenderer.ellipse(x - 9, f + 3, 0, 360, 2, 3);
-		targetRenderer.ellipse(x + 9, f + 3, 0, 360, 2, 3);
-		targetRenderer.ellipse(x - 9, f + 3, 0, 360, 1, 2);
-		targetRenderer.ellipse(x + 9, f + 3, 0, 360, 1, 2);
+		targetRenderer.ellipse(x - 9, y + 3, 0, 360, 2, 3);
+		targetRenderer.ellipse(x + 9, y + 3, 0, 360, 2, 3);
+		targetRenderer.ellipse(x - 9, y + 3, 0, 360, 1, 2);
+		targetRenderer.ellipse(x + 9, y + 3, 0, 360, 1, 2);
 
 		targetRenderer.setColor(10);
-		targetRenderer.line(x + 2, f, x, f + 20);
-		targetRenderer.line(x - 2, f, x, f + 20);
-		targetRenderer.line(x - 10, f - 5, x + 10, f - 5);
-		targetRenderer.line(x + 10, f - 5, x + 15, f + 3);
-		targetRenderer.line(x - 10, f - 5, x - 15, f + 3);
-		targetRenderer.line(x - 14, f + 3, x - 11, f + 15);
-		targetRenderer.line(x - 11, f + 15, x - 4, f + 5);
-		targetRenderer.line(x + 14, f + 3, x + 11, f + 15);
-		targetRenderer.line(x + 11, f + 15, x + 4, f + 5);
+		targetRenderer.line(x + 2, y, x, y + 20);
+		targetRenderer.line(x - 2, y, x, y + 20);
+		targetRenderer.line(x - 10, y - 5, x + 10, y - 5);
+		targetRenderer.line(x + 10, y - 5, x + 15, y + 3);
+		targetRenderer.line(x - 10, y - 5, x - 15, y + 3);
+		targetRenderer.line(x - 14, y + 3, x - 11, y + 15);
+		targetRenderer.line(x - 11, y + 15, x - 4, y + 5);
+		targetRenderer.line(x + 14, y + 3, x + 11, y + 15);
+		targetRenderer.line(x + 11, y + 15, x + 4, y + 5);
 
 		targetRenderer.setColor(14);
-		targetRenderer.line(x - 15, f + 3, x - 12, f + 15);
-		targetRenderer.line(x - 12, f + 15, x - 5, f + 5);
-		targetRenderer.line(x + 15, f + 3, x + 12, f + 15);
-		targetRenderer.line(x + 12, f + 15, x + 5, f + 5);
+		targetRenderer.line(x - 15, y + 3, x - 12, y + 15);
+		targetRenderer.line(x - 12, y + 15, x - 5, y + 5);
+		targetRenderer.line(x + 15, y + 3, x + 12, y + 15);
+		targetRenderer.line(x + 12, y + 15, x + 5, y + 5);
 	} else if (enemyCode === 2) {
 		targetRenderer.setColor(12);
-		targetRenderer.ellipse(x, f + 5, 0, 180, 15, 10);
-		targetRenderer.line(x - 15, f + 5, x - 5, f + 12);
-		targetRenderer.line(x + 15, f + 5, x + 5, f + 12);
-		targetRenderer.line(x - 5, f + 11, x + 5, f + 11);
+		targetRenderer.ellipse(x, y + 5, 0, 180, 15, 10);
+		targetRenderer.line(x - 15, y + 5, x - 5, y + 12);
+		targetRenderer.line(x + 15, y + 5, x + 5, y + 12);
+		targetRenderer.line(x - 5, y + 11, x + 5, y + 11);
 
 		targetRenderer.setColor(3);
-		targetRenderer.ellipse(x, f + 15, 160, 15, 5, 8);
-		targetRenderer.ellipse(x, f + 15, 145, 25, 3, 6);
+		targetRenderer.ellipse(x, y + 15, 160, 15, 5, 8);
+		targetRenderer.ellipse(x, y + 15, 145, 25, 3, 6);
 
 		targetRenderer.setColor(5);
-		targetRenderer.line(x - 12, f + 8, x - 15, f + 18);
-		targetRenderer.line(x + 12, f + 8, x + 15, f + 18);
-		targetRenderer.line(x - 5, f + 10, x - 15, f + 18);
-		targetRenderer.line(x + 5, f + 10, x + 15, f + 18);
+		targetRenderer.line(x - 12, y + 8, x - 15, y + 18);
+		targetRenderer.line(x + 12, y + 8, x + 15, y + 18);
+		targetRenderer.line(x - 5, y + 10, x - 15, y + 18);
+		targetRenderer.line(x + 5, y + 10, x + 15, y + 18);
 
 		targetRenderer.setFillStyle(9, 4);
-		targetRenderer.floodFill(x, f, 12);
+		targetRenderer.floodFill(x, y, 12);
 
 		targetRenderer.setColor(3);
-		targetRenderer.circle(x, f + 15, 3);
-		targetRenderer.circle(x, f + 15, 2);
+		targetRenderer.circle(x, y + 15, 3);
+		targetRenderer.circle(x, y + 15, 2);
 
 		targetRenderer.setColor(11);
-		targetRenderer.circle(x, f + 15, 1);
+		targetRenderer.circle(x, y + 15, 1);
 	} else if (enemyCode === 3 || enemyCode === 4) {
 		targetRenderer.setColor(11);
-		targetRenderer.ellipse(x, f + 17, 0, 360, 15, 5);
-		targetRenderer.circle(x, f + 19, 4);
+		targetRenderer.ellipse(x, y + 17, 0, 360, 15, 5);
+		targetRenderer.circle(x, y + 19, 4);
 
 		targetRenderer.setColor(10);
-		targetRenderer.line(x - 7, f + 15, x - 15, f + (enemyCode === 3 ? 8 : 5));
-		targetRenderer.line(x - 15, f + (enemyCode === 3 ? 8 : 5), x - 7, f + (enemyCode === 3 ? 3 : -5));
-		targetRenderer.line(x - 15, f + (enemyCode === 3 ? 8 : 5), x + 7, f + 15);
-		targetRenderer.line(x + 15, f + (enemyCode === 3 ? 8 : 5), x - 7, f + 15);
-		targetRenderer.line(x + 7, f + 15, x + 15, f + (enemyCode === 3 ? 8 : 5));
-		targetRenderer.line(x + 15, f + (enemyCode === 3 ? 8 : 5), x + 7, f + (enemyCode === 3 ? 3 : -5));
+		targetRenderer.line(x - 7, y + 15, x - 15, y + (enemyCode === 3 ? 8 : 5));
+		targetRenderer.line(x - 15, y + (enemyCode === 3 ? 8 : 5), x - 7, y + (enemyCode === 3 ? 3 : -5));
+		targetRenderer.line(x - 15, y + (enemyCode === 3 ? 8 : 5), x + 7, y + 15);
+		targetRenderer.line(x + 15, y + (enemyCode === 3 ? 8 : 5), x - 7, y + 15);
+		targetRenderer.line(x + 7, y + 15, x + 15, y + (enemyCode === 3 ? 8 : 5));
+		targetRenderer.line(x + 15, y + (enemyCode === 3 ? 8 : 5), x + 7, y + (enemyCode === 3 ? 3 : -5));
 
 		targetRenderer.setColor(11);
-		targetRenderer.circle(x, f + 20, 3);
+		targetRenderer.circle(x, y + 20, 3);
 
 		targetRenderer.setColor(6);
-		targetRenderer.line(x - 1, f + 20, x - 1, f + 13);
-		targetRenderer.circle(x, f + 20, 2);
-		targetRenderer.line(x + 1, f + 20, x + 1, f + 13);
+		targetRenderer.line(x - 1, y + 20, x - 1, y + 13);
+		targetRenderer.circle(x, y + 20, 2);
+		targetRenderer.line(x + 1, y + 20, x + 1, y + 13);
 
 		targetRenderer.setColor(12);
-		targetRenderer.line(x, f + 20, x, f + 10);
+		targetRenderer.line(x, y + 20, x, y + 10);
 
 		targetRenderer.setFillStyle(1, 12);
-		targetRenderer.floodFill(x - 8, f + 12, 10);
-		targetRenderer.floodFill(x + 8, f + 12, 10);
+		targetRenderer.floodFill(x - 8, y + 12, 10);
+		targetRenderer.floodFill(x + 8, y + 12, 10);
 	}
 }
 
@@ -2565,6 +2556,7 @@ function gameLoop(timestamp) {
 				break;
 		}
 	}
+	
 	requestAnimationFrame(gameLoop);
 }
 
