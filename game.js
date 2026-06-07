@@ -39,13 +39,13 @@ const PILL_TYPES = {
 let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
 let players = 'Uno'; // 'Uno' o 'Dos'
 let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
+let timeFactor = 1;
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
-let lastGameUpdateTime = 0;
 
-function getGameSpeedInterval() {
-	if (speed === 'Lento') return 20;
-	if (speed === 'Rápido') return 0;
-	return 16; // Normal
+function getSpeedMultiplier() {
+	if (speed === 'Lento') return 0.6;
+	if (speed === 'Rápido') return 1.2;
+	return 1; // Normal
 }
 
 // Player state
@@ -182,7 +182,7 @@ function buildSpriteCache() {
 		anchorY: spriteSpecs.player1.anchorY
 	};
 	spriteCache.player1_odd = {
-		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY+1, 1, false, false)),
+		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY + 1, 1, false, false)),
 		anchorX: spriteSpecs.player1.anchorX,
 		anchorY: spriteSpecs.player1.anchorY
 	};
@@ -192,7 +192,7 @@ function buildSpriteCache() {
 		anchorY: spriteSpecs.player1_shield.anchorY
 	};
 	spriteCache.player1_odd_shield = {
-		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY+1, 1, true, true)),
+		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY + 1, 1, true, true)),
 		anchorX: spriteSpecs.player1_shield.anchorX,
 		anchorY: spriteSpecs.player1_shield.anchorY
 	};
@@ -203,7 +203,7 @@ function buildSpriteCache() {
 		anchorY: spriteSpecs.player2.anchorY
 	};
 	spriteCache.player2_odd = {
-		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY+1, 2, false, false)),
+		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY + 1, 2, false, false)),
 		anchorX: spriteSpecs.player2.anchorX,
 		anchorY: spriteSpecs.player2.anchorY
 	};
@@ -213,7 +213,7 @@ function buildSpriteCache() {
 		anchorY: spriteSpecs.player2_shield.anchorY
 	};
 	spriteCache.player2_odd_shield = {
-		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY+1, 2, true, true)),
+		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY + 1, 2, true, true)),
 		anchorX: spriteSpecs.player2_shield.anchorX,
 		anchorY: spriteSpecs.player2_shield.anchorY
 	};
@@ -270,7 +270,7 @@ function drawSprite(object, x, y) {
 }
 
 function getPlayerSprite(player, showShield) {
-	const parity = Math.random() < 0.5? 'even' : 'odd';
+	const parity = Math.random() < 0.5 ? 'even' : 'odd';
 	const shieldSuffix = showShield ? '_shield' : '';
 	return spriteCache[`player${player}_${parity}${shieldSuffix}`];
 }
@@ -1118,36 +1118,38 @@ function updateEnemies(screenNumber) {
 			case 1:
 				// Move horizontally toward the player
 				if (Math.random() < 0.5) {
+					const step = (Math.random() * 3 + 1) * timeFactor;
 					if (enemies[i].x > player1.x) {
-						enemies[i].x -= Math.floor(Math.random() * 3) + 1;
+						enemies[i].x -= step;
 					} else {
-						enemies[i].x += Math.floor(Math.random() * 3) + 1;
+						enemies[i].x += step;
 					}
 				} else {
+					const step = (Math.random() * 3 + 1) * timeFactor;
 					if (enemies[i].x < player1.x) {
-						enemies[i].x -= Math.floor(Math.random() * 3) + 1;
+						enemies[i].x -= step;
 					} else {
-						enemies[i].x += Math.floor(Math.random() * 3) + 1;
+						enemies[i].x += step;
 					}
 				}
 				break;
 			case 2:
 				// Oscillating movement
-				if (enemies[i].y % 150 === 0) {
+				if (Math.floor(enemies[i].y) % 150 === 0) {
 					enemies[i].control = !enemies[i].control;
 				}
 				if (enemies[i].control) {
-					enemies[i].x++;
+					enemies[i].x += timeFactor;
 				} else {
-					enemies[i].x--;
+					enemies[i].x -= timeFactor;
 				}
 				break;
 			case 3:
 				// Special vertical movement
-				if (enemies[i].y % 18 === 0) {
-					enemies[i].y += 19;
+				if (Math.floor(enemies[i].y) % 18 === 0) {
+					enemies[i].y += 19 * timeFactor;
 				} else if (Math.random() < 0.5) {
-					enemies[i].y++;
+					enemies[i].y += timeFactor;
 				}
 				break;
 		}
@@ -1158,7 +1160,7 @@ function updateEnemies(screenNumber) {
 
 		// Vertical movement (except for screenNumber=3)
 		if (screenNumber !== 3) {
-			enemies[i].y++;
+			enemies[i].y += timeFactor;
 		}
 
 		// Reset if it exits below
@@ -1204,12 +1206,12 @@ function updateEnemyShot(enemyIndex, screenNumber) {
 
 	// Move shot based on screen
 	if (screenNumber === 1) {
-		e.shotY += 2; // Vertical
+		e.shotY += 2 * timeFactor; // Vertical
 	} else if (screenNumber === 2 || screenNumber === 3) {
 		if (finalBossActive && screenNumber !== 3) {
-			e.shotY += 5; // Faster when boss is active
+			e.shotY += 5 * timeFactor; // Faster when boss is active
 		} else {
-			e.shotY += 3;
+			e.shotY += 3 * timeFactor;
 		}
 	}
 
@@ -1231,15 +1233,15 @@ function updateEnemyShot(enemyIndex, screenNumber) {
 		}
 		if (Math.random() < 0.5) {
 			if (e.shotX > playerX) {
-				e.shotX -= Math.random() * 7;
+				e.shotX -= Math.random() * 7 * timeFactor;
 			} else {
-				e.shotX += Math.random() * 7;
+				e.shotX += Math.random() * 7 * timeFactor;
 			}
 		} else {
 			if (e.shotX < playerX) {
-				e.shotX -= Math.random() * 4;
+				e.shotX -= Math.random() * 4 * timeFactor;
 			} else {
-				e.shotX += Math.random() * 4;
+				e.shotX += Math.random() * 4 * timeFactor;
 			}
 		}
 	}
@@ -1912,8 +1914,9 @@ function applyPillEffect(player, playerNum, pillType) {
 
 function updatePlayerEffects(player) {
 	if (player.effectDuration > 0) {
-		player.effectDuration--;
-		if (player.effectDuration === 0) {
+		player.effectDuration -= timeFactor;
+		if (player.effectDuration <= 0) {
+			player.effectDuration = 0;
 			player.speedBoost = false;
 			player.controlsChanged = false;
 		}
@@ -1933,7 +1936,7 @@ function checkPillPickup(player, playerNum) {
 
 function updatePillDrop() {
 	if (!pillDrop.active) return;
-	pillDrop.y++;
+	pillDrop.y += timeFactor;
 	if (pillDrop.y > 480) {
 		cancelPillDrop();
 		return;
@@ -1983,7 +1986,7 @@ function updateShots() {
 	for (let i = 0; i < player1.shots.length; i++) {
 		if (!player1.shots[i]) continue;
 		// Move bullet and draw: if it's a laser we draw the laser version at the bullet's position
-		player1.bulletY[i] -= missileSpeed;
+		player1.bulletY[i] -= missileSpeed * timeFactor;
 		if (player1.laser) {
 			drawLaser(player1.bulletX[i], player1.bulletY[i], 14);
 		} else {
@@ -1999,7 +2002,7 @@ function updateShots() {
 	// Player 2
 	for (let i = 0; i < player2.shots.length; i++) {
 		if (!player2.shots[i]) continue;
-		player2.bulletY[i] -= missileSpeed;
+		player2.bulletY[i] -= missileSpeed * timeFactor;
 		if (player2.laser) {
 			drawLaser(player2.bulletX[i], player2.bulletY[i], 11);
 		} else {
@@ -2028,13 +2031,13 @@ function updateAngularShots() {
 
 		// Move angular shots and deactivate when out of bounds
 		if (player.angularShotXRight !== -10) {
-			player.angularShotXRight = player.angularShotXRight > rightBound ? -10 : player.angularShotXRight + 3;
+			player.angularShotXRight = player.angularShotXRight > rightBound ? -10 : player.angularShotXRight + 3 * timeFactor;
 		}
 		if (player.angularShotXLeft !== -10) {
-			player.angularShotXLeft = player.angularShotXLeft < leftBound ? -10 : player.angularShotXLeft - 3;
+			player.angularShotXLeft = player.angularShotXLeft < leftBound ? -10 : player.angularShotXLeft - 3 * timeFactor;
 		}
 		if (player.angularShotY !== -10) {
-			player.angularShotY = player.angularShotY < topBound ? -10 : player.angularShotY - 3;
+			player.angularShotY = player.angularShotY < topBound ? -10 : player.angularShotY - 3 * timeFactor;
 		}
 
 		// Draw if within left game area
@@ -2219,14 +2222,14 @@ document.addEventListener('keyup', (event) => {
 });
 
 function updatePlayerMovement() {
-	const moveSpeed = 2; // Pixels per frame
+	const moveSpeed = 2; // Pixels per frame at normal speed
 	const gameAreaWidth = 400;
 
 	updatePlayerEffects(player1);
 	updatePlayerEffects(player2);
 
-	const player1Speed = player1.speedBoost ? moveSpeed + 3 : moveSpeed;
-	const player2Speed = player2.speedBoost ? moveSpeed + 3 : moveSpeed;
+	const player1Speed = (player1.speedBoost ? moveSpeed + 3 : moveSpeed) * timeFactor;
+	const player2Speed = (player2.speedBoost ? moveSpeed + 3 : moveSpeed) * timeFactor;
 
 	const p1Up = player1.controlsChanged ? 'arrowdown' : 'arrowup';
 	const p1Down = player1.controlsChanged ? 'arrowup' : 'arrowdown';
@@ -2386,119 +2389,112 @@ function drawHelpScreen() {
 }
 
 
-function gameLoop(timestamp) {
-	const interval = getGameSpeedInterval();
-	const isGameRunning = gameState === GAME_STATES.GAME || gameState === GAME_STATES.BOSS_EXPLOSION;
-	const shouldUpdate = !isGameRunning || timestamp - lastGameUpdateTime >= interval;
+function gameLoop() {
 
-	if (shouldUpdate) {
-		if (isGameRunning) {
-			lastGameUpdateTime = timestamp;
-		}
-		switch (gameState) {
-			case GAME_STATES.MENU:
-				drawMenu();
-				break;
-			case GAME_STATES.GAME_START:
-				// Initialize game screen and show message
-				setupGameScreen();
-				renderer.setTextStyle(2, 0, 1.5);
-				renderer.setColor(12);
-				renderer.outTextXY(50, 200, 'Presione una tecla para comenzar');
-				renderer.setTextStyle(2, 0, 1.3);
-				renderer.outTextXY(50, 240, '? - Ayuda');
-				renderer.outTextXY(50, 260, 'Esc - Volver a menu');
-				renderer.outTextXY(50, 280, '↑←↓→ - Jugador 1   Espacio - Disparo');
-				if (players === 'Dos') {
-					renderer.outTextXY(50, 300, 'WASD - Jugador 2   1 - Disparo');
-				}
-				break;
-			case GAME_STATES.GAME:
-				writeScore(player1.score, 1);
-				if (players === 'Dos') writeScore(player2.score, 2);
+	switch (gameState) {
+		case GAME_STATES.MENU:
+			drawMenu();
+			break;
+		case GAME_STATES.GAME_START:
+			timeFactor = getSpeedMultiplier();
+			// Initialize game screen and show message
+			setupGameScreen();
+			renderer.setTextStyle(2, 0, 1.5);
+			renderer.setColor(12);
+			renderer.outTextXY(50, 200, 'Presione una tecla para comenzar');
+			renderer.setTextStyle(2, 0, 1.3);
+			renderer.outTextXY(50, 240, '? - Ayuda');
+			renderer.outTextXY(50, 260, 'Esc - Volver a menu');
+			renderer.outTextXY(50, 280, '↑←↓→ - Jugador 1   Espacio - Disparo');
+			if (players === 'Dos') {
+				renderer.outTextXY(50, 300, 'WASD - Jugador 2   1 - Disparo');
+			}
+			break;
+		case GAME_STATES.GAME:
+			writeScore(player1.score, 1);
+			if (players === 'Dos') writeScore(player2.score, 2);
 
-				updatePlayerMovement();
+			updatePlayerMovement();
 
-				// Redraw game area
-				renderer.setFillStyle(0, 0);
-				renderer.bar(0, 0, 400, canvas.height);
+			// Redraw game area
+			renderer.setFillStyle(0, 0);
+			renderer.bar(0, 0, 400, canvas.height);
 
-				// Draw player ships in current positions
-				if (player1.lives > 0) {
-					drawPlayer(player1.x, player1.y, 1);
-				}
-				if (players === 'Dos' && player2.lives > 0) {
-					drawPlayer(player2.x, player2.y, 2);
-				}
+			// Draw player ships in current positions
+			if (player1.lives > 0) {
+				drawPlayer(player1.x, player1.y, 1);
+			}
+			if (players === 'Dos' && player2.lives > 0) {
+				drawPlayer(player2.x, player2.y, 2);
+			}
 
-				// Update and draw angular shots and projectiles
-				updateAngularShots();
-				updateShots();
-				// Update and draw enemies only when the final boss is not active
-				if (!finalBossActive) {
-					updateEnemies(currentScreen);
-					drawEnemies(currentScreen);
-				}
-				// Always update enemy shots (even during the final boss)
-				updateEnemyShots(currentScreen);
-				handleFinalBoss();
+			// Update and draw angular shots and projectiles
+			updateAngularShots();
+			updateShots();
+			// Update and draw enemies only when the final boss is not active
+			if (!finalBossActive) {
+				updateEnemies(currentScreen);
+				drawEnemies(currentScreen);
+			}
+			// Always update enemy shots (even during the final boss)
+			updateEnemyShots(currentScreen);
+			handleFinalBoss();
 
-				updatePillDrop();
-				if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
-				// Draw pill duration bar
-				drawEffectDurationBar(player1, 1);
-				if (players === 'Dos') drawEffectDurationBar(player2, 2);
+			updatePillDrop();
+			if (pillDrop.active) drawPill(pillDrop.x, pillDrop.y, pillDrop.type);
+			// Draw pill duration bar
+			drawEffectDurationBar(player1, 1);
+			if (players === 'Dos') drawEffectDurationBar(player2, 2);
 
-				// Check collisions with enemy shots
-				checkEnemyShotCollisions();
-				checkPlayerEnemyCollisions();
+			// Check collisions with enemy shots
+			checkEnemyShotCollisions();
+			checkPlayerEnemyCollisions();
 
-				// Check collisions with player shots
-				checkPlayerShotCollisions(1);
-				if (players === 'Dos') checkPlayerShotCollisions(2);
-				// Update game progression based on totalKilled
-				updateGameProgression();
-				break;
-			case GAME_STATES.BOSS_EXPLOSION:
-				writeScore(player1.score, 1);
-				if (players === 'Dos') writeScore(player2.score, 2);
+			// Check collisions with player shots
+			checkPlayerShotCollisions(1);
+			if (players === 'Dos') checkPlayerShotCollisions(2);
+			// Update game progression based on totalKilled
+			updateGameProgression();
+			break;
+		case GAME_STATES.BOSS_EXPLOSION:
+			writeScore(player1.score, 1);
+			if (players === 'Dos') writeScore(player2.score, 2);
 
-				renderer.setFillStyle(0, 0);
-				renderer.bar(0, 0, 400, canvas.height);
-				if (player1.lives > 0) drawPlayer(player1.x, player1.y, 1);
-				if (players === 'Dos' && player2.lives > 0) drawPlayer(player2.x, player2.y, 2);
-				updateBossExplosion(16);
-				renderBossExplosion();
-				break;
-			case GAME_STATES.STATS_SCREEN:
-				drawStatsScreen();
-				if (statsState.isGameOver) ensureHighscoreCheck();
-				break;
-			case GAME_STATES.HIGHSCORE_ENTRY:
-				drawHighscoreEntry();
-				break;
-			case GAME_STATES.CONFIRM_EXIT:
-				// Show frozen screen with confirmation message
-				drawConfirmExitScreen();
-				break;
-			case GAME_STATES.HELP:
-				drawHelpScreen();
-				break;
-			case GAME_STATES.HIGHSCORES:
-				drawRankingScreen();
-				break;
-			case GAME_STATES.LIFE_LOST:
-				renderer.setTextStyle(2, 0, 1);
-				renderer.setColor(15);
-				renderer.outTextXY(460, 145, 'Una Vida Menos');
-				renderer.setColor(11);
-				renderer.outTextXY(425, 153, 'Dispare Para Continuar');
-				break;
-		}
+			renderer.setFillStyle(0, 0);
+			renderer.bar(0, 0, 400, canvas.height);
+			if (player1.lives > 0) drawPlayer(player1.x, player1.y, 1);
+			if (players === 'Dos' && player2.lives > 0) drawPlayer(player2.x, player2.y, 2);
+			updateBossExplosion(16);
+			renderBossExplosion();
+			break;
+		case GAME_STATES.STATS_SCREEN:
+			drawStatsScreen();
+			if (statsState.isGameOver) ensureHighscoreCheck();
+			break;
+		case GAME_STATES.HIGHSCORE_ENTRY:
+			drawHighscoreEntry();
+			break;
+		case GAME_STATES.CONFIRM_EXIT:
+			// Show frozen screen with confirmation message
+			drawConfirmExitScreen();
+			break;
+		case GAME_STATES.HELP:
+			drawHelpScreen();
+			break;
+		case GAME_STATES.HIGHSCORES:
+			drawRankingScreen();
+			break;
+		case GAME_STATES.LIFE_LOST:
+			renderer.setTextStyle(2, 0, 1);
+			renderer.setColor(15);
+			renderer.outTextXY(460, 145, 'Una Vida Menos');
+			renderer.setColor(11);
+			renderer.outTextXY(425, 153, 'Dispare Para Continuar');
+			break;
 	}
-
 	requestAnimationFrame(gameLoop);
 }
+
 
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', () => {
@@ -2509,3 +2505,4 @@ if (document.readyState === 'loading') {
 	initSpriteCache();
 	requestAnimationFrame(gameLoop);
 }
+
