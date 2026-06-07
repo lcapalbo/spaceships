@@ -2215,8 +2215,6 @@ document.addEventListener('keydown', (event) => {
 			gameState = GAME_STATES.GAME;
 			keysPressed = {};
 			prevKeysPressed = {};
-			keysPressed[event.key.toLowerCase()] = true;
-			keysPressed[event.key.toUpperCase()] = true;
 		}
 	} else if (gameState === GAME_STATES.STATS_SCREEN) {
 		if (event.key === 'Enter') {
