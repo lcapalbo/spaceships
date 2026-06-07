@@ -1977,20 +1977,6 @@ function drawLaser(x, y, color) {
 	renderer.line(x + 5, y, x + 5, y - 7);
 }
 
-function drawAngledShot(x, y, side, color) {
-	renderer.setColor(color);
-	// Small center
-	renderer.circle(x, y, 2);
-	// Angled lines
-	if (side === 'left') {
-		renderer.line(x, y, x - 8, y - 12);
-		renderer.line(x - 2, y - 2, x - 6, y - 10);
-	} else {
-		renderer.line(x, y, x + 8, y - 12);
-		renderer.line(x + 2, y - 2, x + 6, y - 10);
-	}
-}
-
 function updateShots() {
 	const missileSpeed = 5;
 	// Player 1
@@ -2032,83 +2018,39 @@ function updateAngularShots() {
 	const rightBound = 389;
 	const topBound = 4;
 
-	// Player 1
-	if (player1.angularShot) {
-		// If inactive, values are -10
-		if (!(player1.angularShotXLeft === -10 && player1.angularShotXRight === -10 && player1.angularShotY === -10)) {
-			// Move
-			if (player1.angularShotXRight === -10) {
-				// already inactive on right
-			} else if (player1.angularShotXRight > rightBound) {
-				player1.angularShotXRight = -10;
-			} else {
-				player1.angularShotXRight += 3;
-			}
+	const updatePlayerAngularShots = (player) => {
+		if (!player.angularShot) return;
 
-			if (player1.angularShotXLeft === -10) {
-			} else if (player1.angularShotXLeft < leftBound) {
-				player1.angularShotXLeft = -10;
-			} else {
-				player1.angularShotXLeft -= 3;
-			}
-
-			if (player1.angularShotY === -10) {
-			} else if (player1.angularShotY < topBound) {
-				player1.angularShotY = -10;
-			} else {
-				player1.angularShotY -= 3;
-			}
-
-			// Draw if within left game area
-			renderer.setColor(10);
-			renderer.setFillStyle(1, 10);
-			if (player1.angularShotXRight !== -10 && player1.angularShotY !== -10 && player1.angularShotXRight < 400) {
-				renderer.circle(player1.angularShotXRight, player1.angularShotY, 2);
-				renderer.floodFill(player1.angularShotXRight, player1.angularShotY, 10);
-			}
-			if (player1.angularShotXLeft !== -10 && player1.angularShotY !== -10 && player1.angularShotXLeft < 400) {
-				renderer.circle(player1.angularShotXLeft, player1.angularShotY, 2);
-				renderer.floodFill(player1.angularShotXLeft, player1.angularShotY, 10);
-			}
+		// If inactive, all values are -10
+		if (player.angularShotXLeft === -10 && player.angularShotXRight === -10 && player.angularShotY === -10) {
+			return;
 		}
-	}
 
-	// Player 2
-	if (player2.angularShot) {
-		if (!(player2.angularShotXLeft === -10 && player2.angularShotXRight === -10 && player2.angularShotY === -10)) {
-			if (player2.angularShotXRight === -10) {
-			} else if (player2.angularShotXRight > rightBound) {
-				player2.angularShotXRight = -10;
-			} else {
-				player2.angularShotXRight += 3;
-			}
-
-			if (player2.angularShotXLeft === -10) {
-			} else if (player2.angularShotXLeft < leftBound) {
-				player2.angularShotXLeft = -10;
-			} else {
-				player2.angularShotXLeft -= 3;
-			}
-
-			if (player2.angularShotY === -10) {
-			} else if (player2.angularShotY < topBound) {
-				player2.angularShotY = -10;
-			} else {
-				player2.angularShotY -= 3;
-			}
-
-			renderer.setColor(10);
-			renderer.setFillStyle(1, 10);
-			if (player2.angularShotXRight !== -10 && player2.angularShotY !== -10 && player2.angularShotXRight < 400) {
-				renderer.circle(player2.angularShotXRight, player2.angularShotY, 2);
-				renderer.floodFill(player2.angularShotXRight, player2.angularShotY, 10);
-			}
-			if (player2.angularShotXLeft !== -10 && player2.angularShotY !== -10 && player2.angularShotXLeft < 400) {
-				renderer.circle(player2.angularShotXLeft, player2.angularShotY, 2);
-				renderer.floodFill(player2.angularShotXLeft, player2.angularShotY, 10);
-			}
+		// Move angular shots and deactivate when out of bounds
+		if (player.angularShotXRight !== -10) {
+			player.angularShotXRight = player.angularShotXRight > rightBound ? -10 : player.angularShotXRight + 3;
 		}
-	}
+		if (player.angularShotXLeft !== -10) {
+			player.angularShotXLeft = player.angularShotXLeft < leftBound ? -10 : player.angularShotXLeft - 3;
+		}
+		if (player.angularShotY !== -10) {
+			player.angularShotY = player.angularShotY < topBound ? -10 : player.angularShotY - 3;
+		}
+
+		// Draw if within left game area
+		renderer.setColor(10);
+		if (player.angularShotXRight !== -10 && player.angularShotY !== -10 && player.angularShotXRight < 400) {
+			renderer.circle(player.angularShotXRight, player.angularShotY, 2);
+			renderer.circle(player.angularShotXRight, player.angularShotY, 1);
+		}
+		if (player.angularShotXLeft !== -10 && player.angularShotY !== -10 && player.angularShotXLeft < 400) {
+			renderer.circle(player.angularShotXLeft, player.angularShotY, 2);
+			renderer.circle(player.angularShotXLeft, player.angularShotY, 1);
+		}
+	};
+
+	updatePlayerAngularShots(player1);
+	updatePlayerAngularShots(player2);
 }
 
 
