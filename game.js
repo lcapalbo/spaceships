@@ -182,7 +182,7 @@ function buildSpriteCache() {
 		anchorY: spriteSpecs.player1.anchorY
 	};
 	spriteCache.player1_odd = {
-		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY, 1, false, false)),
+		image: buildSpriteCanvas(spriteSpecs.player1, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY+1, 1, false, false)),
 		anchorX: spriteSpecs.player1.anchorX,
 		anchorY: spriteSpecs.player1.anchorY
 	};
@@ -192,7 +192,7 @@ function buildSpriteCache() {
 		anchorY: spriteSpecs.player1_shield.anchorY
 	};
 	spriteCache.player1_odd_shield = {
-		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY, 1, true, true)),
+		image: buildSpriteCanvas(spriteSpecs.player1_shield, () => drawPlayerSprite(renderer, spriteSpecs.player1.anchorX, spriteSpecs.player1.anchorY+1, 1, true, true)),
 		anchorX: spriteSpecs.player1_shield.anchorX,
 		anchorY: spriteSpecs.player1_shield.anchorY
 	};
@@ -203,7 +203,7 @@ function buildSpriteCache() {
 		anchorY: spriteSpecs.player2.anchorY
 	};
 	spriteCache.player2_odd = {
-		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY, 2, false, false)),
+		image: buildSpriteCanvas(spriteSpecs.player2, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY+1, 2, false, false)),
 		anchorX: spriteSpecs.player2.anchorX,
 		anchorY: spriteSpecs.player2.anchorY
 	};
@@ -213,7 +213,7 @@ function buildSpriteCache() {
 		anchorY: spriteSpecs.player2_shield.anchorY
 	};
 	spriteCache.player2_odd_shield = {
-		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY, 2, true, true)),
+		image: buildSpriteCanvas(spriteSpecs.player2_shield, () => drawPlayerSprite(renderer, spriteSpecs.player2.anchorX, spriteSpecs.player2.anchorY+1, 2, true, true)),
 		anchorX: spriteSpecs.player2_shield.anchorX,
 		anchorY: spriteSpecs.player2_shield.anchorY
 	};
@@ -269,8 +269,8 @@ function drawSprite(object, x, y) {
 	renderer.drawImage(object.image, x - object.anchorX, y - object.anchorY);
 }
 
-function getPlayerSprite(player, y, showShield) {
-	const parity = y % 2 === 0 ? 'even' : 'odd';
+function getPlayerSprite(player, showShield) {
+	const parity = Math.random() < 0.5? 'even' : 'odd';
 	const shieldSuffix = showShield ? '_shield' : '';
 	return spriteCache[`player${player}_${parity}${shieldSuffix}`];
 }
@@ -287,7 +287,7 @@ function getBossSprite(screenNumber, cod) {
 }
 
 function drawPlayer(x, y, player, showShield = true) {
-	const sprite = getPlayerSprite(player, y, showShield && (player === 1 ? player1.shield : player2.shield));
+	const sprite = getPlayerSprite(player, showShield && (player === 1 ? player1.shield : player2.shield));
 	if (sprite) {
 		drawSprite(sprite, x, y);
 		return;
