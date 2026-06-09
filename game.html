@@ -44,6 +44,17 @@
 
   <script src="new_version/renderer.js"></script>
   <script src="new_version/game.js"></script>
-</body>
-</html>
+  <script>
+    // Prevenir scroll cuando se usan teclas del juego
+    document.addEventListener('keydown', (event) => {
+      const keysToPrevent = [
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        ' ', // Space
+        'w', 'W', 's', 'S', 'a', 'A', 'd', 'D'
+      ];
+      if (keysToPrevent.includes(event.key)) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+  </script>
 
