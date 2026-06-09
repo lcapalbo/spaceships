@@ -228,3 +228,17 @@ code {
     align-items: stretch;
   }
 }
+
+/* Estilos para la sección del juego */
+.game-section {
+  display: flex;
+  justify-content: center;
+  background: rgba(8, 16, 28, 0.95) !important;
+  border: none !important;
+  padding: 12px !important;
+}
+
+.game-container {
+  display: flex;
+  justify-content: center;
+}
