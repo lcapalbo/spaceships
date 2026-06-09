@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpaceShips Adventure! — Juega Ahora</title>
   <link rel="stylesheet" href="site.css">
 </head>
+
 <body>
   <div class="page-shell">
     <header class="hero small">
@@ -13,27 +15,34 @@
       <h1>Juega SpaceShips Adventure!</h1>
       <p class="lede">Recreación web del videojuego original, hecha con la ayuda de IA para navegadores modernos.</p>
       <div class="actions">
-        <a class="button primary" href="index.html">Volver al sitio</a>
+        <button id="startGameBtn" class="button primary">Comenzar Juego</button>
+        <a class="button secondary" href="index.html">Volver al sitio</a>
         <a class="button secondary" href="legacy.html">Ver versión legacy</a>
       </div>
     </header>
 
     <main>
-      <section class="game-section">
+      <section class="game-section" id="gameSection" style="display: none;">
         <div class="game-container">
           <canvas id="gameCanvas" width="640" height="480"></canvas>
         </div>
+        <div class="game-info">
+          <button id="exitGameBtn" class="button outline small">Cerrar juego</button>
+        </div>
       </section>
 
-      <section>
+      <section id="introSection">
         <h2>Controles</h2>
-        <p>Usa las teclas de flecha para mover tu nave, la barra espaciadora para disparar. Derrota a los enemigos y evita sus ataques para avanzar a la siguiente pantalla.</p>
+        <p>Usa las teclas de flecha para mover tu nave, la barra espaciadora para disparar. Derrota a los enemigos y
+          evita sus ataques para avanzar a la siguiente pantalla.</p>
       </section>
 
       <section>
         <h2>Sobre esta versión</h2>
-        <p>Esta es la versión recreada del juego original de Turbo Pascal. Se ha mantenido el espíritu y gameplay del original mientras se adapta el código para ejecutarse en navegadores web modernos.</p>
-        <p>El proyecto fue desarrollado en colaboración con IA, probando su capacidad para migrar código legacy y entender la lógica de un videojuego retro.</p>
+        <p>Esta es la versión recreada del juego original de Turbo Pascal. Se ha mantenido el espíritu y gameplay del
+          original mientras se adapta el código para ejecutarse en navegadores web modernos.</p>
+        <p>El proyecto fue desarrollado en colaboración con IA, probando su capacidad para migrar código legacy y
+          entender la lógica de un videojuego retro.</p>
       </section>
     </main>
 
@@ -45,16 +54,27 @@
   <script src="new_version/renderer.js"></script>
   <script src="new_version/game.js"></script>
   <script>
-    // Prevenir scroll cuando se usan teclas del juego
-    document.addEventListener('keydown', (event) => {
-      const keysToPrevent = [
-        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-        ' ', // Space
-        'w', 'W', 's', 'S', 'a', 'A', 'd', 'D'
-      ];
-      if (keysToPrevent.includes(event.key)) {
-        event.preventDefault();
-      }
-    }, { passive: false });
-  </script>
+    let gameRunning = false;
 
+    // Solo prevenir scroll cuando el juego está en ejecución
+    document.addEventListener('keydown', (event) => {
+      if (!gameRunning) return;
+      event.preventDefault();
+    }, { passive: false });
+
+    // Iniciar juego
+    document.getElementById('startGameBtn').addEventListener('click', () => {
+      gameRunning = true;
+      document.getElementById('introSection').style.display = 'none';
+      document.getElementById('gameSection').style.display = 'block';
+      startGame();
+    });
+
+    // Salir del juego
+    document.getElementById('exitGameBtn').addEventListener('click', () => {
+      gameRunning = false;
+      document.getElementById('gameSection').style.display = 'none';
+      document.getElementById('introSection').style.display = 'block';
+      location.reload();
+    });
+  </script>

@@ -2496,13 +2496,20 @@ function gameLoop() {
 }
 
 
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', () => {
+function startGame() {
+	// Reset game state for new game
+	gameState = GAME_STATES.MENU;
+	menuInitialized = false;
+	
+	// Initialize sprite cache if not already done
+	if (!spriteCache.player1_even) {
 		initSpriteCache();
-		requestAnimationFrame(gameLoop);
-	});
-} else {
-	initSpriteCache();
+	}
+	
+	// Start the game loop
 	requestAnimationFrame(gameLoop);
 }
+
+// Prepare sprite cache but don't start game yet
+initSpriteCache();
 
