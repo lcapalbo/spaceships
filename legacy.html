@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpaceShips Legacy — Emulación DOS</title>
   <link rel="stylesheet" href="site.css">
-  <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
+  <link rel="stylesheet" href="js-dos/js-dos.css">
   <link rel="icon" href="data:,">
 </head>
 <body>
@@ -25,6 +25,14 @@
         <h2>¿Qué contiene esta página?</h2>
         <p>El archivo ejecutable original se carga desde un paquete js-dos completo desde <code>legacy.jsdos</code> para incluir también los recursos necesarios.</p>
         <p>Si el emulador no arranca en tu navegador, puedes descargar el paquete, descomprimirlo y abrirlo localmente con un emulador DOS como DOSBox.</p>
+      </section>
+
+      <section>
+        <h2>Sobre esta emulación</h2>
+        <p>Este proyecto usa <strong>js-dos v8</strong> con backend <strong>DOSBox</strong> para ejecutar la versión legacy de SpaceShips Adventure directamente en el navegador.</p>
+        <p>Todos los recursos del emulador se sirven desde este repositorio, sin depender de la CDN del proveedor.</p>
+        <p>Ver el sitio público del proyecto en <a href="index.html">la página principal</a>.</p>
+        <p>Gracias a la comunidad de js-dos y a los desarrolladores de DOSBox por hacer posible esta emulación.</p>
       </section>
 
       <section class="emulator-section">
@@ -51,7 +59,7 @@
     </footer>
   </div>
 
-  <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+  <script src="js-dos/js-dos.js"></script>
   <script>
     (function () {
       const el = document.getElementById('dosbox');
@@ -65,6 +73,7 @@
       }
 
       Dos(el, {
+        pathPrefix: 'js-dos/emulators/',
         url: 'legacy.jsdos',
         autoStart: true,
         onEvent: function (event, ci) {
