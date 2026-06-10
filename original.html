@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SpaceShips Legacy — Emulación DOS</title>
+  <title>SpaceShips Original — Emulación DOS</title>
   <link rel="stylesheet" href="site.css">
   <link rel="stylesheet" href="js-dos/js-dos.css">
   <link rel="icon" href="data:,">
@@ -11,9 +11,9 @@
 <body>
   <div class="page-shell">
     <header class="hero small">
-      <p class="eyebrow">Versión Legacy</p>
+      <p class="eyebrow">Versión original</p>
       <h1>Emulación del juego original</h1>
-      <p class="lede">Esta página intenta cargar el ejecutable legacy de SpaceShips Adventure! dentro de un emulador DOS en el navegador.</p>
+      <p class="lede">Esta página intenta cargar el ejecutable original de SpaceShips Adventure! dentro de un emulador DOS en el navegador.</p>
       <div class="actions">
         <a class="button primary" href="index.html">Volver al sitio</a>
         <a class="button secondary" href="game.html">Ir a la versión nueva</a>
@@ -23,13 +23,13 @@
     <main>
       <section>
         <h2>¿Qué contiene esta página?</h2>
-        <p>El archivo ejecutable original se carga desde un paquete js-dos completo desde <code>legacy.jsdos</code> para incluir también los recursos necesarios.</p>
+        <p>El archivo ejecutable original se carga desde un paquete js-dos completo que incluye también los recursos necesarios.</p>
         <p>Si el emulador no arranca en tu navegador, puedes descargar el paquete, descomprimirlo y abrirlo localmente con un emulador DOS como DOSBox.</p>
       </section>
 
       <section>
         <h2>Sobre esta emulación</h2>
-        <p>Este proyecto usa <strong>js-dos v8</strong> con backend <strong>DOSBox</strong> para ejecutar la versión legacy de SpaceShips Adventure directamente en el navegador.</p>
+        <p>Este proyecto usa <strong>js-dos v8</strong> con backend <strong>DOSBox</strong> para ejecutar la versión original de SpaceShips Adventure directamente en el navegador.</p>
         <p>Todos los recursos del emulador se sirven desde este repositorio, sin depender de la CDN del proveedor.</p>
         <p>Más información sobre js-dos en su sitio público: <a href="https://js-dos.com" target="_blank" rel="noreferrer">js-dos.com</a>.</p>
         <p>Gracias a la comunidad de js-dos y a los desarrolladores de DOSBox por hacer posible esta emulación.</p>
@@ -40,15 +40,15 @@
           <button id="startEmulatorBtn" class="button primary">Iniciar emulador</button>
           <div id="dosbox-loading" class="dosbox-loading">Presiona "Iniciar emulador" para cargar el juego.</div>
           <div id="dosbox" class="dosbox" style="display:none;width:800px;height:600px;"></div>
-          <p class="note">Si no hay carga automática, prueba recargando la página o descarga el paquete legacy.</p>
-          <a class="button outline" href="legacy.jsdos" target="_blank" rel="noreferrer">Descargar legacy.jsdos</a>
+          <p class="note">Si no hay carga automática, prueba recargando la página o descarga el paquete original.</p>
+          <a class="button outline" href="original.jsdos" target="_blank" rel="noreferrer">Descargar paquete original</a>
         </div>
       </section>
 
       <section>
         <h2>Notas rápidas</h2>
         <ul>
-          <li>La versión legacy es el ejecutable original de Turbo Pascal, ahora disponible para explorar.</li>
+          <li>La versión original es el ejecutable original de Turbo Pascal, ahora disponible para explorar.</li>
           <li>La emulación se realiza con una librería JavaScript externa; puede depender del navegador y de la política de seguridad.</li>
           <li>Si deseas, también puedes ejecutar el archivo localmente con DOSBox en tu sistema.</li>
         </ul>
@@ -96,7 +96,7 @@
 
         Dos(el, {
           pathPrefix: 'js-dos/emulators/',
-          url: 'legacy.jsdos',
+          url: 'original.jsdos',
           autoStart: true,
           onEvent: function (event, ci) {
             console.log('js-dos event:', event, ci);
