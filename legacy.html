@@ -93,6 +93,7 @@
             console.log('js-dos event:', event, ci);
             if (event === 'emu-ready') {
               loading.style.display = 'none';
+              startBtn.style.display = 'none';
               emuRunning = true;
             }
             if (event === 'ci-ready' && ci) {
