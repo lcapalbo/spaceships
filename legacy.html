@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpaceShips Legacy — Emulación DOS</title>
   <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
+  <link rel="icon" href="data:,">
 </head>
 <body>
   <div class="page-shell">
@@ -21,14 +23,15 @@
     <main>
       <section>
         <h2>¿Qué contiene esta página?</h2>
-        <p>El archivo legacy se encuentra en <code>legacy_version/SPACES~1.exe</code>. Si el emulador compatible está disponible, debería iniciar directamente desde aquí.</p>
+        <p>El archivo legacy se encuentra en <code>legacy_version/SPACES~1.exe</code>, y esta página carga un paquete js-dos completo desde <code>legacy.jsdos</code> para incluir también los recursos necesarios.</p>
         <p>Si el emulador no arranca en tu navegador, puedes descargar el ejecutable y abrirlo localmente con un emulador DOS como DOSBox.</p>
       </section>
 
       <section class="emulator-section">
         <div class="emulator-card">
-          <div id="dosbox" class="dosbox">Cargando emulador...</div>
+          <div id="dosbox" class="dosbox" style="width:800px;height:600px;">Cargando emulador...</div>
           <p class="note">Si no hay carga automática, prueba recargando la página o descarga el ejecutable legacy.</p>
+          <a class="button outline" href="legacy.jsdos" target="_blank" rel="noreferrer">Descargar legacy.jsdos</a>
           <a class="button outline" href="legacy_version/SPACES~1.exe" target="_blank" rel="noreferrer">Descargar SPACES~1.exe</a>
         </div>
       </section>
@@ -48,20 +51,31 @@
     </footer>
   </div>
 
-  <script src="https://js-dos.com/6.22.0/jsdos.min.js"></script>
+  <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
   <script>
-    if (window.Dos) {
-      Dos(document.getElementById('dosbox'), {
-        wdosboxUrl: 'https://js-dos.com/6.22.0/current/wdosbox.js'
-      }).ready().then(function (dos) {
-        return dos.run('legacy_version/SPACES~1.exe');
-      }).catch(function (error) {
-        document.getElementById('dosbox').textContent = 'No se pudo iniciar el emulador. Puedes descargar el ejecutable y abrirlo con DOSBox.';
-        console.error(error);
+    (function () {
+      const el = document.getElementById('dosbox');
+      el.textContent = 'Cargando emulador...';
+
+      if (!window.Dos) {
+        el.textContent = 'No se pudo cargar la biblioteca js-dos. Verifica tu conexión e inténtalo de nuevo.';
+        console.error('Dos not available');
+        return;
+      }
+
+      Dos(el, {
+        url: 'legacy.jsdos',
+        autoStart: true,
+        onEvent: function (event, ci) {
+          console.log('js-dos event:', event, ci);
+          if (event === 'ci-ready' && ci) {
+            ci.events().onStdout(function (m) {
+              console.log('DOS stdout:', m);
+            });
+          }
+        }
       });
-    } else {
-      document.getElementById('dosbox').textContent = 'No se pudo cargar la biblioteca del emulador. Verifica tu conexión o recarga la página.';
-    }
+    })();
   </script>
 </body>
 </html>
