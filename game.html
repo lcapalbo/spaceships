@@ -24,7 +24,10 @@
     <main>
       <section class="game-section" id="gameSection" style="display: none;">
         <div class="game-container">
-          <canvas id="gameCanvas" width="640" height="480"></canvas>
+          <div class="game-display">
+            <button id="maximizeGameBtn" class="button outline small game-maximize-btn" type="button" aria-label="Pantalla completa">Maximizar</button>
+            <canvas id="gameCanvas" width="640" height="480"></canvas>
+          </div>
         </div>
         <div class="game-info">
           <button id="exitGameBtn" class="button outline small">Cerrar juego</button>
@@ -77,6 +80,28 @@
       gameRunning = false;
       document.getElementById('gameSection').style.display = 'none';
       document.getElementById('introSection').style.display = 'block';
+      if (document.fullscreenElement) document.exitFullscreen();
       location.reload();
     });
+
+    const gameContainer = document.querySelector('.game-container');
+    const maximizeBtn = document.getElementById('maximizeGameBtn');
+
+    function updateMaximizeButton() {
+      const isFullscreen = document.fullscreenElement === gameContainer;
+      maximizeBtn.textContent = isFullscreen ? 'Salir pantalla completa' : 'Maximizar';
+    }
+
+    maximizeBtn.addEventListener('click', () => {
+      if (document.fullscreenElement === gameContainer) {
+        document.exitFullscreen();
+      } else {
+        gameContainer.requestFullscreen().catch((error) => {
+          console.error('No se pudo activar pantalla completa', error);
+        });
+      }
+    });
+
+    document.addEventListener('fullscreenchange', updateMaximizeButton);
+    updateMaximizeButton();
   </script>
