@@ -37,8 +37,9 @@
 
       <section class="emulator-section">
         <div class="emulator-card">
-          <div id="dosbox-loading" class="dosbox-loading">Cargando emulador...</div>
-          <div id="dosbox" class="dosbox" style="width:800px;height:600px;"></div>
+          <button id="startEmulatorBtn" class="button primary">Iniciar emulador</button>
+          <div id="dosbox-loading" class="dosbox-loading">Presiona "Iniciar emulador" para cargar el juego.</div>
+          <div id="dosbox" class="dosbox" style="display:none;width:800px;height:600px;"></div>
           <p class="note">Si no hay carga automática, prueba recargando la página o descarga el paquete legacy.</p>
           <a class="button outline" href="legacy.jsdos" target="_blank" rel="noreferrer">Descargar legacy.jsdos</a>
         </div>
@@ -64,30 +65,46 @@
     (function () {
       const el = document.getElementById('dosbox');
       const loading = document.getElementById('dosbox-loading');
-      loading.textContent = 'Cargando emulador...';
+      const startBtn = document.getElementById('startEmulatorBtn');
+      let emuRunning = false;
+
+      document.addEventListener('keydown', (event) => {
+        if (!emuRunning) return;
+        event.preventDefault();
+      }, { passive: false });
 
       if (!window.Dos) {
         loading.textContent = 'No se pudo cargar la biblioteca js-dos. Verifica tu conexión e inténtalo de nuevo.';
         console.error('Dos not available');
+        startBtn.disabled = true;
         return;
       }
 
-      Dos(el, {
-        pathPrefix: 'js-dos/emulators/',
-        url: 'legacy.jsdos',
-        autoStart: true,
-        onEvent: function (event, ci) {
-          console.log('js-dos event:', event, ci);
-          if (event === 'emu-ready') {
-            loading.style.display = 'none';
+      const startEmulator = () => {
+        startBtn.disabled = true;
+        loading.textContent = 'Cargando emulador...';
+        el.style.display = 'block';
+
+        Dos(el, {
+          pathPrefix: 'js-dos/emulators/',
+          url: 'legacy.jsdos',
+          autoStart: true,
+          onEvent: function (event, ci) {
+            console.log('js-dos event:', event, ci);
+            if (event === 'emu-ready') {
+              loading.style.display = 'none';
+              emuRunning = true;
+            }
+            if (event === 'ci-ready' && ci) {
+              ci.events().onStdout(function (m) {
+                console.log('DOS stdout:', m);
+              });
+            }
           }
-          if (event === 'ci-ready' && ci) {
-            ci.events().onStdout(function (m) {
-              console.log('DOS stdout:', m);
-            });
-          }
-        }
-      });
+        });
+      };
+
+      startBtn.addEventListener('click', startEmulator);
     })();
   </script>
 </body>
