@@ -95,6 +95,10 @@ button:hover a,
   transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease;
 }
 
+.w-full {
+  width: 100%;
+}
+
 .button:hover {
   transform: translateY(-1px);
 }
