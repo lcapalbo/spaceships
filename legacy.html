@@ -29,7 +29,8 @@
 
       <section class="emulator-section">
         <div class="emulator-card">
-          <div id="dosbox" class="dosbox" style="width:800px;height:600px;">Cargando emulador...</div>
+          <div id="dosbox-loading" class="dosbox-loading">Cargando emulador...</div>
+          <div id="dosbox" class="dosbox" style="width:800px;height:600px;"></div>
           <p class="note">Si no hay carga automática, prueba recargando la página o descarga el ejecutable legacy.</p>
           <a class="button outline" href="legacy.jsdos" target="_blank" rel="noreferrer">Descargar legacy.jsdos</a>
         </div>
@@ -54,10 +55,11 @@
   <script>
     (function () {
       const el = document.getElementById('dosbox');
-      el.textContent = 'Cargando emulador...';
+      const loading = document.getElementById('dosbox-loading');
+      loading.textContent = 'Cargando emulador...';
 
       if (!window.Dos) {
-        el.textContent = 'No se pudo cargar la biblioteca js-dos. Verifica tu conexión e inténtalo de nuevo.';
+        loading.textContent = 'No se pudo cargar la biblioteca js-dos. Verifica tu conexión e inténtalo de nuevo.';
         console.error('Dos not available');
         return;
       }
@@ -67,6 +69,9 @@
         autoStart: true,
         onEvent: function (event, ci) {
           console.log('js-dos event:', event, ci);
+          if (event === 'emu-ready') {
+            loading.style.display = 'none';
+          }
           if (event === 'ci-ready' && ci) {
             ci.events().onStdout(function (m) {
               console.log('DOS stdout:', m);
