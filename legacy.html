@@ -68,6 +68,15 @@
       const startBtn = document.getElementById('startEmulatorBtn');
       let emuRunning = false;
 
+      const resetEmulatorUI = () => {
+        emuRunning = false;
+        startBtn.disabled = false;
+        startBtn.style.display = 'inline-block';
+        el.style.display = 'none';
+        loading.style.display = 'block';
+        loading.textContent = 'Presiona "Iniciar emulador" para cargar el juego.';
+      };
+
       document.addEventListener('keydown', (event) => {
         if (!emuRunning) return;
         event.preventDefault();
@@ -91,22 +100,46 @@
           autoStart: true,
           onEvent: function (event, ci) {
             console.log('js-dos event:', event, ci);
+
             if (event === 'emu-ready') {
               loading.style.display = 'none';
               startBtn.style.display = 'none';
               emuRunning = true;
             }
+
             if (event === 'ci-ready' && ci) {
-              ci.events().onStdout(function (m) {
-                console.log('DOS stdout:', m);
-              });
+              const events = ci.events();
+
+              if (typeof events.onExit === 'function') {
+                events.onExit(() => {
+                  console.log('js-dos emulator exited');
+                  resetEmulatorUI();
+                });
+              }
+
+              if (typeof events.onUnload === 'function') {
+                events.onUnload(() => {
+                  console.log('js-dos emulator unloaded');
+                  resetEmulatorUI();
+                });
+              }
+
+              if (typeof events.onStdout === 'function') {
+                events.onStdout((message) => {
+                  console.log('DOS stdout:', message);
+                  const normalized = String(message).toLowerCase();
+                  if (/\b(exit|quit|killed|terminated)\b/.test(normalized)) {
+                    resetEmulatorUI();
+                  }
+                });
+              }
             }
           }
         });
       };
 
       startBtn.addEventListener('click', startEmulator);
-    })();
-  </script>
+      })();
+    </script>
 </body>
 </html>
