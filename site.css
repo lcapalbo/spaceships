@@ -217,6 +217,35 @@ section li {
   flex: 1;
 }
 
+.the-game-section .game-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.the-game-section .game-image {
+  height: 147px;
+  width: 150px;
+  object-fit: cover;
+}
+
+.the-game-section .game-image-wrapper {
+  position: relative;
+  width: 150px;
+  height: 147px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+}
+
+.the-game-section .game-inner > div:not(.game-image-wrapper) {
+  min-width: 220px;
+  flex: 1;
+}
+
 .gallery-section {
   padding-bottom: 12px;
 }
