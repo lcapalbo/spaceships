@@ -97,6 +97,14 @@
         Dos(el, {
           pathPrefix: 'js-dos/emulators/',
           url: 'original.jsdos',
+          dosboxConf: `
+[cpu]
+core=auto
+cputype=pentium_mmx
+cycles=fixed 6000
+cycleup=10
+cycledown=20
+`,
           autoStart: true,
           onEvent: function (event, ci) {
             console.log('js-dos event:', event, ci);
