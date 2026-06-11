@@ -349,8 +349,21 @@ code {
 .game-maximize-btn {
   position: absolute;
   top: 12px;
-  right: 12px;
+  right: -64px;
   z-index: 2;
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  font-size: 1rem;
+  border-radius: 999px;
+}
+
+.game-maximize-btn:hover,
+.game-maximize-btn:focus {
+  transform: scale(1.1);
 }
 
 #gameCanvas {
