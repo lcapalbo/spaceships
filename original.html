@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpaceShips Original — Emulación DOS</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="js-dos/js-dos.css">
   <link rel="stylesheet" href="site.css">
 </head>
 <body>
@@ -39,7 +38,7 @@
         <div class="emulator-card">
           <button id="startEmulatorBtn" class="button primary">Iniciar emulador</button>
           <div id="dosbox-loading" class="dosbox-loading">Presiona "Iniciar emulador" para cargar el juego.</div>
-          <div id="dosbox" class="dosbox" style="display:none;width:800px;height:600px;"></div>
+          <div id="dosbox-wrapper" class="dosbox" style="display:none;"></div>
           <p class="note">Si no hay carga automática, prueba recargando la página o descarga el paquete original.</p>
           <a class="button outline" href="original.jsdos" target="_blank" rel="noreferrer">Descargar paquete original</a>
         </div>
@@ -63,16 +62,19 @@
   <script src="js-dos/js-dos.js"></script>
   <script>
     (function () {
-      const el = document.getElementById('dosbox');
+      const wrapper = document.getElementById('dosbox-wrapper');
       const loading = document.getElementById('dosbox-loading');
       const startBtn = document.getElementById('startEmulatorBtn');
       let emuRunning = false;
+      let shadowRoot = null;
+      let shadowHost = null;
+      let emulatorRoot = null;
 
       const resetEmulatorUI = () => {
         emuRunning = false;
         startBtn.disabled = false;
         startBtn.style.display = 'inline-block';
-        el.style.display = 'none';
+        if (wrapper) wrapper.style.display = 'none';
         loading.style.display = 'block';
         loading.textContent = 'Presiona "Iniciar emulador" para cargar el juego.';
       };
@@ -82,19 +84,51 @@
         event.preventDefault();
       }, { passive: false });
 
-      if (!window.Dos) {
-        loading.textContent = 'No se pudo cargar la biblioteca js-dos. Verifica tu conexión e inténtalo de nuevo.';
-        console.error('Dos not available');
-        startBtn.disabled = true;
-        return;
-      }
+      const injectShadowStyles = async () => {
+        const response = await fetch('js-dos/js-dos.css');
+        const css = await response.text();
+        const style = document.createElement('style');
+        style.textContent = css;
+        shadowRoot.appendChild(style);
+      };
 
-      const startEmulator = () => {
+      const createShadowEmulator = async () => {
+        if (!wrapper) return;
+
+        wrapper.innerHTML = '';
+        shadowHost = document.createElement('div');
+        shadowHost.className = 'dosbox-shadow-host';
+        wrapper.appendChild(shadowHost);
+        shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+        emulatorRoot = document.createElement('div');
+        emulatorRoot.id = 'dosbox';
+        emulatorRoot.style.width = '800px';
+        emulatorRoot.style.height = '600px';
+        shadowRoot.appendChild(emulatorRoot);
+
+        await injectShadowStyles();
+      };
+
+      const ensureDosLoaded = () => {
+        if (!window.Dos) {
+          loading.textContent = 'No se pudo cargar la biblioteca js-dos. Verifica tu conexión e inténtalo de nuevo.';
+          console.error('Dos not available');
+          startBtn.disabled = true;
+          return false;
+        }
+        return true;
+      };
+
+      const startEmulator = async () => {
+        if (!ensureDosLoaded()) return;
+
         startBtn.disabled = true;
         loading.textContent = 'Cargando emulador...';
-        el.style.display = 'block';
+        wrapper.style.display = 'block';
 
-        Dos(el, {
+        await createShadowEmulator();
+
+        Dos(emulatorRoot, {
           pathPrefix: 'js-dos/emulators/',
           url: 'original.jsdos',
           dosboxConf: `
@@ -147,7 +181,7 @@ cycledown=20
       };
 
       startBtn.addEventListener('click', startEmulator);
-      })();
-    </script>
+    })();
+  </script>
 </body>
 </html>
