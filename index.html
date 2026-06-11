@@ -40,7 +40,11 @@
             <p>Me llamo Lucas, "Locutus" para algunos, "Luqui" o "Lu" para otros. Estudié en la EET Nro. 1 "Julio Argentino Roca" de Pergamino, donde hice esta versión original en Turbo Pascal. Con el tiempo seguí programando por mi cuenta y ahora vivo y trabajo en Buenos Aires.</p>
             <p>Este proyecto conecta dos momentos: mi primer juego escolar y un redescubrimiento con herramientas actuales y la IA como compañera.</p>
           </div>
-          <img class="about-me-avatar" src="my-avataaars.png" alt="Avatar de Lucas">
+          <div class="about-me-avatar-wrapper" role="img" aria-label="Avatar de Lucas">
+            <img class="about-me-avatar" src="my-avataaars.png" alt="Avatar de Lucas">
+            <div class="avatar-eye left-eye"><span class="avatar-pupil"></span></div>
+            <div class="avatar-eye right-eye"><span class="avatar-pupil"></span></div>
+          </div>
         </div>
       </section>
 
@@ -208,6 +212,29 @@
           closeImage();
         }
       });
+
+      const avatarWrapper = document.querySelector('.about-me-avatar-wrapper');
+      const pupils = document.querySelectorAll('.avatar-pupil');
+
+      if (avatarWrapper && pupils.length === 2) {
+        const maxOffset = 6;
+
+        document.addEventListener('mousemove', (event) => {
+          const rect = avatarWrapper.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          const deltaX = event.clientX - centerX;
+          const deltaY = event.clientY - centerY;
+          const angle = Math.atan2(deltaY, deltaX);
+          const distance = Math.min(maxOffset, Math.hypot(deltaX, deltaY) / 12);
+          const offsetX = Math.cos(angle) * distance;
+          const offsetY = Math.sin(angle) * distance;
+
+          pupils.forEach((pupil) => {
+            pupil.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+          });
+        });
+      }
     });
   </script>
 </body>
