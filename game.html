@@ -29,9 +29,6 @@
             <canvas id="gameCanvas" width="640" height="480"></canvas>
           </div>
         </div>
-        <div class="game-info">
-          <button id="exitGameBtn" class="button outline small">Cerrar juego</button>
-        </div>
       </section>
 
       <section class="emulator-section" id="introSection">
@@ -73,15 +70,6 @@
       document.getElementById('introSection').style.display = 'none';
       document.getElementById('gameSection').style.display = 'block';
       startGame();
-    });
-
-    // Salir del juego
-    document.getElementById('exitGameBtn').addEventListener('click', () => {
-      gameRunning = false;
-      document.getElementById('gameSection').style.display = 'none';
-      document.getElementById('introSection').style.display = 'block';
-      if (document.fullscreenElement) document.exitFullscreen();
-      location.reload();
     });
 
     const gameContainer = document.querySelector('.game-container');
