@@ -2390,7 +2390,6 @@ function drawHelpScreen() {
 
 
 function gameLoop() {
-
 	switch (gameState) {
 		case GAME_STATES.MENU:
 			drawMenu();
@@ -2403,7 +2402,7 @@ function gameLoop() {
 			renderer.setColor(12);
 			renderer.outTextXY(50, 200, 'Presione una tecla para comenzar');
 			renderer.setTextStyle(2, 0, 1.3);
-			renderer.outTextXY(50, 240, '? - Ayuda');
+			renderer.outTextXY(50, 240, 'F1/? - Ayuda');
 			renderer.outTextXY(50, 260, 'Esc - Volver a menu');
 			renderer.outTextXY(50, 280, '↑←↓→ - Jugador 1   Espacio - Disparo');
 			if (players === 'Dos') {
