@@ -14,8 +14,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background: radial-gradient(circle at top, rgba(75, 85, 99, 0.18), transparent 30%),
-              radial-gradient(circle at 20% 10%, rgba(56, 189, 248, 0.12), transparent 15%),
-              #05070d;
+    radial-gradient(circle at 20% 10%, rgba(56, 189, 248, 0.12), transparent 15%),
+    #05070d;
   color: #f8fafc;
 }
 
@@ -93,6 +93,22 @@ button:hover a,
   text-decoration: none;
   font-weight: 600;
   transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.btn-github {
+  position: relative;
+  padding-left: 40px;
+}
+
+.btn-github::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  width: 20px;
+  height: 20px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M12 .297a12 12 0 00-3.79 23.4c.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.06-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.74.08-.74 1.2.08 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.62-2.8 5.65-5.47 5.95.43.37.81 1.1.81 2.22 0 1.6-.01 2.88-.01 3.27 0 .32.22.7.83.58A12 12 0 0012 .297z"/></svg>');
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .w-full {
@@ -212,7 +228,7 @@ section li {
   left: 82px;
 }
 
-.about-me-section .about-me-inner > div:not(.about-me-avatar-wrapper) {
+.about-me-section .about-me-inner>div:not(.about-me-avatar-wrapper) {
   min-width: 220px;
   flex: 1;
 }
@@ -241,7 +257,7 @@ section li {
   overflow: hidden;
 }
 
-.the-game-section .game-inner > div:not(.game-image-wrapper) {
+.the-game-section .game-inner>div:not(.game-image-wrapper) {
   min-width: 220px;
   flex: 1;
 }
