@@ -12,9 +12,11 @@ const GAME_STATES = {
 	GAME_OVER: 'GAME_OVER',
 	HIGHSCORES: 'HIGHSCORES',
 	CONFIRM_EXIT: 'CONFIRM_EXIT',
-	HELP: 'HELP'
+	HELP: 'HELP',
+	END: 'END'
 };
-const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
+const movementKeysPlayer1Set = new Set(['arrowdown', 'arrowup', 'arrowright', 'arrowleft']);
+const movementKeysPlayer2Set = new Set(['s', 'w', 'd', 'a']);
 
 // Current game state
 let gameState = GAME_STATES.MENU;
@@ -36,11 +38,13 @@ const PILL_TYPES = {
 };
 
 // Menu options
-let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
-let players = 'Uno'; // 'Uno' o 'Dos'
+const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
+let selectedOption = 0; // 0: Jugar
+let players = 'Uno'; // 'Uno' or 'Dos'
 let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
 let timeFactor = 1;
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
+
 
 function getSpeedMultiplier() {
 	if (speed === 'Lento') return 0.6;
@@ -114,15 +118,15 @@ let statsState = {
 	player1Efficiency: 0,
 	player2Kills: 0,
 	player2Crashes: 0,
-	player2Efficiency: 0
+	player2Efficiency: 0,
+	// State for highscore entry and display
+	highscoreChecked: false,      // Whether highscores have been checked after finishing
+	highscoreEntryActive: false,  // Whether highscore name entry is active
+	pendingHighscores: [],        // {player, score} pending entry
+	currentHighIndex: 0,          // index in pendingHighscores
+	nameBuffer: '',               // buffer for name entry
+	maxHighscores: 5,             // top N
 };
-// State for highscore entry and display
-statsState.highscoreChecked = false; // Whether highscores have been checked after finishing
-statsState.highscoreEntryActive = false; // Whether highscore name entry is active
-statsState.pendingHighscores = []; // {player, score} pending entry
-statsState.currentHighIndex = 0; // index in pendingHighscores
-statsState.nameBuffer = ''; // buffer for name entry
-statsState.maxHighscores = 5; // top N
 
 let pillDrop = {
 	active: false,
@@ -1604,7 +1608,6 @@ function losePlayerLife(player, playerNum) {
 	if (player.lives > 0) {
 		gameState = GAME_STATES.LIFE_LOST;
 		keysPressed = {};
-		prevKeysPressed = {};
 	} else {
 		const otherPlayerDead = playerNum === 1 ? player2.lives === 0 : player1.lives === 0;
 		if (players === 'Uno' || otherPlayerDead) {
@@ -1613,7 +1616,6 @@ function losePlayerLife(player, playerNum) {
 		} else {
 			gameState = GAME_STATES.LIFE_LOST;
 			keysPressed = {};
-			prevKeysPressed = {};
 		}
 	}
 }
@@ -1723,7 +1725,6 @@ function finishBossExplosion() {
 	prepareStatsScreen(bossExplosionState.targetPlayer);
 	gameState = GAME_STATES.STATS_SCREEN;
 	keysPressed = {};
-	prevKeysPressed = {};
 }
 
 function updateBossExplosion(deltaTime) {
@@ -2059,7 +2060,6 @@ function updateAngularShots() {
 
 // Game control state
 let keysPressed = {};
-let prevKeysPressed = {};
 
 // Keyboard handling
 document.addEventListener('keydown', (event) => {
@@ -2113,7 +2113,8 @@ document.addEventListener('keydown', (event) => {
 				} else if (selectedOption === 3) {
 					gameState = GAME_STATES.HIGHSCORES;
 				} else if (selectedOption === 4) {
-					location.reload();
+					gameState = GAME_STATES.END;
+					window.dispatchEvent(new CustomEvent('SpaceShips:gameExit', { detail: {}, cancelable: true }));
 				}
 				break;
 		}
@@ -2122,9 +2123,15 @@ document.addEventListener('keydown', (event) => {
 		gameState = GAME_STATES.GAME;
 		keysPressed = {};
 	} else if (gameState === GAME_STATES.GAME) {
+		const lowerCaseKey = event.key.toLowerCase();
+		if (movementKeysPlayer1Set.has(lowerCaseKey)) {
+			movementKeysPlayer1Set.forEach((key) => keysPressed[key] = false);
+		} else if (movementKeysPlayer2Set.has(lowerCaseKey)) {
+			movementKeysPlayer2Set.forEach((key) => keysPressed[key] = false);
+		}
+
 		// Track pressed keys
-		keysPressed[event.key.toLowerCase()] = true;
-		keysPressed[event.key.toUpperCase()] = true;
+		keysPressed[lowerCaseKey] = true;
 
 		// Escape handling to exit
 		if (event.key === 'Escape') {
@@ -2159,7 +2166,6 @@ document.addEventListener('keydown', (event) => {
 			renderer.outTextXY(425, 153, '███████████████████████████████');
 			gameState = GAME_STATES.GAME;
 			keysPressed = {};
-			prevKeysPressed = {};
 		}
 	} else if (gameState === GAME_STATES.STATS_SCREEN) {
 		if (event.key === 'Enter') {
@@ -2179,7 +2185,6 @@ document.addEventListener('keydown', (event) => {
 				nextScreen(statsState.targetPlayer);
 				gameState = GAME_STATES.GAME;
 				keysPressed = {};
-				prevKeysPressed = {};
 			}
 		}
 	} else if (gameState === GAME_STATES.HIGHSCORE_ENTRY) {
@@ -2216,8 +2221,11 @@ document.addEventListener('keydown', (event) => {
 
 document.addEventListener('keyup', (event) => {
 	if (gameState === GAME_STATES.GAME) {
-		keysPressed[event.key.toLowerCase()] = false;
-		keysPressed[event.key.toUpperCase()] = false;
+		if (!movementKeysPlayer1Set.has(event.key.toLowerCase())
+			&& !movementKeysPlayer2Set.has(event.key.toLowerCase())
+		) {
+			keysPressed[event.key.toLowerCase()] = false;
+		}
 	}
 });
 
@@ -2240,19 +2248,17 @@ function updatePlayerMovement() {
 	if (player1.lives > 0) {
 		if (keysPressed[p1Up]) {
 			player1.y = Math.max(20, player1.y - player1Speed);
-		}
-		if (keysPressed[p1Down]) {
+		} else if (keysPressed[p1Down]) {
 			player1.y = Math.min(canvas.height - 8, player1.y + player1Speed);
-		}
-		if (keysPressed[p1Left]) {
+		} else if (keysPressed[p1Left]) {
 			player1.x = Math.max(11, player1.x - player1Speed);
-		}
-		if (keysPressed[p1Right]) {
+		} else if (keysPressed[p1Right]) {
 			player1.x = Math.min(gameAreaWidth - 12, player1.x + player1Speed);
 		}
 
-		// Player 1 shot: Space (edge press only)
-		if (keysPressed[' '] && !prevKeysPressed[' ']) {
+		// Player 1 shot: Space
+		if (keysPressed[' ']) {
+			keysPressed[' '] = false;
 			if (player1.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player1.shots.findIndex(shot => !shot);
 				if (shotIndex !== -1) {
@@ -2280,19 +2286,17 @@ function updatePlayerMovement() {
 	if (players === 'Dos' && player2.lives > 0) {
 		if (keysPressed[p2Up]) {
 			player2.y = Math.max(20, player2.y - player2Speed);
-		}
-		if (keysPressed[p2Down]) {
+		} else if (keysPressed[p2Down]) {
 			player2.y = Math.min(canvas.height - 8, player2.y + player2Speed);
-		}
-		if (keysPressed[p2Left]) {
+		} else if (keysPressed[p2Left]) {
 			player2.x = Math.max(11, player2.x - player2Speed);
-		}
-		if (keysPressed[p2Right]) {
+		} else if (keysPressed[p2Right]) {
 			player2.x = Math.min(gameAreaWidth - 12, player2.x + player2Speed);
 		}
 
-		// Player 2 shot: 1 (two-player mode only)
-		if (keysPressed['1'] && !prevKeysPressed['1']) {
+		// Player 2 shot: 1
+		if (keysPressed['1']) {
+			keysPressed['1'] = false;
 			if (player2.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player2.shots.findIndex(shot => !shot);
 				if (shotIndex !== -1) {
@@ -2310,9 +2314,6 @@ function updatePlayerMovement() {
 			}
 		}
 	}
-
-	// Update prevKeysPressed for next frame (edge detection)
-	prevKeysPressed = Object.assign({}, keysPressed);
 }
 
 function drawConfirmExitScreen() {
@@ -2390,7 +2391,6 @@ function drawHelpScreen() {
 
 
 function gameLoop() {
-
 	switch (gameState) {
 		case GAME_STATES.MENU:
 			drawMenu();
@@ -2403,7 +2403,7 @@ function gameLoop() {
 			renderer.setColor(12);
 			renderer.outTextXY(50, 200, 'Presione una tecla para comenzar');
 			renderer.setTextStyle(2, 0, 1.3);
-			renderer.outTextXY(50, 240, '? - Ayuda');
+			renderer.outTextXY(50, 240, 'F1/? - Ayuda');
 			renderer.outTextXY(50, 260, 'Esc - Volver a menu');
 			renderer.outTextXY(50, 280, '↑←↓→ - Jugador 1   Espacio - Disparo');
 			if (players === 'Dos') {
@@ -2491,6 +2491,9 @@ function gameLoop() {
 			renderer.setColor(11);
 			renderer.outTextXY(425, 153, 'Dispare Para Continuar');
 			break;
+		case GAME_STATES.END:
+			// Avoid requesting another frame after game end
+			return;
 	}
 	requestAnimationFrame(gameLoop);
 }
@@ -2500,16 +2503,15 @@ function startGame() {
 	// Reset game state for new game
 	gameState = GAME_STATES.MENU;
 	menuInitialized = false;
-	
+
 	// Initialize sprite cache if not already done
 	if (!spriteCache.player1_even) {
 		initSpriteCache();
 	}
-	
+
 	// Start the game loop
 	requestAnimationFrame(gameLoop);
 }
 
 // Prepare sprite cache but don't start game yet
 initSpriteCache();
-
