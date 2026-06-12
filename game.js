@@ -14,7 +14,8 @@ const GAME_STATES = {
 	CONFIRM_EXIT: 'CONFIRM_EXIT',
 	HELP: 'HELP'
 };
-const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
+const movementKeysPlayer1Set = new Set(['arrowdown', 'arrowup', 'arrowright', 'arrowleft']);
+const movementKeysPlayer2Set = new Set(['s', 'w', 'd', 'a']);
 
 // Current game state
 let gameState = GAME_STATES.MENU;
@@ -36,11 +37,13 @@ const PILL_TYPES = {
 };
 
 // Menu options
-let selectedOption = 0; // 0: Jugar, 1: Velocidad, 2: Dificultad, 3: Puntajes, 4: Salir
-let players = 'Uno'; // 'Uno' o 'Dos'
+const menuOptions = ['Jugar', 'Velocidad', 'Dificultad', 'Puntajes', 'Salir'];
+let selectedOption = 0; // 0: Jugar
+let players = 'Uno'; // 'Uno' or 'Dos'
 let speed = 'Normal'; // 'Lento', 'Normal', 'Rápido'
 let timeFactor = 1;
 let difficulty = 'Media'; // 'Fácil', 'Media', 'Difícil'
+
 
 function getSpeedMultiplier() {
 	if (speed === 'Lento') return 0.6;
@@ -114,15 +117,15 @@ let statsState = {
 	player1Efficiency: 0,
 	player2Kills: 0,
 	player2Crashes: 0,
-	player2Efficiency: 0
+	player2Efficiency: 0,
+	// State for highscore entry and display
+	highscoreChecked: false,      // Whether highscores have been checked after finishing
+	highscoreEntryActive: false,  // Whether highscore name entry is active
+	pendingHighscores: [],        // {player, score} pending entry
+	currentHighIndex: 0,          // index in pendingHighscores
+	nameBuffer: '',               // buffer for name entry
+	maxHighscores: 5,             // top N
 };
-// State for highscore entry and display
-statsState.highscoreChecked = false; // Whether highscores have been checked after finishing
-statsState.highscoreEntryActive = false; // Whether highscore name entry is active
-statsState.pendingHighscores = []; // {player, score} pending entry
-statsState.currentHighIndex = 0; // index in pendingHighscores
-statsState.nameBuffer = ''; // buffer for name entry
-statsState.maxHighscores = 5; // top N
 
 let pillDrop = {
 	active: false,
@@ -2118,9 +2121,15 @@ document.addEventListener('keydown', (event) => {
 		gameState = GAME_STATES.GAME;
 		keysPressed = {};
 	} else if (gameState === GAME_STATES.GAME) {
+		const lowerCaseKey = event.key.toLowerCase();
+		if (movementKeysPlayer1Set.has(lowerCaseKey)) {
+			movementKeysPlayer1Set.forEach((key) => keysPressed[key] = false);
+		} else if (movementKeysPlayer2Set.has(lowerCaseKey)) {
+			movementKeysPlayer2Set.forEach((key) => keysPressed[key] = false);
+		}
+
 		// Track pressed keys
-		keysPressed[event.key.toLowerCase()] = true;
-		keysPressed[event.key.toUpperCase()] = true;
+		keysPressed[lowerCaseKey] = true;
 
 		// Escape handling to exit
 		if (event.key === 'Escape') {
@@ -2210,8 +2219,11 @@ document.addEventListener('keydown', (event) => {
 
 document.addEventListener('keyup', (event) => {
 	if (gameState === GAME_STATES.GAME) {
-		keysPressed[event.key.toLowerCase()] = false;
-		keysPressed[event.key.toUpperCase()] = false;
+		if (!movementKeysPlayer1Set.has(event.key.toLowerCase())
+			&& !movementKeysPlayer2Set.has(event.key.toLowerCase())
+		) {
+			keysPressed[event.key.toLowerCase()] = false;
+		}
 	}
 });
 
@@ -2234,20 +2246,17 @@ function updatePlayerMovement() {
 	if (player1.lives > 0) {
 		if (keysPressed[p1Up]) {
 			player1.y = Math.max(20, player1.y - player1Speed);
-		}
-		if (keysPressed[p1Down]) {
+		} else if (keysPressed[p1Down]) {
 			player1.y = Math.min(canvas.height - 8, player1.y + player1Speed);
-		}
-		if (keysPressed[p1Left]) {
+		} else if (keysPressed[p1Left]) {
 			player1.x = Math.max(11, player1.x - player1Speed);
-		}
-		if (keysPressed[p1Right]) {
+		} else if (keysPressed[p1Right]) {
 			player1.x = Math.min(gameAreaWidth - 12, player1.x + player1Speed);
 		}
 
 		// Player 1 shot: Space
 		if (keysPressed[' ']) {
-			keysPressed[' ']=false;
+			keysPressed[' '] = false;
 			if (player1.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player1.shots.findIndex(shot => !shot);
 				if (shotIndex !== -1) {
@@ -2275,20 +2284,17 @@ function updatePlayerMovement() {
 	if (players === 'Dos' && player2.lives > 0) {
 		if (keysPressed[p2Up]) {
 			player2.y = Math.max(20, player2.y - player2Speed);
-		}
-		if (keysPressed[p2Down]) {
+		} else if (keysPressed[p2Down]) {
 			player2.y = Math.min(canvas.height - 8, player2.y + player2Speed);
-		}
-		if (keysPressed[p2Left]) {
+		} else if (keysPressed[p2Left]) {
 			player2.x = Math.max(11, player2.x - player2Speed);
-		}
-		if (keysPressed[p2Right]) {
+		} else if (keysPressed[p2Right]) {
 			player2.x = Math.min(gameAreaWidth - 12, player2.x + player2Speed);
 		}
 
 		// Player 2 shot: 1
 		if (keysPressed['1']) {
-			keysPressed['1']=false;
+			keysPressed['1'] = false;
 			if (player2.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player2.shots.findIndex(shot => !shot);
 				if (shotIndex !== -1) {
@@ -2492,12 +2498,12 @@ function startGame() {
 	// Reset game state for new game
 	gameState = GAME_STATES.MENU;
 	menuInitialized = false;
-	
+
 	// Initialize sprite cache if not already done
 	if (!spriteCache.player1_even) {
 		initSpriteCache();
 	}
-	
+
 	// Start the game loop
 	requestAnimationFrame(gameLoop);
 }
