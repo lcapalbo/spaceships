@@ -1604,7 +1604,6 @@ function losePlayerLife(player, playerNum) {
 	if (player.lives > 0) {
 		gameState = GAME_STATES.LIFE_LOST;
 		keysPressed = {};
-		prevKeysPressed = {};
 	} else {
 		const otherPlayerDead = playerNum === 1 ? player2.lives === 0 : player1.lives === 0;
 		if (players === 'Uno' || otherPlayerDead) {
@@ -1613,7 +1612,6 @@ function losePlayerLife(player, playerNum) {
 		} else {
 			gameState = GAME_STATES.LIFE_LOST;
 			keysPressed = {};
-			prevKeysPressed = {};
 		}
 	}
 }
@@ -1723,7 +1721,6 @@ function finishBossExplosion() {
 	prepareStatsScreen(bossExplosionState.targetPlayer);
 	gameState = GAME_STATES.STATS_SCREEN;
 	keysPressed = {};
-	prevKeysPressed = {};
 }
 
 function updateBossExplosion(deltaTime) {
@@ -2059,7 +2056,6 @@ function updateAngularShots() {
 
 // Game control state
 let keysPressed = {};
-let prevKeysPressed = {};
 
 // Keyboard handling
 document.addEventListener('keydown', (event) => {
@@ -2159,7 +2155,6 @@ document.addEventListener('keydown', (event) => {
 			renderer.outTextXY(425, 153, '███████████████████████████████');
 			gameState = GAME_STATES.GAME;
 			keysPressed = {};
-			prevKeysPressed = {};
 		}
 	} else if (gameState === GAME_STATES.STATS_SCREEN) {
 		if (event.key === 'Enter') {
@@ -2179,7 +2174,6 @@ document.addEventListener('keydown', (event) => {
 				nextScreen(statsState.targetPlayer);
 				gameState = GAME_STATES.GAME;
 				keysPressed = {};
-				prevKeysPressed = {};
 			}
 		}
 	} else if (gameState === GAME_STATES.HIGHSCORE_ENTRY) {
@@ -2251,8 +2245,9 @@ function updatePlayerMovement() {
 			player1.x = Math.min(gameAreaWidth - 12, player1.x + player1Speed);
 		}
 
-		// Player 1 shot: Space (edge press only)
-		if (keysPressed[' '] && !prevKeysPressed[' ']) {
+		// Player 1 shot: Space
+		if (keysPressed[' ']) {
+			keysPressed[' ']=false;
 			if (player1.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player1.shots.findIndex(shot => !shot);
 				if (shotIndex !== -1) {
@@ -2291,8 +2286,9 @@ function updatePlayerMovement() {
 			player2.x = Math.min(gameAreaWidth - 12, player2.x + player2Speed);
 		}
 
-		// Player 2 shot: 1 (two-player mode only)
-		if (keysPressed['1'] && !prevKeysPressed['1']) {
+		// Player 2 shot: 1
+		if (keysPressed['1']) {
+			keysPressed['1']=false;
 			if (player2.shots.filter(shot => shot).length < maxPlayerShots) {
 				const shotIndex = player2.shots.findIndex(shot => !shot);
 				if (shotIndex !== -1) {
@@ -2310,9 +2306,6 @@ function updatePlayerMovement() {
 			}
 		}
 	}
-
-	// Update prevKeysPressed for next frame (edge detection)
-	prevKeysPressed = Object.assign({}, keysPressed);
 }
 
 function drawConfirmExitScreen() {
