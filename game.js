@@ -12,7 +12,8 @@ const GAME_STATES = {
 	GAME_OVER: 'GAME_OVER',
 	HIGHSCORES: 'HIGHSCORES',
 	CONFIRM_EXIT: 'CONFIRM_EXIT',
-	HELP: 'HELP'
+	HELP: 'HELP',
+	END: 'END'
 };
 const movementKeysPlayer1Set = new Set(['arrowdown', 'arrowup', 'arrowright', 'arrowleft']);
 const movementKeysPlayer2Set = new Set(['s', 'w', 'd', 'a']);
@@ -2112,7 +2113,8 @@ document.addEventListener('keydown', (event) => {
 				} else if (selectedOption === 3) {
 					gameState = GAME_STATES.HIGHSCORES;
 				} else if (selectedOption === 4) {
-					location.reload();
+					gameState = GAME_STATES.END;
+					window.dispatchEvent(new CustomEvent('SpaceShips:gameExit', { detail: {}, cancelable: true }));
 				}
 				break;
 		}
@@ -2489,6 +2491,9 @@ function gameLoop() {
 			renderer.setColor(11);
 			renderer.outTextXY(425, 153, 'Dispare Para Continuar');
 			break;
+		case GAME_STATES.END:
+			// Avoid requesting another frame after game end
+			return;
 	}
 	requestAnimationFrame(gameLoop);
 }
