@@ -94,4 +94,11 @@
 
     document.addEventListener('fullscreenchange', updateMaximizeButton);
     updateMaximizeButton();
+
+    window.addEventListener('SpaceShips:gameExit', () => {
+      gameRunning = false;
+      document.getElementById('gameSection').style.display = 'none';
+      document.getElementById('introSection').style.display = 'block';
+      if (document.fullscreenElement) document.exitFullscreen();
+    });
   </script>
