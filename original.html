@@ -13,12 +13,12 @@
   <div class="page-shell">
     <header class="hero small">
       <p class="eyebrow">Versión original</p>
-      <h1>Emulación del juego original</h1>
-      <p class="lede">Esta página intenta cargar el ejecutable original de SpaceShips Adventure! del 2000, dentro de un
-        emulador DOS en el navegador.</p>
+      <h1>Jugá al SpaceShips Adventure! original</h1>
+      <p class="lede">Esta sección intenta ejecutar juego original del 2000, dentro de un emulador DOS en el navegador.
+      </p>
       <div class="actions">
         <a class="button secondary" href="index.html">Volver al inicio</a>
-        <a class="button secondary" href="game.html">Ver nueva versión</a>
+        <a class="button secondary" href="game.html">Jugar nueva versión</a>
         <a class="button outline btn-github" href="https://github.com/lcapalbo/spaceships" target="_blank"
           rel="noreferrer">Repositorio GitHub</a>
       </div>
@@ -26,21 +26,13 @@
 
     <main>
       <section>
-        <h2>¿Qué contiene esta página?</h2>
-        <p>El archivo ejecutable original se carga desde un paquete js-dos completo que incluye también los recursos
-          necesarios.</p>
-        <p>Si el emulador no arranca en tu navegador, puedes descargar el paquete, descomprimirlo y abrirlo localmente
-          con un emulador DOS como DOSBox.</p>
-      </section>
-
-      <section>
         <h2>Sobre esta emulación</h2>
-        <p>Este proyecto usa <strong>js-dos v8</strong> con backend <strong>DOSBox</strong> para ejecutar la versión
-          original de SpaceShips Adventure directamente en el navegador.</p>
-        <p>Todos los recursos del emulador se sirven desde este repositorio, sin depender de la CDN del proveedor.</p>
-        <p>Más información sobre js-dos en su sitio público: <a href="https://js-dos.com" target="_blank"
-            rel="noreferrer">js-dos.com</a>.</p>
-        <p>Gracias a la comunidad de js-dos y a los desarrolladores de DOSBox por hacer posible esta emulación.</p>
+        <p>Esta sección usa <a href="https://js-dos.com" target="_blank" rel="noreferrer">js-dos v8</a> con backend <a
+            href="https://dosbox.com" target="_blank" rel="noreferrer">DOSBox</a> para ejecutar la versión original de
+          <em>SpaceShips Adventure!</em> directamente en el navegador. El archivo ejecutable original se carga desde un
+          paquete que incluye todos los recursos necesarios.
+        </p>
+        <p>❤️ Gracias a la comunidad de js-dos y a los desarrolladores de DOSBox por hacer posible esta emulación.</p>
       </section>
 
       <section class="emulator-section">
@@ -48,25 +40,17 @@
           <button id="startEmulatorBtn" class="button primary">Iniciar emulador</button>
           <div id="dosbox-loading" class="dosbox-loading">Presiona "Iniciar emulador" para cargar el juego.</div>
           <div id="dosbox-wrapper" class="dosbox" style="display:none;"></div>
-          <p class="note">Si no hay carga automática, prueba recargando la página o descarga el paquete original.</p>
+          <p class="note">Si el emulador no arranca en tu navegador, probá recargando la página o descargá el paquete
+            original, descomprimilo (.zip) y ejecutá un emulador como DOSBox.</p>
           <a class="button outline" href="original.jsdos" target="_blank" rel="noreferrer">Descargar paquete
             original</a>
         </div>
       </section>
-
-      <section>
-        <h2>Notas rápidas</h2>
-        <ul>
-          <li>La versión original es el ejecutable original de Turbo Pascal, ahora disponible para explorar.</li>
-          <li>La emulación se realiza con una librería JavaScript externa; puede depender del navegador y de la política
-            de seguridad.</li>
-          <li>Si deseas, también puedes ejecutar el archivo localmente con DOSBox en tu sistema.</li>
-        </ul>
-      </section>
     </main>
 
     <footer>
-      <p>Este sitio usa la rama <strong>gh-pages</strong> para publicar el proyecto en GitHub Pages.</p>
+      <p><small>por Lucas Capalbo + Copilot/Gemini/GPT-5 - 2000 (original Turbo Pascal) / 2026 (recreación mediante IA y
+          sitio web)</small></p>
     </footer>
   </div>
 

@@ -13,17 +13,24 @@
   <div class="page-shell">
     <header class="hero small">
       <p class="eyebrow">Nueva Versión</p>
-      <h1>Juega SpaceShips Adventure!</h1>
-      <p class="lede">Recreación web del videojuego original, hecha con la ayuda de IA para navegadores modernos.</p>
+      <h1>Jugá al nuevo SpaceShips Adventure!</h1>
+      <p class="lede">Esta es la recreación web del videojuego original, hecha con la ayuda de IA.</p>
       <div class="actions">
         <a class="button secondary" href="index.html">Volver al inicio</a>
-        <a class="button secondary" href="original.html">Ver versión original</a>
+        <a class="button secondary" href="original.html">Jugar versión original</a>
         <a class="button outline btn-github" href="https://github.com/lcapalbo/spaceships" target="_blank"
           rel="noreferrer">Repositorio GitHub</a>
       </div>
     </header>
 
     <main>
+      <section>
+        <h2>Sobre esta versión</h2>
+        <p>Esta es la versión recreada con IA. Se mantuvo el espíritu y <em>gameplay</em> del original mientras se
+          adaptó el código para ejecutarse en navegadores web modernos.</p>
+        <p>La interacción es por teclado, no es posible de momento jugar con pantalla táctil.</p>
+      </section>
+
       <section class="game-section" id="gameSection" style="display: none;">
         <div class="game-container">
           <div class="game-display">
@@ -37,22 +44,15 @@
       <section class="emulator-section" id="introSection">
         <div class="emulator-card">
           <button id="startGameBtn" class="button primary">Comenzar Juego</button>
-          <p class="note">Usa las teclas de flecha para mover tu nave, la barra espaciadora para disparar. Derrota a los
-            enemigos y evita sus ataques para avanzar a la siguiente pantalla.</p>
+          <p class="note">Aunque se respeta la resolución <em>640x480</em> del original, en la esquina
+            superior derecha encontrarás un botón ⛶ para activar el modo <em>pantalla completa</em>.</p>
         </div>
-      </section>
-
-      <section>
-        <h2>Sobre esta versión</h2>
-        <p>Esta es la versión recreada del juego original de Turbo Pascal. Se ha mantenido el espíritu y gameplay del
-          original mientras se adapta el código para ejecutarse en navegadores web modernos.</p>
-        <p>El proyecto fue desarrollado en colaboración con IA, probando su capacidad para migrar el código original y
-          entender la lógica de un videojuego retro.</p>
       </section>
     </main>
 
     <footer>
-      <p>Proyecto recreado con IA y publicado en GitHub Pages desde la rama <strong>gh-pages</strong>.</p>
+      <p><small>por Lucas Capalbo + Copilot/Gemini/GPT-5 - 2000 (original Turbo Pascal) / 2026 (recreación mediante IA y
+          sitio web)</small></p>
     </footer>
   </div>
 
