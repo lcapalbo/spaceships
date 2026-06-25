@@ -6,8 +6,8 @@ class Renderer {
 		this.color = 15;
 		this.textStyle = { font: '12px monospace', align: 'left', baseline: 'top', outline: false };
 		this.palette = {
-			0: '#000000', 1: '#000080', 2: '#008000', 3: '#008080', 4: '#800000', 5: '#800080', 6: '#808000', 7: '#C0C0C0',
-			8: '#555555', 9: '#0000FF', 10: '#00FF00', 11: '#00FFFF', 12: '#FF0000', 13: '#FF00FF', 14: '#FFFF00', 15: '#FFFFFF'
+			0: '#000000', 1: '#0000AA', 2: '#00AA00', 3: '#00AAAA', 4: '#AA0000', 5: '#AA00AA', 6: '#AA5500', 7: '#AAAAAA',
+			8: '#555555', 9: '#5555FF', 10: '#55FF55', 11: '#55FFFF', 12: '#FF5555', 13: '#FF55FF', 14: '#FFFF55', 15: '#FFFFFF'
 		};
 	}
 
